@@ -33,6 +33,9 @@
       </item>
       <item row="0" column="2">
        <widget class="QPushButton" name="goto_boxes_btn">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="text">
          <string>Boxes</string>
         </property>
@@ -68,21 +71,21 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="module_tab_wg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="tab_1">
          <attribute name="title">
-          <string>Tab text 1</string>
+          <string>Tab 1</string>
          </attribute>
         </widget>
         <widget class="QWidget" name="tab_2">
          <attribute name="title">
-          <string>Tab text 2</string>
+          <string>Tab 2</string>
          </attribute>
         </widget>
         <widget class="QWidget" name="tab_3">
          <attribute name="title">
-          <string>Tab text 3</string>
+          <string>Tab 3</string>
          </attribute>
         </widget>
        </widget>

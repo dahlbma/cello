@@ -19,6 +19,9 @@
      <layout class="QGridLayout" name="gridLayout_6">
       <item row="0" column="0">
        <widget class="QPushButton" name="goto_search_btn">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Search</string>
         </property>
@@ -68,7 +71,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="search_tab_wg">
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="onevial_search_tab">
          <attribute name="title">
@@ -82,6 +85,12 @@
               <layout class="QGridLayout" name="gridLayout">
                <item row="1" column="0">
                 <widget class="QLabel" name="label_4">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string>Compound id:</string>
                  </property>
@@ -89,6 +98,12 @@
                </item>
                <item row="3" column="0">
                 <widget class="QLabel" name="label_6">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string>Coordinates:</string>
                  </property>
@@ -99,6 +114,12 @@
                </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_3">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string>Batch:</string>
                  </property>
@@ -109,6 +130,12 @@
                </item>
                <item row="2" column="0">
                 <widget class="QLabel" name="label_5">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string>Box / Location:</string>
                  </property>
@@ -139,6 +166,12 @@
               <layout class="QHBoxLayout" name="horizontalLayout">
                <item>
                 <widget class="QLabel" name="label_2">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
                  <property name="text">
                   <string>Vial:</string>
                  </property>
@@ -168,6 +201,12 @@
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
               </property>
               <property name="text">
                <string>Checkout:</string>
@@ -212,6 +251,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="discard_vial_btn">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(51, 122, 183)</string>
+              </property>
               <property name="text">
                <string>Discard Vial</string>
               </property>
@@ -232,6 +274,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="print_label_btn">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(51, 122, 183)</string>
+              </property>
               <property name="text">
                <string>Print Label</string>
               </property>
@@ -328,6 +373,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="mult_vial_search_btn">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(51, 122, 183)</string>
+              </property>
               <property name="text">
                <string>Search</string>
               </property>
@@ -349,7 +397,7 @@
            </spacer>
           </item>
           <item row="1" column="0" rowspan="2">
-           <widget class="QTableWidget" name="tableWidget">
+           <widget class="QTableWidget" name="multvial_table">
             <property name="lineWidth">
              <number>1</number>
             </property>
@@ -447,6 +495,9 @@ Weight</string>
             </item>
             <item>
              <widget class="QPushButton" name="batch_search_btn">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(51, 122, 183)</string>
+              </property>
               <property name="text">
                <string>Search</string>
               </property>
@@ -478,7 +529,7 @@ Weight</string>
            </spacer>
           </item>
           <item row="1" column="0" rowspan="2">
-           <widget class="QTableWidget" name="tableWidget_2">
+           <widget class="QTableWidget" name="batch_table">
             <property name="lineWidth">
              <number>1</number>
             </property>
