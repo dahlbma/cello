@@ -1,14 +1,11 @@
 import tornado.web
 import tornado.auth
-import tornado.template as template
 import json
 import requests
 import os
 import time
 import MySQLdb
-import applicationTemplate
 from datetime import datetime
-import applicationTemplate
 
 from datetime import datetime, timedelta
 import logging
@@ -221,20 +218,13 @@ class UnAuthorizedHandler(UnsafeHandler):
         # be careful not to evaluate them as code
         email = self.get_argument("email", '')
         name = self.get_argument("name", '')
-        contact = self.get_argument("contact", "contact@example.com")
-        t = template.Template(applicationTemplate.notAuthorizedHtml)
-        self.write(t.generate())
+        self.write(contact)
 
 class MainHandler(UnsafeHandler):
     """ Serves the html front page upon request.
     """
     def get(self):
         self.set_header('Access-Control-Allow-Origin', '*')
-        t = template.Template(applicationTemplate.indexHtml)
-        #self.write(t.generate())
-
-        #self.write("MainHandler")
-        #t = self.application.loader.load("index.html")
         self.write(t.generate(user_name=self.get_current_user_name()))
 
 

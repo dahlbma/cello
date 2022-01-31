@@ -1,4 +1,3 @@
-import tornado.template as template
 import tornado.gen
 import MySQLdb 
 import json
@@ -6,7 +5,6 @@ import logging
 import ast
 import datetime
 import time
-import applicationTemplate
 import os, random, string
 import re
 import util
@@ -34,12 +32,7 @@ def res_to_json(response, cursor):
 
 class home(util.UnsafeHandler):
     def get(self, *args, **kwargs):
-        #self.set_header('Access-Control-Allow-Origin', '*')
-        t = template.Template(applicationTemplate.indexHead)
-        self.write(t.generate())
-        t = template.Template(applicationTemplate.indexHtml)
-        logging.info(self.get_current_user_name())
-        self.write(t.generate(user_name=self.get_current_user_name()))
+        return
 
 
 @jwtauth

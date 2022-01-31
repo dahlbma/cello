@@ -5,7 +5,6 @@ import tornado.web
 import util
 import os
 import application
-from tornado import template
 from tornado.options import define, options
 import logging
 from tornado.log import enable_pretty_logging
