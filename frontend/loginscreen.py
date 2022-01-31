@@ -3,6 +3,7 @@ from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QMessageBox
+import dbInterface
 
 from cellolib import *
 
@@ -15,6 +16,8 @@ class LoginScreen(QMainWindow):
         loadUi(resource_path("assets/welcomescreen.ui"), self)
         #self.passwordfield.setEchoMode(QtWidgets.QLineEdit.Password)
         self.login.clicked.connect(self.loginfunction)
+        saDatabases = dbInterface.getDatabase()
+        self.server_cb.addItems(saDatabases)
     
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
@@ -23,6 +26,7 @@ class LoginScreen(QMainWindow):
     def loginfunction(self):
         user = self.usernamefield.text()
         password = self.passwordfield.text()
+        database = self.server_cb.currentText()
 
         if len(user) == 0 or len(password) == 0:
             self.errorlabel.setText("Please input all fields")
@@ -30,7 +34,7 @@ class LoginScreen(QMainWindow):
             self.errorlabel.setText("")
         
         try:
-            r = dbInterface.login(user, password)
+            r = dbInterface.login(user, password, database)
         except Exception as e:
             self.errorlabel.setText("Bad Connection")
             send_msg("Error Message", str(e), QMessageBox.Warning, e)
