@@ -1029,3 +1029,9 @@ class StaticFileHandler(tornado.web.StaticFileHandler):
         if path.endswith('woff'):
             self.set_header('Content-Type','application/font-woff')
         super(StaticFileHandler, self).get(path, include_body)
+
+
+class GetDatabase(tornado.web.RequestHandler):
+    def get(self):
+        sRes = json.dumps([['Live'], ['Test']])
+        self.finish(sRes)

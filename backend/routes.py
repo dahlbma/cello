@@ -8,6 +8,9 @@ import application
 from tornado.options import define, options
 import logging
 from tornado.log import enable_pretty_logging
+import MySQLdb
+from datetime import datetime, timedelta
+import jwt
 
 # Secret stuff in config file
 import config
@@ -73,6 +76,7 @@ class login(tornado.web.RequestHandler):
 def make_app():
     return tornado.web.Application([
         (r"/login", login),
+        (r"/getDatabase", application.GetDatabase),
         (r"/", application.home),
         (r"/static/(.*)", util.SafeStaticFileHandler, {"path": "static/"}),
         (r"/javascript/(.*)", tornado.web.StaticFileHandler, {"path": "javascript/"}),
