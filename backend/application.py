@@ -10,14 +10,9 @@ import applicationTemplate
 import os, random, string
 import re
 import util
-#import cx_Oracle
 import codecs
-
+from auth import jwtauth
 import config
-
-#dsn_tns = cx_Oracle.makedsn('localhost', 1521, 'star')
-#con = cx_Oracle.connect('reader', 'reader', dsn_tns)
-#cur = con.cursor()
 
 db_connection = MySQLdb.connect(
     host=config.database['host'],
@@ -36,6 +31,7 @@ def res_to_json(response, cursor):
     to_js = [{columns[index][0]:column for index, column in enumerate(value)} for value in response]
     return to_js
 
+
 class home(util.UnsafeHandler):
     def get(self, *args, **kwargs):
         #self.set_header('Access-Control-Allow-Origin', '*')
@@ -45,7 +41,9 @@ class home(util.UnsafeHandler):
         logging.info(self.get_current_user_name())
         self.write(t.generate(user_name=self.get_current_user_name()))
 
-class getMicroTubeByBatch(util.SafeHandler):
+
+@jwtauth
+class getMicroTubeByBatch(tornado.web.RequestHandler):
     def get(self, sBatches):
         if len(sBatches) < 1:
             print("no batch")
@@ -95,7 +93,9 @@ class getMicroTubeByBatch(util.SafeHandler):
             jRes = makeJson(tRes, jRes, sId)
         self.write(json.dumps(jRes, indent=4))
 
-class readScannedRack(util.SafeHandler):
+
+@jwtauth
+class readScannedRack(tornado.web.RequestHandler):
     def post(self):
         try:
             # self.request.files['file'][0]:
@@ -155,7 +155,9 @@ class readScannedRack(util.SafeHandler):
         }))
             
             
-class getRack(util.SafeHandler):
+
+@jwtauth
+class getRack(tornado.web.RequestHandler):
     def get(self, sRack):
         logging.info(sRack)
         jResTot = list()
@@ -221,7 +223,8 @@ class getRack(util.SafeHandler):
         self.write(json.dumps(jRes, indent=4))
 
         
-class uploadEmptyVials(util.SafeHandler):
+@jwtauth
+class uploadEmptyVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         try:
             # self.request.files['file'][0]:
@@ -366,7 +369,8 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 
 
 
-class createLocation(util.SafeHandler):
+@jwtauth
+class createLocation(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
         try:
@@ -381,7 +385,8 @@ class createLocation(util.SafeHandler):
         self.write(json.dumps({'locId':sLoc,
                                'locDescription':sDescription}))
 
-class getLocations(util.SafeHandler):
+@jwtauth
+class getLocations(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
         sSlask = cur.execute("""SELECT location_id, location_description from vialdb.box_location
@@ -389,7 +394,9 @@ class getLocations(util.SafeHandler):
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur), indent=4))
 
-class searchLocation(util.SafeHandler):
+
+@jwtauth
+class searchLocation(tornado.web.RequestHandler):
     def get(self, sLocation):
         self.set_header("Content-Type", "application/json")
         sSlask = cur.execute("""SELECT l.location_id as locId, location_description as locDescription, box_id as boxId, box_description as boxDescription
@@ -406,7 +413,9 @@ class searchLocation(util.SafeHandler):
         #                 "boxDescription":row.box_description})
         self.write(json.dumps(res_to_json(tRes, cur)))
 
-class verifyVial(util.SafeHandler):
+
+@jwtauth
+class verifyVial(tornado.web.RequestHandler):
     def get(self, sVial):
         sSql = """SELECT batch_id, vial_type from vialdb.vial where vial_id='%s'""" % sVial
         tRes = cur.execute(sSql)
@@ -438,7 +447,9 @@ class verifyVial(util.SafeHandler):
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
-class batchInfo(util.SafeHandler):
+
+@jwtauth
+class batchInfo(tornado.web.RequestHandler):
     def get(self, sBatch):
         sSlask = cur.execute("""SELECT b.batch_id,
                            b.compound_id, batch_formula_weight
@@ -455,7 +466,9 @@ class batchInfo(util.SafeHandler):
             return
         self.write(json.dumps(res_to_json(tRes, cur)))
 
-class editVial(util.SafeHandler):
+
+@jwtauth
+class editVial(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         sCompoundId = self.get_argument("compound_id")
         sVial = self.get_argument("sVial")
@@ -489,7 +502,9 @@ class editVial(util.SafeHandler):
         logging.info("Done editing vial: " + str(sVial))
         return
 
-class printVial(util.SafeHandler):
+
+@jwtauth
+class printVial(tornado.web.RequestHandler):
     def get(self, sVial):
         logging.info("Printing label for " + sVial)
         sSql = """
@@ -524,7 +539,9 @@ def getNextVialId():
     sNewVial = 'V' + str(iVial + 1).zfill(7)
     return sNewVial
 
-class createManyVialsNLabels(util.SafeHandler):
+
+@jwtauth
+class createManyVialsNLabels(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         iNumberOfVials = int(self.get_argument("numberOfVials", default='', strip=False))
         sType = self.get_argument("vialType", default='', strip=False)
@@ -551,12 +568,16 @@ class createManyVialsNLabels(util.SafeHandler):
                 sError = 'Vial already in database'
             doPrint(sCmp, sBatch, sTypeDesc, sDate, sVial)
 
-class generateVialId(util.SafeHandler):
+
+@jwtauth
+class generateVialId(tornado.web.RequestHandler):
     def get(self):
         sNewVial = getNextVialId()
         self.write(json.dumps({'vial_id':sNewVial}))
 
-class discardVial(util.SafeHandler):
+
+@jwtauth
+class discardVial(tornado.web.RequestHandler):
     def get(self, sVial):
         sSql = """update vialdb.box_positions set vial_id=%s, update_date=now()
                   where vial_id=%s""" % (None, sVial)
@@ -567,7 +588,9 @@ class discardVial(util.SafeHandler):
         logVialChange(sVial, '', 'Discarded')
         self.finish()
 
-class vialInfo(util.SafeHandler):
+
+@jwtauth
+class vialInfo(tornado.web.RequestHandler):
     def get(self, sVial):
         sSql = """SELECT batch_id from vialdb.vial where vial_id='%s'""" % sVial
         sSlask = cur.execute(sSql)
@@ -590,14 +613,18 @@ class vialInfo(util.SafeHandler):
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
-class getVialTypes(util.SafeHandler):
+
+@jwtauth
+class getVialTypes(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         sSlask = cur.execute("""SELECT vial_type, vial_type_desc, concentration from vialdb.vial_type
                            order by vial_order asc""")
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
-class getBoxDescription(util.SafeHandler):
+
+@jwtauth
+class getBoxDescription(tornado.web.RequestHandler):
     def get(self, sBox):
         sSlask = cur.execute("""SELECT box_description FROM vialdb.box where box_id = '%s'""" % (sBox))
         tRes = cur.fetchall()
@@ -615,7 +642,8 @@ def updateVialType(sBoxId, sVialId):
     sSlask = cur.execute(sSql)
 
     
-class updateVialPosition(util.SafeHandler):
+@jwtauth
+class updateVialPosition(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         sVialId = self.get_argument("vialId", default='', strip=False)
         sBoxId = self.get_argument("boxId", default='', strip=False)
@@ -713,7 +741,8 @@ class updateVialPosition(util.SafeHandler):
         self.finish(json.dumps(res_to_json(tRes, cur)))
 
 
-class printBox(util.SafeHandler):
+@jwtauth
+class printBox(tornado.web.RequestHandler):
     def get(self, sBox):
         sSlask = cur.execute("""select box_description, vial_type_desc from vialdb.box b, vialdb.vial_type v
                   where b.vial_type=v.vial_type and box_id = '%s'""" % (sBox))
@@ -741,7 +770,9 @@ class printBox(util.SafeHandler):
         os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
         self.finish("Printed")
 
-class createBox(util.SafeHandler):
+
+@jwtauth
+class createBox(tornado.web.RequestHandler):
     def createVials(self, sBoxId, iVialPk):
         for iVial in range(NR_OF_VIALS_IN_BOX):
             iCoord = iVial + 1
@@ -792,15 +823,18 @@ class createBox(util.SafeHandler):
         self.finish("Printed")
 
 
-class getFirstEmptyCoordForBox(util.SafeHandler):
+@jwtauth
+class getFirstEmptyCoordForBox(tornado.web.RequestHandler):
     def get(self, sBox):
         sSlask = cur.execute("""select coordinate from vialdb.box_positions
                            where (vial_id is null or vial_id ='') and box_id = '%s'
                            order by coordinate asc limit 1""" % (sBox))
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
-                       
-class getBoxOfType(util.SafeHandler):
+
+
+@jwtauth
+class getBoxOfType(tornado.web.RequestHandler):
     def get(self, sBoxType):
         sSlask = cur.execute("""select distinct(p.box_id)
                            from vialdb.box_positions p, vialdb.box b
@@ -812,7 +846,9 @@ class getBoxOfType(util.SafeHandler):
         #    saRes.append(saItem.box_id)
         self.write(json.dumps(res_to_json(tRes, cur)))
 
-class updateBox(util.SafeHandler):
+
+@jwtauth
+class updateBox(tornado.web.RequestHandler):
     def get(self, sBox):
         self.set_header("Content-Type", "application/json")
         sSlask = cur.execute("""select box_id, box_description, vial_type_desc
@@ -829,7 +865,9 @@ class updateBox(util.SafeHandler):
             self.set_status(400)
             self.finish(json.dumps("Box not found"))
 
-class searchVials(util.SafeHandler):
+
+@jwtauth
+class searchVials(tornado.web.RequestHandler):
     def get(self, sVials):
         sIds = set(sVials.split())
         tmpIds = ""
@@ -883,7 +921,8 @@ class searchVials(util.SafeHandler):
         self.finish(json.dumps(jRes))
 
 
-class searchBatches(util.SafeHandler):
+@jwtauth
+class searchBatches(tornado.web.RequestHandler):
     def get(self, sBatches):
         sIds = sBatches.split()
         jRes = []
@@ -940,7 +979,9 @@ class searchBatches(util.SafeHandler):
             jRes.append(res_to_json(tRes, cur)[0])
         self.finish(json.dumps(jRes))
 
-class getLocation(util.SafeHandler):
+
+@jwtauth
+class getLocation(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         sSlask = cur.execute("SET CHARACTER SET utf8")
         self.set_header("Content-Type", "application/json;charset=utf-8")
@@ -952,7 +993,9 @@ class getLocation(util.SafeHandler):
         #tRes = {'vial_location': u''}.update(tRes)
         self.write(json.dumps(res_to_json(tRes, cur), ensure_ascii=False).encode('utf8'))
 
-class moveVialToLocation(util.SafeHandler):
+
+@jwtauth
+class moveVialToLocation(tornado.web.RequestHandler):
     def get(self, sVial, sUser):
         sSlask = cur.execute("""select vial_location from vialdb.vial_location
         where vial_location = '%s'""" % sUser)

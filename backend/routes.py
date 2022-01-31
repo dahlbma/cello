@@ -71,8 +71,6 @@ class login(tornado.web.RequestHandler):
         pass
 
 
-
-
 def make_app():
     return tornado.web.Application([
         (r"/login", login),
