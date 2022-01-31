@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QMessageBox
 import dbInterface
 
 from cellolib import *
-
+from searchscreen import SearchScreen
 
 class LoginScreen(QMainWindow):
     def __init__(self):
@@ -48,8 +48,8 @@ class LoginScreen(QMainWindow):
 
     def gotoSearch(self, token):
         print("go to search")
-        raise Exception
-        #search = SearchScreen(token)
-        #self.window().addWidget(search)
-        #self.window().setCurrentIndex(self.window().currentIndex() + 1)
+        #raise Exception
+        search = SearchScreen(token)
+        self.window().addWidget(search)
+        self.window().setCurrentIndex(self.window().currentIndex() + 1)
 
