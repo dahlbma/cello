@@ -740,12 +740,16 @@ class updateVialPosition(tornado.web.RequestHandler):
         jRes = getBoxFromDb(sBoxId)
         #self.finish(json.dumps(jRes))
 
-        sSlask = cur.execute("""SELECT v.vial_id as vialId, coordinate, batch_id as batchId, compound_id as compoundId,
-                       b.box_id as boxId, box_description as boxDescription
-                       from vialdb.box b
-                       left join vialdb.box_positions v on b.box_id = v.box_id
-                       left join vialdb.vial c on v.vial_id = c.vial_id
-                       where b.box_id = '%s' and coordinate = '%s'""" % (sBoxId, iCoordinate))
+        sSlask = cur.execute("""SELECT v.vial_id as vialId,
+                                coordinate, batch_id as batchId,
+                                compound_id as compoundId,
+                                b.box_id as boxId,
+                                box_description as boxDescription
+                                from vialdb.box b
+                                left join vialdb.box_positions v on b.box_id = v.box_id
+                                left join vialdb.vial c on v.vial_id = c.vial_id
+                                where b.box_id = '%s'
+                                and coordinate = '%s'""" % (sBoxId, iCoordinate))
         tRes = cur.fetchall()
         #jRes = {"vialId":tRes[0].vial_id,
         #        "coordinate":tRes[0].coordinate,
@@ -759,8 +763,10 @@ class updateVialPosition(tornado.web.RequestHandler):
 @jwtauth
 class printBox(tornado.web.RequestHandler):
     def get(self, sBox):
-        sSlask = cur.execute("""select box_description, vial_type_desc from vialdb.box b, vialdb.vial_type v
-                  where b.vial_type=v.vial_type and box_id = '%s'""" % (sBox))
+        sSlask = cur.execute("""select box_description, vial_type_desc
+                                from vialdb.box b, vialdb.vial_type v
+                                where b.vial_type=v.vial_type
+                                and box_id = '%s'""" % (sBox))
         tRes = cur.fetchall()
         sType = tRes[0][1]
         sDescription = tRes[0][0]
@@ -791,7 +797,8 @@ class createBox(tornado.web.RequestHandler):
     def createVials(self, sBoxId, iVialPk):
         for iVial in range(NR_OF_VIALS_IN_BOX):
             iCoord = iVial + 1
-            sSql = """insert into vialdb.box_positions (box_id, coordinate, update_date)
+            sSql = """insert into vialdb.box_positions
+                      (box_id, coordinate, update_date)
                       values (%s, %s, now())""" % (sBoxId, iCoord)
             sSlask = cur.execute(sSql)
 
@@ -842,8 +849,9 @@ class createBox(tornado.web.RequestHandler):
 class getFirstEmptyCoordForBox(tornado.web.RequestHandler):
     def get(self, sBox):
         sSlask = cur.execute("""select coordinate from vialdb.box_positions
-                           where (vial_id is null or vial_id ='') and box_id = '%s'
-                           order by coordinate asc limit 1""" % (sBox))
+                                where (vial_id is null or vial_id ='')
+                                and box_id = '%s'
+                                order by coordinate asc limit 1""" % (sBox))
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
@@ -867,8 +875,8 @@ class updateBox(tornado.web.RequestHandler):
     def get(self, sBox):
         self.set_header("Content-Type", "application/json")
         sSlask = cur.execute("""select box_id, box_description, vial_type_desc
-                  from vialdb.box b, vialdb.vial_type t
-                  where b.vial_type = t.vial_type and box_id = '%s'
+                                from vialdb.box b, vialdb.vial_type t
+                                where b.vial_type = t.vial_type and box_id = '%s'
                """ % (sBox))
         tRes = cur.fetchall()
         jRes = getBoxFromDb(sBox)
@@ -889,17 +897,23 @@ class searchVials(tornado.web.RequestHandler):
         jRes = []
         lNotFound = list()
         for sId in sIds:
-            sSql = """SELECT b.batch_id as batchId, b.compound_id as compoundId, bbb.box_id as boxId, bbb.box_description as boxDescription, p.coordinate, b.vial_id as vialId,
-            ddd.batch_formula_weight as batchMolWeight, ddd.batch_salt as salt, b.dilution, ddd.cbk_id as cbkId
-            FROM
-            vialdb.vial b
-            left outer join vialdb.box_positions p
-            on b.vial_id = p.vial_id
-            left outer join ddd.batch ddd
-            on b.batch_id = ddd.batch_id 
-            left outer join vialdb.box bbb 
-            on bbb.box_id = p.box_id where
-            b.vial_id = '%s'""" % sId
+            sSql = """SELECT b.batch_id as batchId,
+                      b.compound_id as compoundId,
+                      bbb.box_id as boxId,
+                      bbb.box_description as boxDescription,
+                      p.coordinate, b.vial_id as vialId,
+                      ddd.batch_formula_weight as batchMolWeight,
+                      ddd.batch_salt as salt,
+                      b.dilution, ddd.cbk_id as cbkId
+              FROM
+                 vialdb.vial b
+                 left outer join vialdb.box_positions p
+                 on b.vial_id = p.vial_id
+                 left outer join ddd.batch ddd
+                 on b.batch_id = ddd.batch_id 
+                 left outer join vialdb.box bbb 
+                 on bbb.box_id = p.box_id where
+                 b.vial_id = '%s'""" % sId
             try:
                 sSlask = cur.execute(sSql)
             except Exception as e:
@@ -947,17 +961,29 @@ class searchBatches(tornado.web.RequestHandler):
             tmpIds += "'" + sId + "'"
         stringIds = tmpIds.replace("''", "','")
         if sIds[0].startswith('SLL-'):
-            sSql = """SELECT b.batch_id as batchId, b.compound_id as compoundId, bb.cbk_id cbkId, bbb.box_id as boxId, bbb.box_description as boxDescription,
-                      p.coordinate, b.vial_id vialId, bb.batch_formula_weight as batchMolWeight, bb.batch_salt as salt
-                      FROM vialdb.vial b, vialdb.box_positions p, bcpvs.batch bb, vialdb.box as bbb
-                      where b.vial_id = p.vial_id and
-                      bb.batch_id = b.batch_id and bbb.box_id = p.box_id and
-		      b.compound_id = %s
+            sSql = """
+            SELECT b.batch_id as batchId,
+            b.compound_id as compoundId,
+            bb.cbk_id cbkId,
+            bbb.box_id as boxId,
+            bbb.box_description as boxDescription,
+            p.coordinate,
+            b.vial_id vialId,
+            bb.batch_formula_weight as batchMolWeight,
+            bb.batch_salt as salt
+            FROM vialdb.vial b,
+            vialdb.box_positions p,
+            bcpvs.batch bb, vialdb.box as bbb
+            where b.vial_id = p.vial_id and
+            bb.batch_id = b.batch_id and bbb.box_id = p.box_id and
+	    b.compound_id = %s
             """
         else:
             sSql = """
-            SELECT v.batch_id, bb.compound_id, bb.cbk_id, bbb.box_description as box_id,
-            b.coordinate, v.vial_id, batch_formula_weight, batch_salt,
+            SELECT v.batch_id, bb.compound_id, bb.cbk_id,
+            bbb.box_description as box_id,
+            b.coordinate, v.vial_id,
+            batch_formula_weight, batch_salt,
             bb.batch_formula_weight, bb.batch_salt
             FROM
             vialdb.vial v
@@ -1006,14 +1032,17 @@ class getLocation(tornado.web.RequestHandler):
         tRes.insert(0, {'vial_location': u''})
         tRes = tuple(tRes)
         #tRes = {'vial_location': u''}.update(tRes)
-        self.write(json.dumps(res_to_json(tRes, cur), ensure_ascii=False).encode('utf8'))
+        self.write(json.dumps(res_to_json(tRes, cur),
+                              ensure_ascii=False).encode('utf8'))
 
 
 @jwtauth
 class moveVialToLocation(tornado.web.RequestHandler):
     def get(self, sVial, sUser):
-        sSlask = cur.execute("""select vial_location from vialdb.vial_location
-        where vial_location = '%s'""" % sUser)
+        sSlask = cur.execute("""
+          select vial_location
+          from vialdb.vial_location
+          where vial_location = '%s'""" % sUser)
         tRes = cur.fetchall()
         if len(tRes) != 1:
             return
