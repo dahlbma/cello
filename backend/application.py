@@ -26,7 +26,8 @@ NR_OF_VIALS_IN_BOX = 200
 
 def res_to_json(response, cursor):
     columns = cursor.description 
-    to_js = [{columns[index][0]:column for index, column in enumerate(value)} for value in response]
+    to_js = [{columns[index][0]:column for index,
+              column in enumerate(value)} for value in response]
     return to_js
 
 
@@ -617,12 +618,22 @@ class vialInfo(tornado.web.RequestHandler):
             logging.error('Vial ' + sVial + ' not found')
             return
 
-        sSql = """SELECT v.vial_id, coordinate, v.batch_id, v.compound_id,
-                  b.box_id,box_description, v.tare, discarded, checkedout
-	          from vialdb.vial v left join bcpvs.batch c on v.batch_id = c.notebook_ref
-                  left join vialdb.box_positions p on v.vial_id = p.vial_id
-                  left join vialdb.box b on p.box_id = b.box_id
-                  where v.vial_id='%s'""" % sVial
+        #sSql = """SELECT v.vial_id, coordinate, v.batch_id, v.compound_id,
+        #          b.box_id,box_description, v.tare, discarded, checkedout
+	#          from vialdb.vial v
+        #          left join bcpvs.batch c on v.batch_id = c.notebook_ref
+        #          left join vialdb.box_positions p on v.vial_id = p.vial_id
+        #          left join vialdb.box b on p.box_id = b.box_id
+        #          where v.vial_id='%s'""" % sVial
+        sSql = f"""select v.vial_id,
+                   pos coordinate,
+                   v.notebook_ref batch_id,
+                   compound_id,
+                   location box_id
+               from glass.vial v
+                  left join bcpvs.batch c ON v.notebook_ref = c.notebook_ref
+               where vial_id ='{sVial}'"""
+        
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))

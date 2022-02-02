@@ -60,6 +60,7 @@ def jwtauth(handler_class):
             head = str(handler.request.headers)
             if head.find('token') == -1:
                 handler._transforms = []
+                handler.set_status(401)
                 handler.write("Missing authorization")
                 handler.finish()
                 return False
@@ -67,22 +68,15 @@ def jwtauth(handler_class):
             #auth = handler.request.headers.get(AUTHORIZATION_HEADER)
             try:                    
                 auth = handler.request.headers.get('token')
-                parts = auth.split()
-                if len(parts) == 2 and parts[0] == '{"token":':
+                res = json.loads(auth)
                 
-                    x = re.match('^\"(.+)\"}', parts[1])
-                    payload = x.groups()[0]
-                    s = jwt.decode(
-                        payload,
-                        SECRET_KEY, algorithms=[JWT_ALGORITHM],
-                        options=jwt_options
-                    )
+                s = jwt.decode(
+                    res['token'],
+                    SECRET_KEY, algorithms=[JWT_ALGORITHM],
+                    options=jwt_options
+                )
 
-                    name = s['username']
-                else:
-                    handler._transforms = []
-                    handler.write("Missing authorization")
-                    handler.finish()
+                name = s['username']
             except Exception as e:
                 handler._transforms = []
                 logging.error(str(err))

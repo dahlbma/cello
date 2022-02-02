@@ -56,7 +56,7 @@ class login(tornado.web.RequestHandler):
             )
             db_connection2.close()
         except Exception as ex:
-            logger.error(str(ex))
+            logging.error(str(ex))
             self.set_status(400)
             self.write({'message': 'Wrong username password'})
             self.finish()
