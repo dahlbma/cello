@@ -26,3 +26,7 @@ def getDatabase():
     res = listify(r, False)
     return res
 
+def getVialInfo(token, vialId):
+    r = requests.get(f'{baseUrl}vialInfo/{vialId}',
+            headers={'token':token})
+    return r.content.decode()

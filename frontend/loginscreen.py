@@ -3,10 +3,8 @@ from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QMessageBox
-import dbInterface
 
 from cellolib import *
-from searchscreen import SearchScreen
 
 class LoginScreen(QMainWindow):
     def __init__(self):
@@ -44,12 +42,12 @@ class LoginScreen(QMainWindow):
             self.errorlabel.setText("Wrong username/password")
             return
         self.jwt_token = r.content
-        self.gotoSearch(self.jwt_token)
+        self.gotoSearch()
 
-    def gotoSearch(self, token):
-        print("go to search")
-        #raise Exception
-        search = SearchScreen(token)
+    def gotoSearch(self):
+        from searchscreen import SearchScreen
+        resize_window(self)
+        search = SearchScreen(self.jwt_token)
         self.window().addWidget(search)
         self.window().setCurrentIndex(self.window().currentIndex() + 1)
-
+        search.vial_search_eb.setFocus()

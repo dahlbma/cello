@@ -1,4 +1,5 @@
-import sys, requests, json, os, subprocess, platform, shutil, datetime, traceback, logging#, dbInterface
+import imp
+import sys, requests, json, os, subprocess, platform, shutil, datetime, traceback, logging, dbInterface
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMessageBox
@@ -30,3 +31,14 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
+def resize_window(self, height=800, width=1200):
+    desktop = QApplication.desktop()
+
+    windowHeight = int(round(0.9 * desktop.screenGeometry().height(), -1))
+    if windowHeight > height:
+        windowHeight = height
+
+    windowWidth = int(round((width/height) * windowHeight, -1))
+
+    self.window().resize(windowWidth, windowHeight)
