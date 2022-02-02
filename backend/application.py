@@ -258,9 +258,9 @@ class uploadEmptyVials(tornado.web.RequestHandler):
                         iError += 1
                         saError.append(sVial)
                         sSql = f"""update vialdb.vial set
-                        tare = {sTare},
-                        update_date = now()
-                        where vial_id = {sVial}
+                                   tare = {sTare},
+                                   update_date = now()
+                                   where vial_id = {sVial}
                         """
                         logging.info("Upload vial: " + sVial + ' Tare: ' + sTare)
                         sSlask = cur.execute(sSql)
@@ -268,8 +268,9 @@ class uploadEmptyVials(tornado.web.RequestHandler):
         self.finish(json.dumps({'FailedVials':saError, 'iOk':iOk, 'iError':iError}))
 
 def getNewLocationId():
-    sSlask = cur.execute("""SELECT pk, location_id, location_description from vialdb.box_location
-                       order by pk desc limit 1""")
+    sSlask = cur.execute("""SELECT pk, location_id, location_description
+                            from vialdb.box_location
+                            order by pk desc limit 1""")
     tRes = cur.fetchall()
     if len(tRes) == 0:
         iKey = 0
@@ -292,9 +293,9 @@ def getNewBoxId():
 
 def deleteOldVialPosition(sVialId):
     sSql = f"""update vialdb.box_positions set
-    vial_id={None},
-    update_date=now()
-    where vial_id={sVialId}
+               vial_id={None},
+               update_date=now()
+               where vial_id={sVialId}
     """
     sSlask = cur.execute(sSql)
 
@@ -306,10 +307,11 @@ def logVialChange(sVialId, sOldPos, sNewPos):
     sSlask = cur.execute(sSql)
 
 def getVialPosition(sVialId):
-    sSql = f"""select IFNULL(b.box_id, '') box_id, IFNULL(b.coordinate, '') coordinate, v.checkedout
-    from vialdb.vial v
-    left outer join vialdb.box_positions b on v.vial_id = b.vial_id
-    where v.vial_id={sVialId}
+    sSql = f"""select IFNULL(b.box_id, '') box_id,
+               IFNULL(b.coordinate, '') coordinate, v.checkedout
+               from vialdb.vial v
+               left outer join vialdb.box_positions b on v.vial_id = b.vial_id
+               where v.vial_id={sVialId}
     """
     sSlask = cur.execute(sSql)
     tRes = cur.fetchall()
@@ -372,8 +374,9 @@ class createLocation(tornado.web.RequestHandler):
             logging.error("Error cant find file1 in the argument list")
             return
         sLoc = getNewLocationId()
-        sSql = f"""insert into vialdb.box_location (location_id, location_description, update_date)
-                  values ({sLoc}, {sDescription}, now())"""
+        sSql = f"""insert into vialdb.box_location (location_id,
+                   location_description, update_date)
+                   values ({sLoc}, {sDescription}, now())"""
         sSlask = cur.execute(sSql)
         self.write(json.dumps({'locId':sLoc,
                                'locDescription':sDescription}))
@@ -382,8 +385,9 @@ class createLocation(tornado.web.RequestHandler):
 class getLocations(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
-        sSlask = cur.execute("""SELECT location_id, location_description from vialdb.box_location
-                           order by pk""")
+        sSlask = cur.execute("""SELECT location_id, location_description
+                                from vialdb.box_location
+                                order by pk""")
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur), indent=4))
 
@@ -392,7 +396,11 @@ class getLocations(tornado.web.RequestHandler):
 class searchLocation(tornado.web.RequestHandler):
     def get(self, sLocation):
         self.set_header("Content-Type", "application/json")
-        sSlask = cur.execute("""SELECT l.location_id as locId, location_description as locDescription, box_id as boxId, box_description as boxDescription
+        sSlask = cur.execute("""
+                     SELECT l.location_id as locId,
+                           location_description as locDescription,
+                           box_id as boxId,
+                           box_description as boxDescription
                            from vialdb.box_location l
                  	   left join vialdb.box b
                            on l.location_id = b.location_id
@@ -410,7 +418,9 @@ class searchLocation(tornado.web.RequestHandler):
 @jwtauth
 class verifyVial(tornado.web.RequestHandler):
     def get(self, sVial):
-        sSql = """SELECT batch_id, vial_type from vialdb.vial where vial_id='%s'""" % sVial
+        sSql = f"""SELECT batch_id, vial_type
+                  from vialdb.vial
+                  where vial_id='{sVial}'"""
         tRes = cur.execute(sSql)
         tRes = cur.fetchall()
         lError = False
@@ -431,11 +441,15 @@ class verifyVial(tornado.web.RequestHandler):
             logging.error(tRes)
             return
 
-        sSlask = cur.execute("""SELECT v.vial_id sVial, v.batch_id, v.vial_type,
-        b.compound_id, v.tare, batch_formula_weight, net iNetWeight, gross iGross, dilution iDilutionFactor
-        from vialdb.vial v
-        left outer join ddd.batch b on v.batch_id = b.batch_id
-        where  v.vial_id = '%s'
+        sSlask = cur.execute("""
+                  SELECT v.vial_id sVial, v.batch_id, v.vial_type,
+                  b.compound_id,
+                  v.tare, batch_formula_weight,
+                  net iNetWeight, gross iGross,
+                  dilution iDilutionFactor
+                  from vialdb.vial v
+                  left outer join ddd.batch b on v.batch_id = b.batch_id
+                  where  v.vial_id = '%s'
         """ % (sVial))
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
@@ -485,7 +499,8 @@ class editVial(tornado.web.RequestHandler):
         gross = %s,
         dilution = %s
         where vial_id = %s
-        """ % (sBatch, sCompoundId, sBoxType, sTare, sNetWeight, sGross, iDilutionFactor, sVial)
+        """ % (sBatch, sCompoundId, sBoxType, sTare,
+               sNetWeight, sGross, iDilutionFactor, sVial)
 
         try:
             cur.execute(sSql)
@@ -509,7 +524,8 @@ class printVial(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         if len(tRes) > 0:
             sDate = (time.strftime("%Y-%m-%d"))
-            doPrint(tRes[0].compound_id, tRes[0].batch_id, tRes[0].vial_type_desc, sDate, sVial)
+            doPrint(tRes[0].compound_id, tRes[0].batch_id,
+                    tRes[0].vial_type_desc, sDate, sVial)
             self.finish("Printed")
             return
 
@@ -536,9 +552,12 @@ def getNextVialId():
 @jwtauth
 class createManyVialsNLabels(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
-        iNumberOfVials = int(self.get_argument("numberOfVials", default='', strip=False))
+        iNumberOfVials = int(self.get_argument("numberOfVials",
+                                               default='',
+                                               strip=False))
         sType = self.get_argument("vialType", default='', strip=False)
-        sSql = """SELECT vial_type_desc FROM vialdb.vial_type where vial_type = %s""" % (sType)
+        sSql = """SELECT vial_type_desc FROM vialdb.vial_type
+                  where vial_type = %s""" % (sType)
         sSlask = cur.execute(sSql)[0]['vial_type_desc']
         sTypeDesc = cur.fetchall()
         for i in range(iNumberOfVials):
@@ -572,10 +591,12 @@ class generateVialId(tornado.web.RequestHandler):
 @jwtauth
 class discardVial(tornado.web.RequestHandler):
     def get(self, sVial):
-        sSql = """update vialdb.box_positions set vial_id=%s, update_date=now()
+        sSql = """update vialdb.box_positions set vial_id=%s,
+                  update_date=now()
                   where vial_id=%s""" % (None, sVial)
         sSlask = cur.execute(sSql)
-        sSql = """update vialdb.vial set discarded='Discarded', update_date=now(), checkedout=%s
+        sSql = """update vialdb.vial set discarded='Discarded',
+                  update_date=now(), checkedout=%s
                   where vial_id=%s""" % (None, sVial)
         sSlask = cur.execute(sSql)
         logVialChange(sVial, '', 'Discarded')
@@ -585,7 +606,7 @@ class discardVial(tornado.web.RequestHandler):
 @jwtauth
 class vialInfo(tornado.web.RequestHandler):
     def get(self, sVial):
-        sSql = """SELECT batch_id from vialdb.vial where vial_id='%s'""" % sVial
+        sSql = f"""SELECT batch_id from vialdb.vial where vial_id='%s'""" % sVial
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         lError = False
@@ -610,8 +631,9 @@ class vialInfo(tornado.web.RequestHandler):
 @jwtauth
 class getVialTypes(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
-        sSlask = cur.execute("""SELECT vial_type, vial_type_desc, concentration from vialdb.vial_type
-                           order by vial_order asc""")
+        sSlask = cur.execute("""SELECT vial_type, vial_type_desc, concentration
+                                from vialdb.vial_type
+                                order by vial_order asc""")
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
