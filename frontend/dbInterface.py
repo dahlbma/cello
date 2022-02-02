@@ -29,4 +29,7 @@ def getDatabase():
 def getVialInfo(token, vialId):
     r = requests.get(f'{baseUrl}vialInfo/{vialId}',
             headers={'token':token})
-    return r.content.decode()
+    try:
+        return r.content.decode()
+    except:
+        return r.content

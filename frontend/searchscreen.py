@@ -35,9 +35,19 @@ class SearchScreen(QMainWindow):
             self.searchVial(t)
 
     def searchVial(self, vialId):
-        ret = json.loads(dbInterface.getVialInfo(self.token, vialId))
+        res = dbInterface.getVialInfo(self.token, vialId)
+        try:
+            ret = json.loads(res)
+        except:
+            self.errorlabel.setText(res)
+            self.onevial_batch_eb.setText('')
+            self.onevial_compound_id_eb.setText('')
+            self.onevial_box_loc_eb.setText('')
+            self.onevial_coords_eb.setText('')
+            print(res)
+            return
+        self.errorlabel.setText('')
         print(f'ret: {ret}')
-        self.errorlabel.setText(json.dumps(ret))
         self.onevial_batch_eb.setText(ret[0]['batch_id'])
         self.onevial_compound_id_eb.setText(ret[0]['compound_id'])
         self.onevial_box_loc_eb.setText(ret[0]['box_id'])
