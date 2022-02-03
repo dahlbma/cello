@@ -1135,14 +1135,17 @@ class moveVialToLocation(tornado.web.RequestHandler):
 @jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
     def get(self):
-        chemregDB, bcpvsDB = getDatabase(self)
-        regno = self.get_argument("regno")
-        sSql = f"""select molfile from {chemregDB}.chem_info
-                   where regno = '{regno}'"""
+        vial = self.get_argument("vial")
+        sSql = f"""select mol
+        from bcpvs.JCMOL_MOLTABLE m, glass.vial v, bcpvs.batch c
+        where v.notebook_ref = c.notebook_ref
+        and c.compound_id = m.compound_id and
+        vial_id = '{vial}'
+        """
         cur.execute(sSql)
         molfile = cur.fetchall()
         if len(molfile) > 0 and molfile[0][0] != None:
-            createPngFromMolfile(regno, molfile[0][0])
+            createPngFromMolfile(vial, molfile[0][0])
         self.finish()
 
 
