@@ -10,6 +10,8 @@ import re
 import util
 import codecs
 from auth import jwtauth
+from rdkit import Chem
+from rdkit.Chem import Draw
 import config
 
 db_connection = MySQLdb.connect(
@@ -29,6 +31,14 @@ def res_to_json(response, cursor):
     to_js = [{columns[index][0]:column for index,
               column in enumerate(value)} for value in response]
     return to_js
+
+
+def createPngFromMolfile(regno, molfile):
+    m = Chem.MolFromMolBlock(molfile)
+    try:
+        Draw.MolToFile(m, f'mols/{regno}.png', size=(280, 280))
+    except:
+        logger.error(f"regno {regno} is nostruct")
 
 
 class home(util.UnsafeHandler):
@@ -912,10 +922,12 @@ class searchVials(tornado.web.RequestHandler):
                       b.compound_id as compoundId,
                       bbb.box_id as boxId,
                       bbb.box_description as boxDescription,
-                      p.coordinate, b.vial_id as vialId,
+                      p.coordinate,
+                      b.vial_id as vialId,
                       ddd.batch_formula_weight as batchMolWeight,
                       ddd.batch_salt as salt,
-                      b.dilution, ddd.cbk_id as cbkId
+                      b.dilution,
+                      ddd.cbk_id as cbkId
               FROM
                  vialdb.vial b
                  left outer join vialdb.box_positions p
@@ -925,6 +937,23 @@ class searchVials(tornado.web.RequestHandler):
                  left outer join vialdb.box bbb 
                  on bbb.box_id = p.box_id where
                  b.vial_id = '%s'""" % sId
+            sSql = f"""
+            SELECT
+            v.vial_id AS vialId,
+            v.notebook_ref AS batchId,
+            c.compound_id AS compoundId,
+            v.location AS boxId,
+            l.name AS boxDescription,
+            v.pos,
+            c.biological_mw AS batchMolWeight,
+            c.suffix AS salt,
+            v.conc
+            FROM
+	    glass.vial v
+            left join bcpvs.batch c ON v.notebook_ref = c.notebook_ref
+            LEFT OUTER JOIN loctree.locations l on v.location = l.loc_id
+            WHERE v.vial_id = '{sId}'
+            """
             try:
                 sSlask = cur.execute(sSql)
             except Exception as e:
@@ -971,7 +1000,7 @@ class searchBatches(tornado.web.RequestHandler):
         for sId in sIds:
             tmpIds += "'" + sId + "'"
         stringIds = tmpIds.replace("''", "','")
-        if sIds[0].startswith('SLL-'):
+        if sIds[0].startswith('CBK'):
             sSql = """
             SELECT b.batch_id as batchId,
             b.compound_id as compoundId,
@@ -988,6 +1017,23 @@ class searchBatches(tornado.web.RequestHandler):
             where b.vial_id = p.vial_id and
             bb.batch_id = b.batch_id and bbb.box_id = p.box_id and
 	    b.compound_id = %s
+            """
+            sSql = """
+            SELECT v.notebook_ref as batchId,
+            c.compound_id as compoundId,
+            v.location as boxId,
+            l.name as boxDescription,
+            v.pos,
+            v.vial_id vialId,
+            c.biological_mw as batchMolWeight,
+            c.suffix AS salt
+            FROM glass.vial v,
+            bcpvs.batch c,
+            loctree.locations l
+            where
+	    v.notebook_ref = c.notebook_ref and
+            v.location = l.loc_id and
+            c.compound_id = %s
             """
         else:
             sSql = """
@@ -1084,6 +1130,20 @@ class moveVialToLocation(tornado.web.RequestHandler):
                   where vial_id = %s 
                """ % (sUser, sVial)
         sSlask = cur.execute(sSql)
+
+
+@jwtauth
+class CreateMolImage(tornado.web.RequestHandler):
+    def get(self):
+        chemregDB, bcpvsDB = getDatabase(self)
+        regno = self.get_argument("regno")
+        sSql = f"""select molfile from {chemregDB}.chem_info
+                   where regno = '{regno}'"""
+        cur.execute(sSql)
+        molfile = cur.fetchall()
+        if len(molfile) > 0 and molfile[0][0] != None:
+            createPngFromMolfile(regno, molfile[0][0])
+        self.finish()
 
 
 class StaticFileHandler(tornado.web.StaticFileHandler):
