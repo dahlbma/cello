@@ -2,7 +2,7 @@ import imp
 import sys, requests, json, os, subprocess, platform, shutil, datetime, traceback, logging, dbInterface
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMessageBox, QTableWidget
 
 def send_msg(title, text, icon=QMessageBox.Information, e=None):
     msg = QMessageBox()
@@ -49,3 +49,4 @@ def displayMolfile(self, vial):
     self.structure_lab.setScaledContents(True)
     image.loadFromData(dbInterface.getMolImage(vial))
     self.structure_lab.setPixmap(QPixmap(image))
+
