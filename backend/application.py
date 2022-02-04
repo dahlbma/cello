@@ -36,9 +36,9 @@ def res_to_json(response, cursor):
 def createPngFromMolfile(regno, molfile):
     m = Chem.MolFromMolBlock(molfile)
     try:
-        Draw.MolToFile(m, f'mols/{regno}.png', size=(280, 280))
+        Draw.MolToFile(m, f'mols/{regno}.png', size=(300, 300))
     except:
-        logger.error(f"regno {regno} is nostruct")
+        logging.error(f"regno {regno} is nostruct")
 
 
 class home(util.UnsafeHandler):

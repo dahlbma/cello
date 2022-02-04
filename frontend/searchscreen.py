@@ -13,6 +13,8 @@ class SearchScreen(QMainWindow):
         loadUi(resource_path("assets/searchwindow.ui"), self)
         self.window().setWindowTitle("Search")
 
+        self.goto_boxes_btn.clicked.connect(self.gotoBoxes)
+
         self.mult_vial_search_btn.clicked.connect(self.search_many_vials)
         self.vial_search_eb.textChanged.connect(self.check_vial_search_input)
         self.onevial_checkout_cb.addItems([None,
@@ -53,6 +55,8 @@ class SearchScreen(QMainWindow):
             self.onevial_compound_id_eb.setText('')
             self.onevial_box_loc_eb.setText('')
             self.onevial_coords_eb.setText('')
+            self.onevial_checkout_cb.setCurrentText(None)
+            self.structure_lab.clear()
             print(res)
             return
         self.errorlabel.setText('')
@@ -62,6 +66,7 @@ class SearchScreen(QMainWindow):
         self.onevial_box_loc_eb.setText(ret[0]['box_id'])
         self.onevial_coords_eb.setText(str(ret[0]['coordinate']))
         self.onevial_checkout_cb.setCurrentText('a location')
+        displayMolfile(self, vialId)
 
     def discardVial(self):
         print(f"discard vial {self.vial_search_eb.text()}")

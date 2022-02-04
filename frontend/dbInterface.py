@@ -41,3 +41,15 @@ def getManyVials(token, vialIds):
         return r.content.decode()
     except:
         return r.content
+
+def createMolImage(token, vial):
+    r = requests.get(f'{baseUrl}createMolImage',
+                     params={'vial': vial},
+                     headers={'token': token})
+    res = r.content.decode()
+    return res
+
+def getMolImage(vial):
+    r = requests.get(f'{baseUrl}mols/{vial}.png')
+    res = r.content
+    return res

@@ -42,3 +42,10 @@ def resize_window(self, height=800, width=1200):
     windowWidth = int(round((width/height) * windowHeight, -1))
 
     self.window().resize(windowWidth, windowHeight)
+
+def displayMolfile(self, vial):
+    dbInterface.createMolImage(self.token, vial)
+    image = QImage()
+    self.structure_lab.setScaledContents(True)
+    image.loadFromData(dbInterface.getMolImage(vial))
+    self.structure_lab.setPixmap(QPixmap(image))
