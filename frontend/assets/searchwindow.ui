@@ -545,7 +545,7 @@
          </attribute>
          <layout class="QGridLayout" name="gridLayout_5">
           <item row="1" column="1">
-           <widget class="QToolButton" name="export_btn">
+           <widget class="QToolButton" name="multvial_export_btn">
             <property name="toolTip">
              <string>Export data to clipboard</string>
             </property>
@@ -764,6 +764,11 @@ Weight</string>
             </column>
             <column>
              <property name="text">
+              <string>Path</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
               <string>Batch Id</string>
              </property>
             </column>
@@ -775,18 +780,8 @@ Id</string>
             </column>
             <column>
              <property name="text">
-              <string>CBK Id</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
               <string>Batch Mol 
 Weight</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Salt</string>
              </property>
             </column>
            </widget>

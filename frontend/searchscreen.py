@@ -17,9 +17,14 @@ class SearchScreen(QMainWindow):
 
         self.search_tab_wg.setCurrentIndex(0)
         self.search_tab_wg.currentChanged.connect(self.tabChanged)
-        self.export_btn.clicked.connect(self.export_multvial)
+
+        self.multvial_export_btn.clicked.connect(self.export_multvial_table)
+        self.multvial_export_btn.setEnabled(False)
+        self.multvial_table.currentItemChanged.connect(self.multvial_moldisplay)
 
         self.mult_vial_search_btn.clicked.connect(self.search_many_vials)
+
+        self.v_search = False
         self.vial_search_eb.textChanged.connect(self.check_vial_search_input)
         self.onevial_checkout_cb.addItems([None,
                                            'a location',
@@ -34,19 +39,24 @@ class SearchScreen(QMainWindow):
                 self.search_many_vials()
                 return
             elif self.search_tab_wg.currentIndex() == 2:
-                #self._search_batches()
+                self.search_batches()
                 return
             else: # tab 0, no btn
                 return
 
     def tabChanged(self):
         page_index = self.search_tab_wg.currentIndex()
+        self.structure_lab.clear()
         if page_index == 0:
             self.vial_search_eb.setFocus()
+            if self.v_search is True:
+                displayMolfile(self, self.vial_search_eb.text())
         elif page_index == 1:
             self.mult_vial_search_eb.setFocus()
+            self.multvial_moldisplay()
         elif page_index == 2:
             self.batch_search_eb.setFocus()
+            #self.batch_moldisplay()
 
     def gotoBoxes(self):
         from boxesscreen import BoxesScreen
@@ -54,6 +64,49 @@ class SearchScreen(QMainWindow):
         boxes = BoxesScreen(self.token)
         self.window().addWidget(boxes)
         self.window().setCurrentIndex(self.window().currentIndex() + 1)
+
+    def check_vial_search_input(self):
+        print("verify input")
+        pattern = '^v[0-9]{6}$'
+        t = self.vial_search_eb.text()
+        if re.match(pattern, t):
+            print(f"pattern match: {t}")
+            self.searchVial(t)
+
+    def searchVial(self, vialId):
+        res = dbInterface.getVialInfo(self.token, vialId)
+        try:
+            ret = json.loads(res)
+        except:
+            self.v_search = False
+            self.errorlabel.setText(res)
+            self.onevial_batch_eb.setText('')
+            self.onevial_compound_id_eb.setText('')
+            self.onevial_box_loc_eb.setText('')
+            self.onevial_coords_eb.setText('')
+            self.onevial_checkout_cb.setCurrentText(None)
+            self.structure_lab.clear()
+            self.discard_vial_btn.setEnabled(False)
+            self.print_label_btn.setEnabled(False)
+            print(res)
+            return
+        self.v_search = True
+        self.errorlabel.setText('')
+        print(f'ret: {ret}')
+        self.onevial_batch_eb.setText(ret[0]['batch_id'])
+        self.onevial_compound_id_eb.setText(ret[0]['compound_id'])
+        self.onevial_box_loc_eb.setText(ret[0]['box_id'])
+        self.onevial_coords_eb.setText(str(ret[0]['coordinate']))
+        self.onevial_checkout_cb.setCurrentText('a location')
+        self.discard_vial_btn.setEnabled(True)
+        self.print_label_btn.setEnabled(True)
+        displayMolfile(self, vialId)
+
+    def discardVial(self):
+        print(f"discard vial {self.vial_search_eb.text()}")
+
+    def printLabel(self):
+        print(f"print label {self.vial_search_eb.text()}")
 
     def search_many_vials(self):
         vials = self.mult_vial_search_eb.text()
@@ -66,16 +119,18 @@ class SearchScreen(QMainWindow):
             print("error")
             print(self.multvial_data)
             self.multvial_data = None
+            self.multvial_export_btn.setEnabled(False)
+            self.multvial_table.setRowCount(0)
+            self.structure_lab.clear()
             return
-            # clear self.multival_data
         print(self.multvial_data)
         self.multvial_table.setRowCount(len(self.multvial_data))
         self.setMultvialTableData(self.multvial_data)
-        
+        self.multvial_table.setCurrentCell(0,0)
+        self.multvial_export_btn.setEnabled(True)
 
     def setMultvialTableData(self, data):
-        for n in range(len(data)): # row n
-            print(f'{n}')
+        for n in range(len(data)):
             newItem = QTableWidgetItem(f"{data[n]['vialId']}")
             self.multvial_table.setItem(n, 0, newItem)
             newItem = QTableWidgetItem(f"{data[n]['boxDescription']}")
@@ -92,49 +147,46 @@ class SearchScreen(QMainWindow):
             newItem = QTableWidgetItem(f"{data[n]['batchMolWeight']}")
             self.multvial_table.setItem(n, 6, newItem)
             newItem = QTableWidgetItem(f"{data[n]['dilution']}")
-            self.multvial_table.setItem(n, 7, newItem)  
-
-    def export_multvial(self):
-        mat = [[self.multvial_table.item(row, col).text() for col in range(self.multvial_table.columnCount())] for row in range(self.multvial_table.rowCount())]
-        csv = '\n'.join(list(map(lambda x: ', '.join(x), mat)))
-        clipboard = QApplication.clipboard()
-        clipboard.setText(csv)
-        send_msg("Export data", "Data copied to clipboard!")
-
-
-    def check_vial_search_input(self):
-        print("verify input")
-        pattern = '^v[0-9]{6}$'
-        t = self.vial_search_eb.text()
-        if re.match(pattern, t):
-            print(f"pattern match: {t}")
-            self.searchVial(t)
-
-    def searchVial(self, vialId):
-        res = dbInterface.getVialInfo(self.token, vialId)
+            self.multvial_table.setItem(n, 7, newItem)
+    
+    def multvial_moldisplay(self):
         try:
-            ret = json.loads(res)
+            if self.multvial_table.rowCount() > 0:
+                row = self.multvial_table.row(self.multvial_table.currentItem())
+                vialId = self.multvial_table.item(row, 0).text()
+                displayMolfile(self, vialId)
         except:
-            self.errorlabel.setText(res)
-            self.onevial_batch_eb.setText('')
-            self.onevial_compound_id_eb.setText('')
-            self.onevial_box_loc_eb.setText('')
-            self.onevial_coords_eb.setText('')
-            self.onevial_checkout_cb.setCurrentText(None)
-            self.structure_lab.clear()
-            print(res)
             return
-        self.errorlabel.setText('')
-        print(f'ret: {ret}')
-        self.onevial_batch_eb.setText(ret[0]['batch_id'])
-        self.onevial_compound_id_eb.setText(ret[0]['compound_id'])
-        self.onevial_box_loc_eb.setText(ret[0]['box_id'])
-        self.onevial_coords_eb.setText(str(ret[0]['coordinate']))
-        self.onevial_checkout_cb.setCurrentText('a location')
-        displayMolfile(self, vialId)
 
-    def discardVial(self):
-        print(f"discard vial {self.vial_search_eb.text()}")
+    def export_multvial_table(self):
+        export_table(self.multvial_table)
 
-    def printLabel(self):
-        print(f"print label {self.vial_search_eb.text()}")
+    def search_batches(self):
+        print("search batch")
+        return
+
+    def setBatchTableData(self, data):
+        for n in range(len(data)): # row n
+            print(f'{n}')
+            newItem = QTableWidgetItem(f"{data[n]['']}")
+            self.batch_table.setItem(n, 0, newItem)
+            #newItem = QTableWidgetItem(f"{data[n]['']}")
+            #self.batch_table.setItem(n, 1, newItem)
+            #newItem = QTableWidgetItem(f"{data[n]['']}")
+            #self.batch_table.setItem(n, 2, newItem)
+            #newItem = QTableWidgetItem(f"{data[n]['']}")
+            #self.batch_table.setItem(n, 3, newItem)
+            #newItem = QTableWidgetItem(f"{data[n]['']}")
+            #self.batch_table.setItem(n, 4, newItem)
+            #newItem = QTableWidgetItem(f"{data[n]['']}")
+            #self.batch_table.setItem(n, 5, newItem)
+            #newItem = QTableWidgetItem(f"{data[n]['']}")
+            #self.batch_table.setItem(n, 6, newItem)
+            #newItem = QTableWidgetItem(f"{data[n]['']}")
+            #self.batch_table.setItem(n, 7, newItem)
+
+    def batch_moldisplay(self):
+        return
+
+    def export_batch_table(self):
+        export_table(self.batch_table)
