@@ -157,8 +157,7 @@ class readScannedRack(tornado.web.RequestHandler):
                                 'iError': iError,
                                 'sRack': sRackId
         }))
-            
-            
+
 
 @jwtauth
 class getRack(tornado.web.RequestHandler):
@@ -628,20 +627,14 @@ class vialInfo(tornado.web.RequestHandler):
             logging.error('Vial ' + sVial + ' not found')
             return
 
-        #sSql = """SELECT v.vial_id, coordinate, v.batch_id, v.compound_id,
-        #          b.box_id,box_description, v.tare, discarded, checkedout
-	#          from vialdb.vial v
-        #          left join bcpvs.batch c on v.batch_id = c.notebook_ref
-        #          left join vialdb.box_positions p on v.vial_id = p.vial_id
-        #          left join vialdb.box b on p.box_id = b.box_id
-        #          where v.vial_id='%s'""" % sVial
         sSql = f"""select v.vial_id,
                    pos coordinate,
                    v.notebook_ref batch_id,
                    compound_id,
-                   location box_id
+                   path box_id
                from glass.vial v
                   left join bcpvs.batch c ON v.notebook_ref = c.notebook_ref
+                  left join loctree.v_all_locations l on v.location = l.loc_id
                where vial_id ='{sVial}'"""
         
         sSlask = cur.execute(sSql)
@@ -925,9 +918,7 @@ class searchVials(tornado.web.RequestHandler):
                       p.coordinate,
                       b.vial_id as vialId,
                       ddd.batch_formula_weight as batchMolWeight,
-                      ddd.batch_salt as salt,
-                      b.dilution,
-                      ddd.cbk_id as cbkId
+                      b.dilution
               FROM
                  vialdb.vial b
                  left outer join vialdb.box_positions p
@@ -944,16 +935,17 @@ class searchVials(tornado.web.RequestHandler):
             c.compound_id AS compoundId,
             v.location AS boxId,
             l.name AS boxDescription,
+            l.path,
             v.pos,
             c.biological_mw AS batchMolWeight,
-            c.suffix AS salt,
-            v.conc
+            ROUND(((v.net*1000/c.biological_mw)/v.conc)*1000000) AS dilution
             FROM
 	    glass.vial v
             left join bcpvs.batch c ON v.notebook_ref = c.notebook_ref
-            LEFT OUTER JOIN loctree.locations l on v.location = l.loc_id
+            LEFT OUTER JOIN loctree.v_all_locations l on v.location = l.loc_id
             WHERE v.vial_id = '{sId}'
             """
+
             try:
                 sSlask = cur.execute(sSql)
             except Exception as e:
@@ -963,6 +955,8 @@ class searchVials(tornado.web.RequestHandler):
                 self.finish()
                 return
             tRes = cur.fetchall()
+            print(tRes)
+            print(' ')
             if len(tRes) != 1:
                 lNotFound.append(sId)
                 jRes.append({"vialId":sId,
@@ -972,7 +966,6 @@ class searchVials(tornado.web.RequestHandler):
                              "cbkId":'',
                              "boxId":'Vial not in DB',
                              "batchMolWeight":'',
-                             "salt":'',
                              "dilution":''})
                 continue
             #for row in tRes:
@@ -983,7 +976,6 @@ class searchVials(tornado.web.RequestHandler):
             #                 "cbkId":row.cbk_id,
             #                 "boxId":row.box_id,
             #                 "batchMolWeight":row.batch_formula_weight,
-            #                 "salt":row.batch_salt,
             #                 "dilution":row.dilution})
             jRes.append(res_to_json(tRes, cur)[0])
         print(jRes)
@@ -1010,7 +1002,6 @@ class searchBatches(tornado.web.RequestHandler):
             p.coordinate,
             b.vial_id vialId,
             bb.batch_formula_weight as batchMolWeight,
-            bb.batch_salt as salt
             FROM vialdb.vial b,
             vialdb.box_positions p,
             bcpvs.batch bb, vialdb.box as bbb
@@ -1025,8 +1016,7 @@ class searchBatches(tornado.web.RequestHandler):
             l.name as boxDescription,
             v.pos,
             v.vial_id vialId,
-            c.biological_mw as batchMolWeight,
-            c.suffix AS salt
+            c.biological_mw as batchMolWeight
             FROM glass.vial v,
             bcpvs.batch c,
             loctree.locations l
@@ -1040,8 +1030,8 @@ class searchBatches(tornado.web.RequestHandler):
             SELECT v.batch_id, bb.compound_id, bb.cbk_id,
             bbb.box_description as box_id,
             b.coordinate, v.vial_id,
-            batch_formula_weight, batch_salt,
-            bb.batch_formula_weight, bb.batch_salt
+            batch_formula_weight,
+            bb.batch_formula_weight,
             FROM
             vialdb.vial v
             inner join bcpvs.batch bb
@@ -1062,8 +1052,7 @@ class searchBatches(tornado.web.RequestHandler):
                              "compoundId":'',
                              "cbkId":'',
                              "boxId":'Not found',
-                             "batchMolWeight":'',
-                             "salt":''})
+                             "batchMolWeight":''})
                 continue
             #for row in tRes:
             #    jRes.append({"vialId":row.vial_id,
@@ -1072,8 +1061,7 @@ class searchBatches(tornado.web.RequestHandler):
             #                 "compoundId":row.compound_id,
             #                 "cbkId":row.cbk_id,
             #                 "boxId":row.box_id,
-            #                 "batchMolWeight":row.batch_formula_weight,
-            #                 "salt":row.batch_salt})
+            #                 "batchMolWeight":row.batch_formula_weight})
             jRes.append(res_to_json(tRes, cur)[0])
         self.finish(json.dumps(jRes))
 
