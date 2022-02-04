@@ -12,10 +12,13 @@ class SearchScreen(QMainWindow):
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/searchwindow.ui"), self)
         self.window().setWindowTitle("Search")
-        self.goto_boxes_btn.clicked.connect(self.gotoBoxes)
 
+        self.mult_vial_search_btn.clicked.connect(self.search_many_vials)
         self.vial_search_eb.textChanged.connect(self.check_vial_search_input)
-        self.onevial_checkout_cb.addItems([None, 'a location', 'another location', 'a third location'])
+        self.onevial_checkout_cb.addItems([None,
+                                           'a location',
+                                           'another location',
+                                           'a third location'])
         self.discard_vial_btn.clicked.connect(self.discardVial)
         self.print_label_btn.clicked.connect(self.printLabel)
 
@@ -26,6 +29,12 @@ class SearchScreen(QMainWindow):
         self.window().addWidget(boxes)
         self.window().setCurrentIndex(self.window().currentIndex() + 1)
 
+    def search_many_vials(self):
+        vials = self.mult_vial_search_eb.text()
+        print(vials)
+        res = dbInterface.getManyVials(self.token, vials)
+        print(res)
+        
     def check_vial_search_input(self):
         print("verify input")
         pattern = '^v[0-9]{6}$'

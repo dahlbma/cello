@@ -33,3 +33,11 @@ def getVialInfo(token, vialId):
         return r.content.decode()
     except:
         return r.content
+
+def getManyVials(token, vialIds):
+    r = requests.get(f'{baseUrl}searchVials/{vialIds}',
+            headers={'token':token})
+    try:
+        return r.content.decode()
+    except:
+        return r.content
