@@ -955,8 +955,6 @@ class searchVials(tornado.web.RequestHandler):
                 self.finish()
                 return
             tRes = cur.fetchall()
-            print(tRes)
-            print(' ')
             if len(tRes) != 1:
                 lNotFound.append(sId)
                 jRes.append({"vialId":sId,
@@ -978,11 +976,10 @@ class searchVials(tornado.web.RequestHandler):
             #                 "batchMolWeight":row.batch_formula_weight,
             #                 "dilution":row.dilution})
             jRes.append(res_to_json(tRes, cur)[0])
-        print(jRes)
         self.finish(json.dumps(jRes))
 
 
-#@jwtauth
+@jwtauth
 class searchBatches(tornado.web.RequestHandler):
     def get(self, sBatches):
         sIds = sBatches.split()
