@@ -982,7 +982,7 @@ class searchVials(tornado.web.RequestHandler):
         self.finish(json.dumps(jRes))
 
 
-@jwtauth
+#@jwtauth
 class searchBatches(tornado.web.RequestHandler):
     def get(self, sBatches):
         sIds = sBatches.split()
@@ -994,35 +994,20 @@ class searchBatches(tornado.web.RequestHandler):
         stringIds = tmpIds.replace("''", "','")
         if sIds[0].startswith('CBK'):
             sSql = """
-            SELECT b.batch_id as batchId,
-            b.compound_id as compoundId,
-            bb.cbk_id cbkId,
-            bbb.box_id as boxId,
-            bbb.box_description as boxDescription,
-            p.coordinate,
-            b.vial_id vialId,
-            bb.batch_formula_weight as batchMolWeight,
-            FROM vialdb.vial b,
-            vialdb.box_positions p,
-            bcpvs.batch bb, vialdb.box as bbb
-            where b.vial_id = p.vial_id and
-            bb.batch_id = b.batch_id and bbb.box_id = p.box_id and
-	    b.compound_id = %s
-            """
-            sSql = """
             SELECT v.notebook_ref as batchId,
             c.compound_id as compoundId,
             v.location as boxId,
             l.name as boxDescription,
+            l.path,
             v.pos,
             v.vial_id vialId,
             c.biological_mw as batchMolWeight
             FROM glass.vial v,
             bcpvs.batch c,
-            loctree.locations l
+            loctree.v_all_locations l
             where
 	    v.notebook_ref = c.notebook_ref and
-            v.location = l.loc_id and
+            l.loc_id = v.location and
             c.compound_id = %s
             """
         else:
@@ -1043,7 +1028,7 @@ class searchBatches(tornado.web.RequestHandler):
             where v.batch_id = %s
             """
         for sId in sIds:
-            sSlask = cur.execute(sSql, sId)
+            sSlask = cur.execute(sSql, [sId])
             tRes = cur.fetchall()
             if len(tRes) == 0:
                 jRes.append({"vialId":sId,
