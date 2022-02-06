@@ -34,6 +34,14 @@ def getVialInfo(token, vialId):
     except:
         return r.content
 
+def getBatches(token, batchIds):
+    r = requests.get(f'{baseUrl}searchBatches/{batchIds}',
+            headers={'token':token})
+    try:
+        return r.content.decode()
+    except:
+        return r.content
+
 def getManyVials(token, vialIds):
     r = requests.get(f'{baseUrl}searchVials/{vialIds}',
             headers={'token':token})

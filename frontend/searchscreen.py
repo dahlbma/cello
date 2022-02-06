@@ -24,6 +24,9 @@ class SearchScreen(QMainWindow):
 
         self.mult_vial_search_btn.clicked.connect(self.search_many_vials)
 
+        self.batch_search_btn.clicked.connect(self.search_batches)
+        
+
         self.v_search = False
         self.vial_search_eb.textChanged.connect(self.check_vial_search_input)
         self.onevial_checkout_cb.addItems([None,
@@ -108,6 +111,12 @@ class SearchScreen(QMainWindow):
     def printLabel(self):
         print(f"print label {self.vial_search_eb.text()}")
 
+    def search_batches(self):
+        batches = self.batch_search_eb.text()
+        print(batches)
+        res = dbInterface.getBatches(self.token, batches)
+        print(res)
+        
     def search_many_vials(self):
         vials = self.mult_vial_search_eb.text()
         print(vials)
@@ -160,10 +169,6 @@ class SearchScreen(QMainWindow):
 
     def export_multvial_table(self):
         export_table(self.multvial_table)
-
-    def search_batches(self):
-        print("search batch")
-        return
 
     def setBatchTableData(self, data):
         for n in range(len(data)): # row n
