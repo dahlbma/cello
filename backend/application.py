@@ -373,7 +373,6 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
     os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
 
 
-
 @jwtauth
 class createLocation(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
