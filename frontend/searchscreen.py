@@ -77,7 +77,8 @@ class SearchScreen(QMainWindow):
             self.searchVial(t)
 
     def searchVial(self, vialId):
-        logging.info("vial search {vialId}")
+        vialId = re.sub("[^0-9a-zA-Z]+", " ", vialId)
+        logging.info(f"vial search {vialId}")
         res = dbInterface.getVialInfo(self.token, vialId)
         try:
             ret = json.loads(res)
@@ -113,7 +114,8 @@ class SearchScreen(QMainWindow):
         
     def search_many_vials(self):
         vials = self.mult_vial_search_eb.text()
-        logging.info("multvial search {vials}")
+        vials = re.sub("[^0-9a-zA-Z]+", " ", vials)
+        logging.info(f"multvial search {vials}")
         res = dbInterface.getManyVials(self.token, vials)
         self.multvial_data = None
         try:
@@ -165,7 +167,8 @@ class SearchScreen(QMainWindow):
 
     def search_batches(self):
         batches = self.batch_search_eb.text()
-        logging.info("batches search {batches}")
+        batches = re.sub("[^0-9a-zA-Z]+", " ", batches)
+        logging.info(f"batches search {batches}")
         res = dbInterface.getBatches(self.token, batches)
         self.batches_data = None
         try:
