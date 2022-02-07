@@ -70,7 +70,7 @@ class BoxesScreen(QMainWindow):
             self.box_data = json.loads(res)
         except:
             self.box_data = None
-        if len(self.box_data) == 0:
+        if (self.box_data is None) or (len(self.box_data) == 0):
             self.box_data = None
             self.update_print_btn.setEnabled(False)
             self.box_table.setRowCount(0)
