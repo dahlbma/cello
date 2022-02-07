@@ -331,12 +331,15 @@ def getVialPosition(sVialId):
     return str(tRes[0].box_id).upper(), str(tRes[0].coordinate), tRes[0].checkedout
 
 def getBoxFromDb(sBox):
-    sSlask = cur.execute("""SELECT v.vial_id, coordinate, batch_id, compound_id,
-                       b.box_id, box_description
-                       from vialdb.box b
-                       left join vialdb.box_positions v on b.box_id = v.box_id
+    sSlask = cur.execute("""SELECT v.vial_id, pos coordinate, batch_id, compound_id,
+                       v.location, name
+                       from glass.vial v
+                       left join loctree.v_all_locations l on v.location = l.loc_id
                        left join vialdb.vial c on v.vial_id = c.vial_id
-                       where b.box_id = '%s' order by coordinate asc""" % (sBox))
+                       where v.location = '%s' order by coordinate asc""" % (sBox))
+
+
+    
     tRes = cur.fetchall()
     #jRes = []
     #for row in tRes:
@@ -652,9 +655,11 @@ class getVialTypes(tornado.web.RequestHandler):
 
 
 @jwtauth
-class getBoxDescription(tornado.web.RequestHandler):
+class GetBoxLocation(tornado.web.RequestHandler):
     def get(self, sBox):
-        sSlask = cur.execute("""SELECT box_description FROM vialdb.box where box_id = '%s'""" % (sBox))
+        sSlask = cur.execute(f"""SELECT name, path
+                               FROM loctree.v_all_locations
+                               where box_id = '{sBox}'""")
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
@@ -901,6 +906,20 @@ class updateBox(tornado.web.RequestHandler):
             self.set_status(400)
             self.finish(json.dumps("Box not found"))
 
+@jwtauth
+class GetBox(tornado.web.RequestHandler):
+    def get(self, sBox):
+        jRes = getBoxFromDb(sBox)
+        try:
+            #jResult = [{'message':'Box type:' + tRes[0][2] + ', Description:' + tRes[0][1],
+            #            'data':jRes}]
+            #self.write(json.dumps(jResult))
+            jResult = [{'data':jRes}]
+            self.write(json.dumps(jRes))
+        except:
+            self.set_status(400)
+            self.finish(json.dumps("Box not found"))
+
 
 @jwtauth
 class searchVials(tornado.web.RequestHandler):
@@ -910,23 +929,6 @@ class searchVials(tornado.web.RequestHandler):
         jRes = []
         lNotFound = list()
         for sId in sIds:
-            sSql = """SELECT b.batch_id as batchId,
-                      b.compound_id as compoundId,
-                      bbb.box_id as boxId,
-                      bbb.box_description as boxDescription,
-                      p.coordinate,
-                      b.vial_id as vialId,
-                      ddd.batch_formula_weight as batchMolWeight,
-                      b.dilution
-              FROM
-                 vialdb.vial b
-                 left outer join vialdb.box_positions p
-                 on b.vial_id = p.vial_id
-                 left outer join ddd.batch ddd
-                 on b.batch_id = ddd.batch_id 
-                 left outer join vialdb.box bbb 
-                 on bbb.box_id = p.box_id where
-                 b.vial_id = '%s'""" % sId
             sSql = f"""
             SELECT
             v.vial_id AS vialId,
@@ -957,11 +959,13 @@ class searchVials(tornado.web.RequestHandler):
             if len(tRes) != 1:
                 lNotFound.append(sId)
                 jRes.append({"vialId":sId,
-                             "coordinate":'',
+                             "pos":'',
+                             "path":'',
                              "batchId":'',
                              "compoundId":'',
                              "cbkId":'',
                              "boxId":'Vial not in DB',
+                             "boxDescription":'Vial not in DB',
                              "batchMolWeight":'',
                              "dilution":''})
                 continue
@@ -1008,20 +1012,21 @@ class searchBatches(tornado.web.RequestHandler):
             """
         else:
             sSql = """
-            SELECT v.batch_id, bb.compound_id, bb.cbk_id,
-            bbb.box_description as box_id,
-            b.coordinate, v.vial_id,
-            batch_formula_weight,
-            bb.batch_formula_weight,
-            FROM
-            vialdb.vial v
-            inner join bcpvs.batch bb
-            on v.batch_id = bb.batch_id
-            left join vialdb.box_positions b
-            on v.vial_id = b.vial_id
-            left join vialdb.box bbb 
-            on b.box_id = bbb.box_id
-            where v.batch_id = %s
+            SELECT v.notebook_ref as batchId,
+            c.compound_id as compoundId,
+            v.location as boxId,
+            l.name as boxDescription,
+            l.path,
+            v.pos,
+            v.vial_id vialId,
+            c.biological_mw as batchMolWeight
+            FROM glass.vial v,
+            bcpvs.batch c,
+            loctree.v_all_locations l
+            where
+	    v.notebook_ref = c.notebook_ref and
+            l.loc_id = v.location and
+            v.notebook_ref = %s
             """
         for sId in sIds:
             sSlask = cur.execute(sSql, [sId])
@@ -1105,6 +1110,7 @@ class moveVialToLocation(tornado.web.RequestHandler):
 class CreateMolImage(tornado.web.RequestHandler):
     def get(self):
         vial = self.get_argument("vial")
+        vial = vial.lower()
         sSql = f"""select mol
         from bcpvs.JCMOL_MOLTABLE m, glass.vial v, bcpvs.batch c
         where v.notebook_ref = c.notebook_ref
@@ -1116,13 +1122,6 @@ class CreateMolImage(tornado.web.RequestHandler):
         if len(molfile) > 0 and molfile[0][0] != None:
             createPngFromMolfile(vial, molfile[0][0])
         self.finish()
-
-
-class StaticFileHandler(tornado.web.StaticFileHandler):
-    def get(self, path, include_body=True):
-        if path.endswith('woff'):
-            self.set_header('Content-Type','application/font-woff')
-        super(StaticFileHandler, self).get(path, include_body)
 
 
 class GetDatabase(tornado.web.RequestHandler):
