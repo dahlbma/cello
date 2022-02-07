@@ -71,7 +71,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="search_tab_wg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="onevial_search_tab">
          <attribute name="title">
@@ -739,7 +739,7 @@ Weight</string>
              <bool>true</bool>
             </property>
             <attribute name="horizontalHeaderDefaultSectionSize">
-             <number>100</number>
+             <number>120</number>
             </attribute>
             <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
              <bool>true</bool>
