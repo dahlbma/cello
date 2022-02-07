@@ -81,8 +81,9 @@ class SearchScreen(QMainWindow):
         logging.info(f"vial search {vialId}")
         res = dbInterface.getVialInfo(self.token, vialId)
         try:
-            ret = json.loads(res)
+            self.vial_data = json.loads(res)
         except:
+            self.vial_data = None
             self.v_search = False
             self.errorlabel.setText(res)
             self.onevial_batch_eb.setText('')
@@ -94,12 +95,13 @@ class SearchScreen(QMainWindow):
             self.discard_vial_btn.setEnabled(False)
             self.print_label_btn.setEnabled(False)
             return
+        logging.info(f"receieved {self.vial_data}")
         self.v_search = True
         self.errorlabel.setText('')
-        self.onevial_batch_eb.setText(ret[0]['batch_id'])
-        self.onevial_compound_id_eb.setText(ret[0]['compound_id'])
-        self.onevial_box_loc_eb.setText(ret[0]['box_id'])
-        self.onevial_coords_eb.setText(str(ret[0]['coordinate']))
+        self.onevial_batch_eb.setText(self.vial_data[0]['batch_id'])
+        self.onevial_compound_id_eb.setText(self.vial_data[0]['compound_id'])
+        self.onevial_box_loc_eb.setText(self.vial_data[0]['box_id'])
+        self.onevial_coords_eb.setText(str(self.vial_data[0]['coordinate']))
         self.onevial_checkout_cb.setCurrentText('a location')
         self.discard_vial_btn.setEnabled(True)
         self.print_label_btn.setEnabled(True)
@@ -126,31 +128,45 @@ class SearchScreen(QMainWindow):
             self.multvial_table.setRowCount(0)
             self.structure_lab.clear()
             return
-        self.multvial_table.setRowCount(len(self.multvial_data))
+        logging.info(f"receieved {self.multvial_data}")
         self.setMultvialTableData(self.multvial_data)
         self.multvial_table.setCurrentCell(0,0)
         self.multvial_export_btn.setEnabled(True)
 
     def setMultvialTableData(self, data):
+        self.multvial_table.setRowCount(0)
+        self.multvial_table.setRowCount(len(self.multvial_data))
         for n in range(len(data)):
-            newItem = QTableWidgetItem(f"{data[n]['vialId']}")
-            self.multvial_table.setItem(n, 0, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['boxDescription']}")
-            newItem.setToolTip(f"{data[n]['boxId']}")
-            self.multvial_table.setItem(n, 1, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['pos']}")
-            self.multvial_table.setItem(n, 2, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['path']}")
-            newItem.setToolTip(f"{data[n]['path']}")
-            self.multvial_table.setItem(n, 3, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['batchId']}")
-            self.multvial_table.setItem(n, 4, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['compoundId']}")
-            self.multvial_table.setItem(n, 5, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['batchMolWeight']}")
-            self.multvial_table.setItem(n, 6, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['dilution']}")
-            self.multvial_table.setItem(n, 7, newItem)
+            try:
+                if f"{data[n]['boxId']}" == "Not found":
+                    newItem = QTableWidgetItem(f"{data[n]['vialId']}")
+                    self.batch_table.setItem(n, 0, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['boxId']}")
+                    self.batch_table.setItem(n, 1, newItem)
+                    for i in range(2, 8):
+                        newItem = QTableWidgetItem("")
+                        self.batch_table.setItem(n, i, newItem)
+                else:
+                    newItem = QTableWidgetItem(f"{data[n]['vialId']}")
+                    self.multvial_table.setItem(n, 0, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['boxDescription']}")
+                    newItem.setToolTip(f"{data[n]['boxId']}")
+                    self.multvial_table.setItem(n, 1, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['pos']}")
+                    self.multvial_table.setItem(n, 2, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['path']}")
+                    newItem.setToolTip(f"{data[n]['path']}")
+                    self.multvial_table.setItem(n, 3, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['batchId']}")
+                    self.multvial_table.setItem(n, 4, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['compoundId']}")
+                    self.multvial_table.setItem(n, 5, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['batchMolWeight']}")
+                    self.multvial_table.setItem(n, 6, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['dilution']}")
+                    self.multvial_table.setItem(n, 7, newItem)
+            except:
+                logging.error(f"search for {data[n]['vialId']} returned bad response: {data[n]}")
     
     def multvial_moldisplay(self):
         try:
@@ -178,29 +194,42 @@ class SearchScreen(QMainWindow):
             self.batch_export_btn.setEnabled(False)
             self.batch_table.setRowCount(0)
             self.structure_lab.clear()
-        print(self.batches_data)
-        self.batch_table.setRowCount(len(self.batches_data))
+        logging.info(f"receieved {self.batches_data}")
         self.setBatchTableData(self.batches_data)
         self.batch_table.setCurrentCell(0,0)
         self.batch_export_btn.setEnabled(True)
 
     def setBatchTableData(self, data):
+        self.batch_table.setRowCount(0)
+        self.batch_table.setRowCount(len(self.batches_data))
         for n in range(len(data)): # row n
-            newItem = QTableWidgetItem(f"{data[n]['vialId']}")
-            self.batch_table.setItem(n, 0, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['boxDescription']}")
-            self.batch_table.setItem(n, 1, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['pos']}")
-            self.batch_table.setItem(n, 2, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['path']}")
-            newItem.setToolTip(f"{data[n]['path']}")
-            self.batch_table.setItem(n, 3, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['batchId']}")
-            self.batch_table.setItem(n, 4, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['compoundId']}")
-            self.batch_table.setItem(n, 5, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['batchMolWeight']}")
-            self.batch_table.setItem(n, 6, newItem)
+            try:
+                if f"{data[n]['boxId']}" == "Not found":
+                    newItem = QTableWidgetItem(f"{data[n]['vialId']}")
+                    self.batch_table.setItem(n, 0, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['boxId']}")
+                    self.batch_table.setItem(n, 1, newItem)
+                    for i in range(2, 7):
+                        newItem = QTableWidgetItem("")
+                        self.batch_table.setItem(n, i, newItem)
+                else:
+                    newItem = QTableWidgetItem(f"{data[n]['vialId']}")
+                    self.batch_table.setItem(n, 0, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['boxDescription']}")
+                    self.batch_table.setItem(n, 1, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['pos']}")
+                    self.batch_table.setItem(n, 2, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['path']}")
+                    newItem.setToolTip(f"{data[n]['path']}")
+                    self.batch_table.setItem(n, 3, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['batchId']}")
+                    self.batch_table.setItem(n, 4, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['compoundId']}")
+                    self.batch_table.setItem(n, 5, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['batchMolWeight']}")
+                    self.batch_table.setItem(n, 6, newItem)
+            except:
+                logging.error(f"search for {data[n]['vialId']} returned bad response: {data[n]}")
 
     def batch_moldisplay(self):
         try:

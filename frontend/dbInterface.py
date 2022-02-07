@@ -61,3 +61,21 @@ def getMolImage(vial):
     r = requests.get(f'{baseUrl}mols/{vial}.png')
     res = r.content
     return res
+
+def getBox(token, box):
+    r = requests.get(f'{baseUrl}getBox/{box}',
+                     headers={'token': token})
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    return res
+
+def getBoxLocation(token, box):
+    r = requests.get(f'{baseUrl}getBoxLocation/{box}',
+                     headers={'token': token})
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    return res
