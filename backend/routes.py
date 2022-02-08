@@ -96,6 +96,7 @@ def make_app():
         (r"/readScannedRack", application.readScannedRack),
         (r"/updateBox/(?P<sBox>[^\/]+)", application.updateBox),
         (r"/createLocation", application.createLocation),
+        (r"/getFreeBoxes", application.GetFreeBoxes),
         (r"/searchLocation/(?P<sLocation>[^\/]+)", application.searchLocation),
         (r"/batchInfo/(?P<sBatch>[^\/]+)", application.batchInfo),
         (r"/searchBatches/(?P<sBatches>[^\/]+)", application.searchBatches),

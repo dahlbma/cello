@@ -331,16 +331,19 @@ def getVialPosition(sVialId):
     return str(tRes[0].box_id).upper(), str(tRes[0].coordinate), tRes[0].checkedout
 
 def getBoxFromDb(sBox):
-    sSlask = cur.execute("""SELECT v.vial_id, pos coordinate, batch_id, compound_id,
-                       v.location, name
-                       from glass.vial v
-                       left join loctree.v_all_locations l on v.location = l.loc_id
-                       left join vialdb.vial c on v.vial_id = c.vial_id
-                       where v.location = '%s' order by coordinate asc""" % (sBox))
-
-
+    sSlask = cur.execute(f"""select a.coordinate, tt.vial_id, tt.compound_id, tt.notebook_ref batch_id
+    from
+    (SELECT v.pos, v.vial_id, c.compound_id, v.location, v.notebook_ref
+    from glass.vial v
+    left join bcpvs.batch c on v.notebook_ref = c.notebook_ref
+    where v.location = '{sBox}') tt
+    right outer join
+    (select coordinate from glass.box_sequence) a
+    on tt.pos = a.coordinate
+    order by a.coordinate asc""")
     
     tRes = cur.fetchall()
+
     #jRes = []
     #for row in tRes:
     #    jRes.append({"vialId":row.vial_id,
@@ -659,7 +662,7 @@ class GetBoxLocation(tornado.web.RequestHandler):
     def get(self, sBox):
         sSlask = cur.execute(f"""SELECT name, path
                                FROM loctree.v_all_locations
-                               where box_id = '{sBox}'""")
+                               where loc_id = '{sBox}'""")
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
@@ -1106,6 +1109,24 @@ class moveVialToLocation(tornado.web.RequestHandler):
         sSlask = cur.execute(sSql)
 
 
+#@jwtauth
+class GetFreeBoxes(tornado.web.RequestHandler):
+    def get(self):
+        sSql = f"""
+        select location, subpos-count(vial_id) free_positions, min(path) path, min(loctree.location_type.name) loc_type
+        from glass.vial, loctree.locations, loctree.location_type, loctree.v_all_locations
+        where 
+        glass.vial.location = loctree.locations.loc_id
+        and loctree.locations.type_id = loctree.location_type.type_id
+        and glass.vial.location = loctree.v_all_locations.loc_id
+        and loctree.location_type.label_format = 'VIAL_TRAY.pj'
+        and subpos is not null and subpos < 300
+        group by location order by path"""
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        self.write(json.dumps(res_to_json(tRes, cur)))
+
+        
 @jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
     def get(self):
