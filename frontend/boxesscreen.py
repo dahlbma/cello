@@ -41,7 +41,11 @@ class BoxesScreen(QMainWindow):
             print("page 0")
         elif page_index == 1:
             print("page 1")
-
+        elif page_index == 2:
+            self.freebox_table.setFocus()
+            r = dbInterface.getFreePositions(self.token)
+            print(r)
+            
     def gotoSearch(self):
         from searchscreen import SearchScreen
         resize_window(self)

@@ -50,6 +50,12 @@ def getManyVials(token, vialIds):
     except:
         return r.content
 
+def getFreePositions(token):
+    r = requests.get(f'{baseUrl}getFreeBoxes',
+                     headers={'token': token})
+    res = r.content.decode()
+    return res
+
 def createMolImage(token, vial):
     r = requests.get(f'{baseUrl}createMolImage',
                      params={'vial': vial},
