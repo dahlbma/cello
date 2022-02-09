@@ -201,7 +201,7 @@ class SearchScreen(QMainWindow):
 
     def setBatchTableData(self, data):
         self.batch_table.setRowCount(0)
-        self.batch_table.setRowCount(len(self.batches_data))
+        self.batch_table.setRowCount(len(data))
         for n in range(len(data)): # row n
             try:
                 if f"{data[n]['boxId']}" == "Not found":

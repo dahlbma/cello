@@ -1,6 +1,8 @@
 import sys, os, logging, re
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor
 
 from cellolib import *
 
@@ -25,6 +27,10 @@ class BoxesScreen(QMainWindow):
         self.update_box_eb.textChanged.connect(self.check_search_input)
         self.update_print_btn.clicked.connect(self.printLabel)
         self.update_print_btn.setEnabled(False)
+        self.update_export_btn.clicked.connect(self.export_box_table)
+
+        self.freebox_table.cellDoubleClicked.connect(self.showFreeBox)
+        self.freebox_export_btn.clicked.connect(self.export_freebox_table)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
@@ -38,13 +44,12 @@ class BoxesScreen(QMainWindow):
     def tabChanged(self):
         page_index = self.boxes_tab_wg.currentIndex()
         if page_index == 0:
-            print("page 0")
+            self.add_location_cb.setFocus()
         elif page_index == 1:
-            print("page 1")
+            self.update_box_eb.setFocus()
         elif page_index == 2:
             self.freebox_table.setFocus()
-            r = dbInterface.getFreePositions(self.token)
-            print(r)
+            self.fetch_all_boxes()
             
     def gotoSearch(self):
         from searchscreen import SearchScreen
@@ -71,41 +76,61 @@ class BoxesScreen(QMainWindow):
         logging.info(f"box search {box}")
         res = dbInterface.getBox(self.token, box)
         try:
+            res = res.replace("null", "\"\"")
             self.box_data = json.loads(res)
+            logging.info(f"recieved data")#: {self.box_data}")
         except:
             self.box_data = None
-        if (self.box_data is None) or (len(self.box_data) == 0):
+    
+        #if (self.box_data is None) or (len(self.box_data) == 0):
+        #    self.box_data = None
+        #    self.path_js = None
+        #    self.update_print_btn.setEnabled(False)
+        #    self.box_table.setRowCount(0)
+        #    self.update_name_lab.setText("Box not found!")
+        #    self.update_name_lab.setStyleSheet("background-color: red")
+        #    return
+    
+        path_res = dbInterface.getBoxLocation(self.token, box)
+        logging.info(f"recieved path: {path_res}")
+        self.path_js = json.loads(path_res)
+
+        if (len(self.path_js) == 0) or (len(self.box_data) == 0) or (self.box_data is None):
+            # bad results
             self.box_data = None
+            self.path_js = None
             self.update_print_btn.setEnabled(False)
+            self.update_export_btn.setEnabled(False)
             self.box_table.setRowCount(0)
             self.update_name_lab.setText("Box not found!")
             self.update_name_lab.setStyleSheet("background-color: red")
             return
-        logging.info(f"recieved {self.box_data}, GET path")
-        path_res = dbInterface.getBoxLocation(self.token, box)
-        logging.info(f"recieved {path_res}")
-        path_js = json.loads(path_res)
-        self.update_name_lab.setText(f"{path_js[0]['path']}")
+        # not bad results
+        self.update_name_lab.setText(f"{self.path_js[0]['path']}")
         self.update_name_lab.setStyleSheet("")
         self.setBoxTableData(self.box_data, box)
         self.box_table.setCurrentCell(0,0)
         self.update_print_btn.setEnabled(True)
+        self.update_export_btn.setEnabled(True)
 
     def setBoxTableData(self, data, box):
         self.box_table.setRowCount(0)
         self.box_table.setRowCount(len(data))
         for n in range(len(data)):
-            try:
-                newItem = QTableWidgetItem(f"{data[n]['vial_id']}")
-                self.box_table.setItem(n, 0, newItem)
-                newItem = QTableWidgetItem(f"{data[n]['batch_id']}")
-                self.box_table.setItem(n, 1, newItem)
-                newItem = QTableWidgetItem(f"{data[n]['compound_id']}")
-                self.box_table.setItem(n, 2, newItem)
-                newItem = QTableWidgetItem(f"{data[n]['coordinate']}")
-                self.box_table.setItem(n, 3, newItem)
-            except:
-                logging.error(f"search for {box} returned bad response: {data[n]}")
+            #try:
+            newItem = QTableWidgetItem(f"{data[n]['vial_id']}")
+            self.box_table.setItem(n, 0, newItem)
+            newItem = QTableWidgetItem(f"{data[n]['batch_id']}")
+            self.box_table.setItem(n, 1, newItem)
+            newItem = QTableWidgetItem(f"{data[n]['compound_id']}")
+            self.box_table.setItem(n, 2, newItem)
+            newItem = QTableWidgetItem(f"{data[n]['coordinate']}")
+            self.box_table.setItem(n, 3, newItem)
+            for m in range(self.box_table.columnCount()):
+                if len(self.box_table.item(n, m).text()) == 0:
+                    self.box_table.item(n, m).setBackground(QColor('green'))
+            #except:
+            #    logging.error(f"search for {box} returned bad response: {data[n]}")
         return
 
     def printLabel(self):
@@ -114,10 +139,45 @@ class BoxesScreen(QMainWindow):
         print(sBox)
         return
     
+    def export_box_table(self):
+        export_table(self.box_table)
+
 
     def fetch_all_boxes(self):
-        self.all_boxes = None
+        r = dbInterface.getFreePositions(self.token)
+        try:
+            self.freebox_data = json.loads(r)
+        except:
+            self.freebox_data = None
+            self.freebox_export_btn.setEnabled(False)
+        self.setAllBoxesTableData(self.freebox_data)
+        self.freebox_table.setCurrentCell(0,0)
+        self.freebox_export_btn.setEnabled(True)
         return
     
     def setAllBoxesTableData(self, data):
+        self.freebox_table.setRowCount(0)
+        if self.freebox_data is None:
+            return
+        self.freebox_table.setRowCount(len(data))
+        try:
+            for n in range(len(data)):
+                newItem = QTableWidgetItem(f"{data[n]['free_positions']}")
+                self.freebox_table.setItem(n, 0, newItem)
+                newItem = QTableWidgetItem(f"{data[n]['location']}")
+                self.freebox_table.setItem(n, 1, newItem)
+                newItem = QTableWidgetItem(f"{data[n]['path']}")
+                self.freebox_table.setItem(n, 2, newItem)
+        except:
+            logging.error("bad response from allBoxes")
+        self.freebox_table.sortItems(0, Qt.DescendingOrder)
         return
+
+    def showFreeBox(self, row, col):
+        box = self.freebox_table.item(row, col)
+        if box.text() != "":
+            self.update_box_eb.setText(box.text())
+            self.boxes_tab_wg.setCurrentIndex(1)
+
+    def export_freebox_table(self):
+        export_table(self.freebox_table)
