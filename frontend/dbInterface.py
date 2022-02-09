@@ -50,6 +50,12 @@ def getManyVials(token, vialIds):
     except:
         return r.content
 
+def printBoxLabel(token, sBox):
+    r = requests.get(f'{baseUrl}printBox/{sBox}',
+                     headers={'token': token})
+    res = r.content.decode()
+    return res
+
 def getFreePositions(token):
     r = requests.get(f'{baseUrl}getFreeBoxes',
                      headers={'token': token})
