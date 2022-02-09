@@ -796,11 +796,19 @@ class updateVialPosition(tornado.web.RequestHandler):
 @jwtauth
 class printBox(tornado.web.RequestHandler):
     def get(self, sBox):
-        sSlask = cur.execute("""select box_description, vial_type_desc
-                                from vialdb.box b, vialdb.vial_type v
-                                where b.vial_type=v.vial_type
-                                and box_id = '%s'""" % (sBox))
+
+        sSql = f"""select v.name box_description, l.name vial_type_desc
+        from loctree.v_all_locations v, loctree.location_type l
+        where v.type_id = l.type_id and
+        v.loc_id = '{sBox}'
+        """
+        #sSlask = cur.execute("""select box_description, vial_type_desc
+        #                        from vialdb.box b, vialdb.vial_type v
+        #                        where b.vial_type=v.vial_type
+        #                        and box_id = '%s'""" % (sBox))
+        cur.execute(sSql)
         tRes = cur.fetchall()
+        print(tRes)
         sType = tRes[0][1]
         sDescription = tRes[0][0]
         zplVial = """^XA
@@ -821,7 +829,8 @@ class printBox(tornado.web.RequestHandler):
         f = open('/tmp/file.txt','w')
         f.write(zplVial)
         f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
+        print(zplVial)
+        #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
         self.finish("Printed")
 
 
