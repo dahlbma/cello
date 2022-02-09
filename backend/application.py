@@ -331,14 +331,26 @@ def getVialPosition(sVialId):
     return str(tRes[0].box_id).upper(), str(tRes[0].coordinate), tRes[0].checkedout
 
 def getBoxFromDb(sBox):
-    sSlask = cur.execute(f"""select a.coordinate, tt.vial_id, tt.compound_id, tt.notebook_ref batch_id
+    positions = 0
+    sSql = f"""select subpos from loctree.locations, loctree.location_type
+    where loctree.locations.loc_id = '{sBox}'
+    and loctree.locations.type_id = loctree.location_type.type_id"""
+    sSlask = cur.execute(sSql)
+    tRes = cur.fetchall()
+    if len(tRes) != 1:
+        return
+    elif tRes[0][0] > 0:
+        positions = int(tRes[0][0])
+
+    sSlask = cur.execute(f"""select a.coordinate, tt.vial_id,
+    tt.compound_id, tt.notebook_ref batch_id
     from
     (SELECT v.pos, v.vial_id, c.compound_id, v.location, v.notebook_ref
     from glass.vial v
     left join bcpvs.batch c on v.notebook_ref = c.notebook_ref
     where v.location = '{sBox}') tt
     right outer join
-    (select coordinate from glass.box_sequence) a
+    (select coordinate from glass.box_sequence order by coordinate limit {positions}) a
     on tt.pos = a.coordinate
     order by a.coordinate asc""")
     
@@ -1109,11 +1121,12 @@ class moveVialToLocation(tornado.web.RequestHandler):
         sSlask = cur.execute(sSql)
 
 
-#@jwtauth
+@jwtauth
 class GetFreeBoxes(tornado.web.RequestHandler):
     def get(self):
         sSql = f"""
-        select location, subpos-count(vial_id) free_positions, min(path) path, min(loctree.location_type.name) loc_type
+        select location, subpos-count(vial_id) free_positions, min(path) path,
+        min(loctree.location_type.name) loc_type
         from glass.vial, loctree.locations, loctree.location_type, loctree.v_all_locations
         where 
         glass.vial.location = loctree.locations.loc_id
