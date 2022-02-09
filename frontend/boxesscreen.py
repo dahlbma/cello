@@ -122,10 +122,13 @@ class BoxesScreen(QMainWindow):
                 newItem = QTableWidgetItem(f"{data[n]['vial_id']}")
                 self.box_table.setItem(n, 0, newItem)
                 newItem = QTableWidgetItem(f"{data[n]['batch_id']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.box_table.setItem(n, 1, newItem)
                 newItem = QTableWidgetItem(f"{data[n]['compound_id']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.box_table.setItem(n, 2, newItem)
                 newItem = QTableWidgetItem(f"{data[n]['coordinate']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.box_table.setItem(n, 3, newItem)
                 for m in range(self.box_table.columnCount()):
                     if len(self.box_table.item(n, m).text()) == 0:
@@ -166,10 +169,13 @@ class BoxesScreen(QMainWindow):
         try:
             for n in range(len(data)):
                 newItem = QCustomTableWidgetItem(f"{data[n]['free_positions']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.freebox_table.setItem(n, 0, newItem)
                 newItem = QTableWidgetItem(f"{data[n]['location']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.freebox_table.setItem(n, 1, newItem)
                 newItem = QTableWidgetItem(f"{data[n]['path']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.freebox_table.setItem(n, 2, newItem)
         except:
             logging.error("bad response from freeBoxes")
