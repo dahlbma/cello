@@ -263,6 +263,9 @@
           </item>
           <item row="2" column="1" colspan="2">
            <widget class="QTableWidget" name="tableWidget">
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
             <attribute name="horizontalHeaderDefaultSectionSize">
              <number>200</number>
             </attribute>
