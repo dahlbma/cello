@@ -6,18 +6,6 @@ from PyQt5.QtGui import QColor
 
 from cellolib import *
 
-class QCustomTableWidgetItem (QTableWidgetItem):
-    def __init__ (self, value):
-        super(QCustomTableWidgetItem, self).__init__(f'{value}')
-
-    def __lt__ (self, other):
-        if (isinstance(other, QCustomTableWidgetItem)):
-            selfDataValue  = float(self.text())
-            otherDataValue = float(other.text())
-            return selfDataValue < otherDataValue
-        else:
-            return QTableWidgetItem.__lt__(self, other)
-
 class BoxesScreen(QMainWindow):
     def __init__(self, token):
         super(BoxesScreen, self).__init__()

@@ -2,7 +2,19 @@ import imp
 import sys, requests, json, os, subprocess, platform, shutil, datetime, traceback, logging, dbInterface
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QMessageBox, QTableWidget
+from PyQt5.QtWidgets import QApplication, QMessageBox, QTableWidget, QTableWidgetItem
+
+class QCustomTableWidgetItem (QTableWidgetItem):
+    def __init__ (self, value):
+        super(QCustomTableWidgetItem, self).__init__(value)
+
+    def __lt__ (self, other):
+        if (isinstance(other, QCustomTableWidgetItem)):
+            selfDataValue  = float(self.text())
+            otherDataValue = float(other.text())
+            return selfDataValue < otherDataValue
+        else:
+            return QTableWidgetItem.__lt__(self, other)
 
 def send_msg(title, text, icon=QMessageBox.Information, e=None):
     msg = QMessageBox()
