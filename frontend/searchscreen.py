@@ -136,6 +136,7 @@ class SearchScreen(QMainWindow):
     def setMultvialTableData(self, data):
         self.multvial_table.setRowCount(0)
         self.multvial_table.setRowCount(len(self.multvial_data))
+        self.multvial_table.setSortingEnabled(False)
         for n in range(len(data)):
             try:
                 if f"{data[n]['boxId']}" == "Not found":
@@ -167,7 +168,9 @@ class SearchScreen(QMainWindow):
                     self.multvial_table.setItem(n, 7, newItem)
             except:
                 logging.error(f"search for {data[n]['vialId']} returned bad response: {data[n]}")
-    
+        self.multvial_table.setSortingEnabled(True)
+        return
+
     def multvial_moldisplay(self):
         try:
             if self.multvial_table.rowCount() > 0:
@@ -202,6 +205,7 @@ class SearchScreen(QMainWindow):
     def setBatchTableData(self, data):
         self.batch_table.setRowCount(0)
         self.batch_table.setRowCount(len(data))
+        self.batch_table.setSortingEnabled(False)
         for n in range(len(data)): # row n
             try:
                 if f"{data[n]['boxId']}" == "Not found":
@@ -230,6 +234,8 @@ class SearchScreen(QMainWindow):
                     self.batch_table.setItem(n, 6, newItem)
             except:
                 logging.error(f"search for {data[n]['vialId']} returned bad response: {data[n]}")
+        self.batch_table.setSortingEnabled(True)
+        return
 
     def batch_moldisplay(self):
         try:

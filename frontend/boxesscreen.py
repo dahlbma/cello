@@ -116,6 +116,7 @@ class BoxesScreen(QMainWindow):
     def setBoxTableData(self, data, box):
         self.box_table.setRowCount(0)
         self.box_table.setRowCount(len(data))
+        self.box_table.setSortingEnabled(False)
         for n in range(len(data)):
             try:
                 newItem = QTableWidgetItem(f"{data[n]['vial_id']}")
@@ -131,6 +132,7 @@ class BoxesScreen(QMainWindow):
                         self.box_table.item(n, m).setBackground(QColor(63, 186, 120))
             except:
                 logging.error(f"search for {box} returned bad response: {data[n]}")
+        self.box_table.setSortingEnabled(True)
         return
 
     def printLabel(self):
@@ -157,9 +159,11 @@ class BoxesScreen(QMainWindow):
     
     def setFreeBoxesTableData(self, data):
         self.freebox_table.setRowCount(0)
-        if self.freebox_data is None:
+        if data is None:
             return
         self.freebox_table.setRowCount(len(data))
+        print(data)
+        self.freebox_table.setSortingEnabled(False)
         try:
             for n in range(len(data)):
                 newItem = QCustomTableWidgetItem(f"{data[n]['free_positions']}")
@@ -170,7 +174,7 @@ class BoxesScreen(QMainWindow):
                 self.freebox_table.setItem(n, 2, newItem)
         except:
             logging.error("bad response from freeBoxes")
-        #self.freebox_table.sortItems(0, Qt.DescendingOrder)
+        self.freebox_table.setSortingEnabled(True)
         return
 
     def showFreeBox(self, row, col):
