@@ -146,6 +146,9 @@ class BoxesScreen(QMainWindow):
         return
 
     def printLabel(self):
+        sBox = self.update_box_eb.text()
+        dbInterface.printBoxLabel(self.token, sBox)
+        print(sBox)
         return
     
     def export_box_table(self):
