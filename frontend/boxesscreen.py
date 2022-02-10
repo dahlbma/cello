@@ -164,7 +164,6 @@ class BoxesScreen(QMainWindow):
         if data is None:
             return
         self.freebox_table.setRowCount(len(data))
-        print(data)
         self.freebox_table.setSortingEnabled(False)
         try:
             for n in range(len(data)):
