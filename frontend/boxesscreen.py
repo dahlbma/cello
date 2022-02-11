@@ -16,6 +16,7 @@ class BoxesScreen(QMainWindow):
         self.window().setWindowTitle("Boxes")
 
         self.goto_search_btn.clicked.connect(self.gotoSearch)
+        self.goto_vials_btn.clicked.connect(self.gotoVials)
         
         self.boxes_tab_wg.setCurrentIndex(0)
         self.boxes_tab_wg.currentChanged.connect(self.tabChanged)
@@ -23,12 +24,12 @@ class BoxesScreen(QMainWindow):
         locations = [None, "Place 1", "Place 2", "Place 3"]
         self.add_location_cb.addItems(locations)
         types = [None, "10mM", "50mM", "Solid", "2mM", "20mM"]
-        self.add_type_cb.addItems(types)
+        self.add_box_type_cb.addItems(types)
         self.add_box_btn.clicked.connect(self.addBox)
         self.add_box_btn.setEnabled(False)
 
         self.add_location_cb.currentTextChanged.connect(self.check_addbox_input)
-        self.add_type_cb.currentTextChanged.connect(self.check_addbox_input)
+        self.add_box_type_cb.currentTextChanged.connect(self.check_addbox_input)
         self.add_description_eb.textChanged.connect(self.check_addbox_input)
 
         self.update_box_eb.textChanged.connect(self.check_search_input)
@@ -74,6 +75,14 @@ class BoxesScreen(QMainWindow):
         self.window().setCurrentIndex(self.window().currentIndex() + 1)
         search.vial_search_eb.setFocus()
 
+    def gotoVials(self):
+        from vialsscreen import VialsScreen
+        resize_window(self)
+        vials = VialsScreen(self.token)
+        self.window().addWidget(vials)
+        self.window().setCurrentIndex(self.window().currentIndex() + 1)
+        vials.edit_vial_id_eb.setFocus()
+
     
     def addBox(self):
         print("add box")
@@ -83,7 +92,7 @@ class BoxesScreen(QMainWindow):
 
     def check_addbox_input(self):
         if (self.add_location_cb.currentText()) != "" and \
-            (self.add_type_cb.currentText() != "") and \
+            (self.add_box_type_cb.currentText() != "") and \
             (self.add_description_eb.text() != ""):
             self.add_box_btn.setEnabled(True)
         else:
@@ -101,13 +110,13 @@ class BoxesScreen(QMainWindow):
 
 
     def search_for_box(self, box):
-        logging.info(f"box search {box}")
+        logging.getLogger(self.mod_name).info(f"box search {box}")
         self.box_search = box
         res = dbInterface.getBox(self.token, box)
         try:
             res = res.replace("null", "\"\"")
             self.box_data = json.loads(res)
-            logging.info(f"recieved data")#: {self.box_data}")
+            logging.getLogger(self.mod_name).info(f"recieved data")#: {self.box_data}")
         except:
             self.box_data = None
     
@@ -121,7 +130,7 @@ class BoxesScreen(QMainWindow):
         #    return
     
         path_res = dbInterface.getBoxLocation(self.token, box)
-        logging.info(f"recieved path: {path_res}")
+        logging.getLogger(self.mod_name).info(f"recieved path: {path_res}")
         self.path_js = json.loads(path_res)
 
         if (len(self.path_js) == 0) or (len(self.box_data) == 0) or (self.box_data is None):
@@ -181,7 +190,7 @@ class BoxesScreen(QMainWindow):
         box = self.box_search
         pos = self.box_table.item(row, 3).text()
 
-        logging.info(f"update {vial} position to {box}/{pos}")
+        logging.getLogger(self.mod_name).info(f"update {vial} position to {box}/{pos}")
         r = dbInterface.updateVialPosition(self.token, vial, box, pos)
 
         self.search_for_box(box)
@@ -196,7 +205,7 @@ class BoxesScreen(QMainWindow):
                 vialList.append(it.text())
         vials = " ".join(vialList)
 
-        logging.info(f"send vials: {vials} to transit")
+        logging.getLogger(self.mod_name).info(f"send vials: {vials} to transit")
         r = dbInterface.transitVials(self.token, vials)
 
         self.search_for_box(self.box_search)
@@ -240,12 +249,14 @@ class BoxesScreen(QMainWindow):
             return
         self.freebox_table.setRowCount(len(data))
         self.freebox_table.setSortingEnabled(False)
+        print(data[0])
         try:
             for n in range(len(data)):
                 newItem = QCustomTableWidgetItem(f"{data[n]['free_positions']}")
                 newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.freebox_table.setItem(n, 0, newItem)
-                newItem = QTableWidgetItem(f"{data[n]['location']}")
+                newItem = QTableWidgetItem(f"{data[n]['path']}")
+                newItem.setToolTip(f"{data[n]['location']}")
                 newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.freebox_table.setItem(n, 1, newItem)
                 newItem = QTableWidgetItem(f"{data[n]['path']}")
@@ -258,8 +269,8 @@ class BoxesScreen(QMainWindow):
 
     def showFreeBox(self, row, col):
         box = self.freebox_table.item(row, 1)
-        if box.text() != "":
-            self.update_box_eb.setText(box.text())
+        if box.toolTip() != "":
+            self.update_box_eb.setText(box.toolTip())
             self.boxes_tab_wg.setCurrentIndex(1)
 
     def export_freebox_table(self):

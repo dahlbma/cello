@@ -56,10 +56,20 @@
     </item>
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_6">
-      <item row="0" column="1">
-       <widget class="QPushButton" name="goto_vials_btn">
+      <item row="0" column="2">
+       <widget class="QPushButton" name="goto_boxes_btn">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
-         <string>Vials</string>
+         <string>Boxes</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QPushButton" name="goto_microtubes_btn">
+        <property name="text">
+         <string>Microtubes</string>
         </property>
        </widget>
       </item>
@@ -70,20 +80,17 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="goto_vials_btn">
+        <property name="text">
+         <string>Vials</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QPushButton" name="goto_search_btn">
         <property name="text">
          <string>Search</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="goto_boxes_btn">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Boxes</string>
         </property>
        </widget>
       </item>
@@ -99,13 +106,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item row="0" column="4">
-       <widget class="QPushButton" name="goto_microtubes_btn">
-        <property name="text">
-         <string>Microtubes</string>
-        </property>
-       </widget>
       </item>
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="boxes_tab_wg">
@@ -144,86 +144,10 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>35</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Location:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
+            <item row="2" column="1">
              <widget class="QComboBox" name="add_location_cb"/>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_3">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>35</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Vial type:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QComboBox" name="add_type_cb"/>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_4">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>35</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Description:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QLineEdit" name="add_description_eb">
-              <property name="placeholderText">
-               <string>Box description</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
+            <item row="5" column="1">
              <layout class="QHBoxLayout" name="horizontalLayout">
               <item>
                <spacer name="horizontalSpacer">
@@ -271,6 +195,128 @@
                </spacer>
               </item>
              </layout>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Location:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="add_description_eb">
+              <property name="placeholderText">
+               <string>Box description</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Description:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Storage Type</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="add_storage_type_cb">
+              <item>
+               <property name="text">
+                <string>Solid</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Freezer</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QComboBox" name="add_box_type_cb">
+              <item>
+               <property name="text">
+                <string>200</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>64</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>50</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Box Type:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

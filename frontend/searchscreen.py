@@ -13,7 +13,8 @@ class SearchScreen(QMainWindow):
         loadUi(resource_path("assets/searchwindow.ui"), self)
         self.window().setWindowTitle("Search")
 
-        self.goto_boxes_btn.clicked.connect(self.gotoBoxes)
+        self.goto_vials_btn.clicked.connect(self.gotoVials)
+        self.goto_boxes_btn.clicked.connect(self.gotoBoxes)        
 
         self.search_tab_wg.setCurrentIndex(0)
         self.search_tab_wg.currentChanged.connect(self.tabChanged)
@@ -63,12 +64,21 @@ class SearchScreen(QMainWindow):
             self.batch_search_eb.setFocus()
             self.batch_moldisplay()
 
+    def gotoVials(self):
+        from vialsscreen import VialsScreen
+        resize_window(self)
+        vials = VialsScreen(self.token)
+        self.window().addWidget(vials)
+        self.window().setCurrentIndex(self.window().currentIndex() + 1)
+        vials.edit_vial_id_eb.setFocus()
+
     def gotoBoxes(self):
         from boxesscreen import BoxesScreen
         resize_window(self)
         boxes = BoxesScreen(self.token)
         self.window().addWidget(boxes)
         self.window().setCurrentIndex(self.window().currentIndex() + 1)
+
 
     def check_vial_search_input(self):
         pattern = '^[vV][0-9]{6}$'
@@ -78,7 +88,7 @@ class SearchScreen(QMainWindow):
 
     def searchVial(self, vialId):
         vialId = re.sub("[^0-9a-zA-Z]+", " ", vialId)
-        logging.info(f"vial search {vialId}")
+        logging.getLogger(self.mod_name).info(f"vial search {vialId}")
         res = dbInterface.getVialInfo(self.token, vialId)
         try:
             self.vial_data = json.loads(res)
@@ -95,13 +105,13 @@ class SearchScreen(QMainWindow):
             self.discard_vial_btn.setEnabled(False)
             self.print_label_btn.setEnabled(False)
             return
-        logging.info(f"receieved {self.vial_data}")
+        logging.getLogger(self.mod_name).info(f"receieved {self.vial_data}")
         self.v_search = True
         self.errorlabel.setText('')
-        self.onevial_batch_eb.setText(self.vial_data[0]['batch_id'])
-        self.onevial_compound_id_eb.setText(self.vial_data[0]['compound_id'])
-        self.onevial_box_loc_eb.setText(self.vial_data[0]['box_id'])
-        self.onevial_coords_eb.setText(str(self.vial_data[0]['coordinate']))
+        self.onevial_batch_eb.setText(f"{self.vial_data[0]['batch_id']}")
+        self.onevial_compound_id_eb.setText(f"{self.vial_data[0]['compound_id']}")
+        self.onevial_box_loc_eb.setText(f"{self.vial_data[0]['box_id']}")
+        self.onevial_coords_eb.setText(f"{self.vial_data[0]['coordinate']}")
         self.onevial_checkout_cb.setCurrentText('a location')
         self.discard_vial_btn.setEnabled(True)
         self.print_label_btn.setEnabled(True)
@@ -117,7 +127,7 @@ class SearchScreen(QMainWindow):
     def search_many_vials(self):
         vials = self.mult_vial_search_eb.text()
         vials = re.sub("[^0-9a-zA-Z]+", " ", vials)
-        logging.info(f"multvial search {vials}")
+        logging.getLogger(self.mod_name).info(f"multvial search {vials}")
         res = dbInterface.getManyVials(self.token, vials)
         self.multvial_data = None
         try:
@@ -128,7 +138,7 @@ class SearchScreen(QMainWindow):
             self.multvial_table.setRowCount(0)
             self.structure_lab.clear()
             return
-        logging.info(f"receieved {self.multvial_data}")
+        logging.getLogger(self.mod_name).info(f"receieved {self.multvial_data}")
         self.setMultvialTableData(self.multvial_data)
         self.multvial_table.setCurrentCell(0,0)
         self.multvial_export_btn.setEnabled(True)
@@ -198,7 +208,7 @@ class SearchScreen(QMainWindow):
     def search_batches(self):
         batches = self.batch_search_eb.text()
         batches = re.sub("[^0-9a-zA-Z]+", " ", batches)
-        logging.info(f"batches search {batches}")
+        logging.getLogger(self.mod_name).info(f"batches search {batches}")
         res = dbInterface.getBatches(self.token, batches)
         self.batches_data = None
         try:
@@ -208,7 +218,7 @@ class SearchScreen(QMainWindow):
             self.batch_export_btn.setEnabled(False)
             self.batch_table.setRowCount(0)
             self.structure_lab.clear()
-        logging.info(f"receieved {self.batches_data}")
+        logging.getLogger(self.mod_name).info(f"receieved {self.batches_data}")
         self.setBatchTableData(self.batches_data)
         self.batch_table.setCurrentCell(0,0)
         self.batch_export_btn.setEnabled(True)
