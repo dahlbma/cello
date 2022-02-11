@@ -1095,7 +1095,7 @@ class GetFreeBoxes(tornado.web.RequestHandler):
     def get(self):
         sSql = f"""
         select location, FORMAT(FLOOR(subpos-count(vial_id)), 0) free_positions,
-        min(path) path, min(loctree.location_type.name) loc_type
+        min(path) path, min(loctree.location_type.name) loc_type, loctree.locations.name
         from glass.vial, loctree.locations, loctree.location_type, loctree.v_all_locations
         where 
         glass.vial.location = loctree.locations.loc_id
