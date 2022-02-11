@@ -37,8 +37,9 @@ class BoxesScreen(QMainWindow):
         self.transit_vials_btn.clicked.connect(self.transitVials)
         self.transit_vials_btn.setEnabled(False)
         self.update_export_btn.clicked.connect(self.export_box_table)
+        
         self.box_table.itemChanged.connect(self.updateVialPosition)
-
+        self.box_table.currentItemChanged.connect(self.box_moldisplay)
 
         self.freebox_table.cellDoubleClicked.connect(self.showFreeBox)
         self.freebox_export_btn.clicked.connect(self.export_freebox_table)
@@ -56,10 +57,13 @@ class BoxesScreen(QMainWindow):
         page_index = self.boxes_tab_wg.currentIndex()
         if page_index == 0:
             self.add_location_cb.setFocus()
+            self.structure_lab.clear()
         elif page_index == 1:
             self.update_box_eb.setFocus()
+            self.box_moldisplay(self.box_table.currentItem())
         elif page_index == 2:
             self.freebox_table.setFocus()
+            self.structure_lab.clear()
             self.fetch_free_boxes()
             
     def gotoSearch(self):
@@ -128,6 +132,7 @@ class BoxesScreen(QMainWindow):
             self.transit_vials_btn.setEnabled(False)
             self.update_export_btn.setEnabled(False)
             self.box_table.setRowCount(0)
+            self.structure_lab.clear()
             self.update_name_lab.setText("Box not found!")
             self.update_name_lab.setStyleSheet("background-color: red")
             return
@@ -196,6 +201,17 @@ class BoxesScreen(QMainWindow):
 
         self.search_for_box(self.box_search)
         return
+
+    def box_moldisplay(self, item):
+        if (len(self.box_table.selectedItems()) == 1) and item is not None:
+            #blank
+            vialId = self.box_table.item(item.row(), 0).text()
+            if len(vialId) > 0:
+                displayMolfile(self, vialId)
+                return
+        self.structure_lab.clear()
+
+
 
     def printLabel(self):
         sBox = self.update_box_eb.text()
