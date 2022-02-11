@@ -135,6 +135,8 @@ class BoxesScreen(QMainWindow):
         for n in range(len(data)):
             try:
                 newItem = QTableWidgetItem(f"{data[n]['vial_id']}")
+                if len(newItem.text()) != 0:
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.box_table.setItem(n, 0, newItem)
                 newItem = QTableWidgetItem(f"{data[n]['batch_id']}")
                 newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
