@@ -20,9 +20,16 @@ class BoxesScreen(QMainWindow):
         self.boxes_tab_wg.setCurrentIndex(0)
         self.boxes_tab_wg.currentChanged.connect(self.tabChanged)
 
+        locations = [None, "Place 1", "Place 2", "Place 3"]
+        self.add_location_cb.addItems(locations)
         types = [None, "10mM", "50mM", "Solid", "2mM", "20mM"]
         self.add_type_cb.addItems(types)
         self.add_box_btn.clicked.connect(self.addBox)
+        self.add_box_btn.setEnabled(False)
+
+        self.add_location_cb.currentTextChanged.connect(self.check_addbox_input)
+        self.add_type_cb.currentTextChanged.connect(self.check_addbox_input)
+        self.add_description_eb.textChanged.connect(self.check_addbox_input)
 
         self.update_box_eb.textChanged.connect(self.check_search_input)
         self.update_print_btn.clicked.connect(self.printLabel)
@@ -61,10 +68,18 @@ class BoxesScreen(QMainWindow):
 
     
     def addBox(self):
+        print("add box")
         #validate description?
         #confirm message?
         return
 
+    def check_addbox_input(self):
+        if (self.add_location_cb.currentText()) != "" and \
+            (self.add_type_cb.currentText() != "") and \
+            (self.add_description_eb.text() != ""):
+            self.add_box_btn.setEnabled(True)
+        else:
+            self.add_box_btn.setEnabled(False)
 
     def check_search_input(self):
         pattern = '^[a-zA-Z]{2}[0-9]{5}$'
@@ -164,7 +179,6 @@ class BoxesScreen(QMainWindow):
         if data is None:
             return
         self.freebox_table.setRowCount(len(data))
-        print(data)
         self.freebox_table.setSortingEnabled(False)
         try:
             for n in range(len(data)):
