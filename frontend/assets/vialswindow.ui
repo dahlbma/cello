@@ -703,7 +703,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QComboBox" name="comboBox"/>
+             <widget class="QComboBox" name="create_type_cb"/>
             </item>
             <item row="3" column="1">
              <layout class="QHBoxLayout" name="horizontalLayout_3">
