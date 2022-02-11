@@ -699,7 +699,7 @@ class TransitVials(tornado.web.RequestHandler):
         for sVialId in sIds:
             sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId)
             sLogString = f"""location from {sOldBox} {sOldName}:{sOldCoordinate}\
- to Compound Center"""
+ to Compound collection"""
             logVialChange(sVialId, sLogString)
             logging.info(f'Placed {sVialId} in Compound collection')
             # Update the new location of the vial, SL11013 is 'Compound collection'
