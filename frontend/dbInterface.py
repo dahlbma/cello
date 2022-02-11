@@ -91,3 +91,19 @@ def getBoxLocation(token, box):
     except:
         res = r.content
     return res
+
+def updateVialPosition(token, vial, box, pos):
+    r = requests.put(f'{baseUrl}updateVialPosition/{vial}/{box}/{pos}',
+                     headers={'token': token})
+    if r.status_code != 200:
+        return False
+    else:
+        return True
+
+def transitVials(token, vials):
+    r = requests.put(f'{baseUrl}transitVials/{vials}',
+                      headers={'token': token})
+    if r.status_code != 200:
+        return False
+    else:
+        return True

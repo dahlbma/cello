@@ -34,7 +34,11 @@ class BoxesScreen(QMainWindow):
         self.update_box_eb.textChanged.connect(self.check_search_input)
         self.update_print_btn.clicked.connect(self.printLabel)
         self.update_print_btn.setEnabled(False)
+        self.transit_vials_btn.clicked.connect(self.transitVials)
+        self.transit_vials_btn.setEnabled(False)
         self.update_export_btn.clicked.connect(self.export_box_table)
+        self.box_table.itemChanged.connect(self.updateVialPosition)
+
 
         self.freebox_table.cellDoubleClicked.connect(self.showFreeBox)
         self.freebox_export_btn.clicked.connect(self.export_freebox_table)
@@ -86,9 +90,15 @@ class BoxesScreen(QMainWindow):
         t = re.sub("[^0-9a-zA-Z]+", " ", self.update_box_eb.text())
         if re.match(pattern, t):
             self.search_for_box(t)
+        else:
+            #no match
+            self.box_search = None
+            self.box_table.setRowCount(0)
+
 
     def search_for_box(self, box):
         logging.info(f"box search {box}")
+        self.box_search = box
         res = dbInterface.getBox(self.token, box)
         try:
             res = res.replace("null", "\"\"")
@@ -115,6 +125,7 @@ class BoxesScreen(QMainWindow):
             self.box_data = None
             self.path_js = None
             self.update_print_btn.setEnabled(False)
+            self.transit_vials_btn.setEnabled(False)
             self.update_export_btn.setEnabled(False)
             self.box_table.setRowCount(0)
             self.update_name_lab.setText("Box not found!")
@@ -126,9 +137,11 @@ class BoxesScreen(QMainWindow):
         self.setBoxTableData(self.box_data, box)
         self.box_table.setCurrentCell(0,0)
         self.update_print_btn.setEnabled(True)
+        self.transit_vials_btn.setEnabled(True)
         self.update_export_btn.setEnabled(True)
 
     def setBoxTableData(self, data, box):
+        self.box_table.itemChanged.disconnect()
         self.box_table.setRowCount(0)
         self.box_table.setRowCount(len(data))
         self.box_table.setSortingEnabled(False)
@@ -153,6 +166,35 @@ class BoxesScreen(QMainWindow):
             except:
                 logging.error(f"search for {box} returned bad response: {data[n]}")
         self.box_table.setSortingEnabled(True)
+        self.box_table.itemChanged.connect(self.updateVialPosition)
+        return
+
+    def updateVialPosition(self, item):
+        row = item.row()
+        col = item.column()
+        vial = item.text()
+        box = self.box_search
+        pos = self.box_table.item(row, 3).text()
+
+        logging.info(f"update {vial} position to {box}/{pos}")
+        r = dbInterface.updateVialPosition(self.token, vial, box, pos)
+
+        self.search_for_box(box)
+        self.box_table.setCurrentCell(row, col)
+        return
+
+    def transitVials(self):
+        items = self.box_table.selectedItems()
+        vialList = []
+        for it in items:
+            if (it.column() == 0) and (len(it.text()) != 0):
+                vialList.append(it.text())
+        vials = " ".join(vialList)
+
+        logging.info(f"send vials: {vials} to transit")
+        r = dbInterface.transitVials(self.token, vials)
+
+        self.search_for_box(self.box_search)
         return
 
     def printLabel(self):
