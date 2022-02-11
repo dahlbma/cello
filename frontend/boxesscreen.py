@@ -203,7 +203,7 @@ class BoxesScreen(QMainWindow):
         return
 
     def box_moldisplay(self, item):
-        if (len(self.box_table.selectedItems()) == 1) and item is not None:
+        if (item is not None) and (len(self.box_table.selectedItems()) == 1):
             #blank
             vialId = self.box_table.item(item.row(), 0).text()
             if len(vialId) > 0:
