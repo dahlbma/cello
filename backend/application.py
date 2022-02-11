@@ -309,26 +309,25 @@ def deleteOldVialPosition(sVialId):
     """
     sSlask = cur.execute(sSql)
 
-def logVialChange(sVialId, sOldPos, sNewPos):
+def logVialChange(sVialId, sLogMessage, sNewPos=None):
     sSql = f"""
-    insert into vialdb.vial_log (vial_id, old_location, new_location)
-    values ({sVialId}, {sOldPos}, {sNewPos})
+    insert into glass.vial_log (vial_id, updated_date, changes)
+    values ('{sVialId}', now(), '{sLogMessage}')
     """
     sSlask = cur.execute(sSql)
 
 def getVialPosition(sVialId):
-    sSql = f"""select IFNULL(b.box_id, '') box_id,
-               IFNULL(b.coordinate, '') coordinate, v.checkedout
-               from vialdb.vial v
-               left outer join vialdb.box_positions b on v.vial_id = b.vial_id
-               where v.vial_id={sVialId}
-    """
+    sSql = f"""select IFNULL(v.location, '') location, l.name, IFNULL(v.pos, '') coordinate
+               from glass.vial v
+               left join loctree.locations l on v.location = l.loc_id
+               where v.vial_id='{sVialId}'"""
+    
     sSlask = cur.execute(sSql)
     tRes = cur.fetchall()
     logging.info(tRes)
     if len(tRes) == 0:
         return '', '', ''
-    return str(tRes[0].box_id).upper(), str(tRes[0].coordinate), tRes[0].checkedout
+    return str(tRes[0][0]).upper(), str(tRes[0][1]), tRes[0][2]
 
 def getBoxFromDb(sBox):
     positions = 0
@@ -689,13 +688,27 @@ def updateVialType(sBoxId, sVialId):
            """ % (tType[0][0], sVialId)
     sSlask = cur.execute(sSql)
 
-    
+
 @jwtauth
-class updateVialPosition(tornado.web.RequestHandler):
-    def post(self, *args, **kwargs):
-        sVialId = self.get_argument("vialId", default='', strip=False)
-        sBoxId = self.get_argument("boxId", default='', strip=False)
-        iCoordinate = self.get_argument("coordinate", default='', strip=False)
+class TransitVials(tornado.web.RequestHandler):
+    def get(self, sVials):
+        sIds = set(sVials.split())
+        for sVialId in sIds:
+            sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId)
+            sLogString = f"""location from {sOldBox} {sOldName}:{sOldCoordinate}\
+ to Compound Center"""
+        logVialChange(sVialId, sLogString)
+        logging.info(f'Placed {sVialId} in Compound collection')
+        # Update the new location of the vial, SL11013 is 'Compound collection'
+        sSql = f"""update glass.vial
+                   set location = 'SL11013', pos = '', updated_date = now()
+                   where vial_id = '{sVialId}'"""
+        sSlask = cur.execute(sSql)
+
+        
+@jwtauth
+class UpdateVialPosition(tornado.web.RequestHandler):
+    def get(self, sVialId, sBoxId, sPos):
         sMessage = 'All ok'
         sBoxId = sBoxId.upper()
         if not re.search('v\d\d\d\d\d(\d|\d\d)', sVialId, re.IGNORECASE):
@@ -708,89 +721,34 @@ class updateVialPosition(tornado.web.RequestHandler):
             return
 
         # Check if the position already is occupied by another compound
-        sSql = """select vial_id from vialdb.box_positions
-                  where box_id=%s and coordinate=%s
-               """ % (sBoxId, iCoordinate)
+        sSql = f"""select vial_id from glass.vial
+                  where location='{sBoxId}' and pos='{sPos}'
+               """
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
-        if len(tRes) != 1 or tRes[0].vial_id != None:
+        if len(tRes) != 0:
             self.set_status(400)
-            jRes = getBoxFromDb(sBoxId)
-            logging.error('this position is occupied ' + sBoxId + ' ' + iCoordinate)
+            logging.error('this position is occupied ' + sBoxId + ' ' + sPos)
             sMessage = 'Position not empty'
-            jResult = [{'message':sMessage, 'data':jRes}]
+            jResult = [{'message':sMessage}]
             self.finish(json.dumps(jResult))
             return
-
-        # Check if the vial has the same type as the box to be placed in
-        sSql = """select v.vial_type
-                  from vialdb.box b, vialdb.vial v
-                  where (b.vial_type = v.vial_type or v.vial_type is null) and vial_id = %s and box_id = %s
-               """ % (sVialId, sBoxId)
+        sSql = f"""select name from loctree.locations where loc_id = '{sBoxId}'"""
         sSlask = cur.execute(sSql)
-        tRes = cur.fetchall()
+        tLoc = cur.fetchall()
+        
+        sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId)
+        sLogString = f"""location from {sOldBox} {sOldName}:{sOldCoordinate}\
+ to {sBoxId} {tLoc[0][0]}:{sPos}"""
 
-        if len(tRes) != 1:
-            self.set_status(400)
-            jRes = getBoxFromDb(sBoxId)
-            sMessage = 'Vial not found ' + sVialId
-            logging.error(sMessage)
-            jResult = [{'message':sMessage, 'data':jRes}]
-            self.finish(json.dumps(jResult))
-            return
-
-        if tRes[0][0] == None:
-            updateVialType(sBoxId, sVialId)
-            logging.error('Please update vialtype here to same as the box ' + sVialId + ' ' + sBoxId)
-            
-        sOldBox, sOldCoordinate, sCheckedOut = getVialPosition(sVialId)
-        sOldPos = ""
-        if sOldBox != '':
-            sOldPos = sOldBox + ' ' + sOldCoordinate
-        else:
-            sOldPos = sCheckedOut
-        logVialChange(sVialId, sOldPos, sBoxId + ' ' + iCoordinate)
+        logVialChange(sVialId, sLogString)
         logging.info('Placed ' + sVialId + ' in ' + sBoxId)
-        # Erase the old place of the vial
-        deleteOldVialPosition(sVialId)
-
+        
         # Update the new location of the vial
-        sSql = """update vialdb.box_positions set
-                  vial_id=%s,
-                  update_date=now()
-                  where box_id=%s and coordinate=%s
-               """ % (sVialId, sBoxId, iCoordinate)
+        sSql = f"""update glass.vial
+                   set location = '{sBoxId}', pos = '{sPos}', updated_date = now()
+                   where vial_id = '{sVialId}'"""
         sSlask = cur.execute(sSql)
-
-        # Make sure that the vial isn't checkedout anymore
-        sSql = """update vialdb.vial set
-                  checkedout=%s,
-                  update_date=now()
-                  where vial_id=%s
-               """ % (None, sVialId)
-        sSlask = cur.execute(sSql)
-
-        jRes = getBoxFromDb(sBoxId)
-        #self.finish(json.dumps(jRes))
-
-        sSlask = cur.execute("""SELECT v.vial_id as vialId,
-                                coordinate, batch_id as batchId,
-                                compound_id as compoundId,
-                                b.box_id as boxId,
-                                box_description as boxDescription
-                                from vialdb.box b
-                                left join vialdb.box_positions v on b.box_id = v.box_id
-                                left join vialdb.vial c on v.vial_id = c.vial_id
-                                where b.box_id = '%s'
-                                and coordinate = '%s'""" % (sBoxId, iCoordinate))
-        tRes = cur.fetchall()
-        #jRes = {"vialId":tRes[0].vial_id,
-        #        "coordinate":tRes[0].coordinate,
-        #        "batchId":tRes[0].batch_id,
-        #        "compoundId":tRes[0].compound_id,
-        #        "boxId":tRes[0].box_id,
-        #        "boxDescription":tRes[0].box_description}
-        self.finish(json.dumps(res_to_json(tRes, cur)))
 
 
 @jwtauth
@@ -829,8 +787,7 @@ class printBox(tornado.web.RequestHandler):
         f = open('/tmp/file.txt','w')
         f.write(zplVial)
         f.close()
-        print(zplVial)
-        #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
+        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
         self.finish("Printed")
 
 
@@ -1092,7 +1049,7 @@ class getLocation(tornado.web.RequestHandler):
 
 
 @jwtauth
-class moveVialToLocation(tornado.web.RequestHandler):
+class MoveVialToLocation(tornado.web.RequestHandler):
     def get(self, sVial, sUser):
         sSlask = cur.execute("""
           select vial_location
@@ -1134,8 +1091,8 @@ class moveVialToLocation(tornado.web.RequestHandler):
 class GetFreeBoxes(tornado.web.RequestHandler):
     def get(self):
         sSql = f"""
-        select location, subpos-count(vial_id) free_positions, min(path) path,
-        min(loctree.location_type.name) loc_type
+        select location, FORMAT(FLOOR(subpos-count(vial_id)), 0) free_positions,
+        min(path) path, min(loctree.location_type.name) loc_type
         from glass.vial, loctree.locations, loctree.location_type, loctree.v_all_locations
         where 
         glass.vial.location = loctree.locations.loc_id
@@ -1143,7 +1100,7 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         and glass.vial.location = loctree.v_all_locations.loc_id
         and loctree.location_type.label_format = 'VIAL_TRAY.pj'
         and subpos is not null and subpos < 300
-        group by location order by path"""
+        group by glass.vial.location order by path"""
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))

@@ -58,8 +58,8 @@ try:
     #widget.resize(windowWidth, windowHeight)
 
     widget.show()
-    #app.setWindowIcon(QtGui.QIcon(''))
-    #widget.setWindowIcon(QtGui.QIcon(''))
+    app.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
+    widget.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
     sys.exit(app.exec_())
 except Exception as e:
     logger.info(str(e))
