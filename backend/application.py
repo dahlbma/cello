@@ -314,7 +314,10 @@ def logVialChange(sVialId, sLogMessage, sNewPos=None):
     insert into glass.vial_log (vial_id, updated_date, changes)
     values ('{sVialId}', now(), '{sLogMessage}')
     """
-    sSlask = cur.execute(sSql)
+    try:
+        sSlask = cur.execute(sSql)
+    except:
+        pass
 
 def getVialPosition(sVialId):
     sSql = f"""select IFNULL(v.location, '') location, l.name, IFNULL(v.pos, '') coordinate
@@ -691,24 +694,24 @@ def updateVialType(sBoxId, sVialId):
 
 @jwtauth
 class TransitVials(tornado.web.RequestHandler):
-    def get(self, sVials):
+    def put(self, sVials):
         sIds = set(sVials.split())
         for sVialId in sIds:
             sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId)
             sLogString = f"""location from {sOldBox} {sOldName}:{sOldCoordinate}\
  to Compound Center"""
-        logVialChange(sVialId, sLogString)
-        logging.info(f'Placed {sVialId} in Compound collection')
-        # Update the new location of the vial, SL11013 is 'Compound collection'
-        sSql = f"""update glass.vial
-                   set location = 'SL11013', pos = '', updated_date = now()
-                   where vial_id = '{sVialId}'"""
-        sSlask = cur.execute(sSql)
+            logVialChange(sVialId, sLogString)
+            logging.info(f'Placed {sVialId} in Compound collection')
+            # Update the new location of the vial, SL11013 is 'Compound collection'
+            sSql = f"""update glass.vial
+                       set location = 'SL11013', pos = '', updated_date = now()
+                       where vial_id = '{sVialId}'"""
+            sSlask = cur.execute(sSql)
 
-        
+
 @jwtauth
 class UpdateVialPosition(tornado.web.RequestHandler):
-    def get(self, sVialId, sBoxId, sPos):
+    def put(self, sVialId, sBoxId, sPos):
         sMessage = 'All ok'
         sBoxId = sBoxId.upper()
         if not re.search('v\d\d\d\d\d(\d|\d\d)', sVialId, re.IGNORECASE):
