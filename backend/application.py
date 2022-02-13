@@ -45,6 +45,14 @@ class home(util.UnsafeHandler):
     def get(self, *args, **kwargs):
         return
 
+def getNewLocId():
+    sSql = f"select pkey from loctree.location_id_sequence"
+    cur.execute(sSql)
+    pkey = cur.fetchall()[0][0] +1
+    sSql = f"update loctree.location_id_sequence set pkey={pkey}"
+    cur.execute(sSql)
+    return 'SL' + str(pkey)
+
 
 @jwtauth
 class getMicroTubeByBatch(tornado.web.RequestHandler):
@@ -1131,3 +1139,43 @@ class GetDatabase(tornado.web.RequestHandler):
     def get(self):
         sRes = json.dumps([['Live'], ['Test']])
         self.finish(sRes)
+
+
+@jwtauth
+class GetLocationByStorage(tornado.web.RequestHandler):
+    def get(self, sStorage):
+        if sStorage == 'Freezer':
+            sSql = f"""select loc_id, path from loctree.v_all_locations
+            where type_id in (29, 31, 69, 6, 8, 24, 25, 27) order by type_id, path
+            """
+        else:
+            sSql = f"""select loc_id, path from loctree.v_all_locations
+            where type_id in (7, 9) order by type_id, path"""
+
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        self.write(json.dumps(res_to_json(tRes, cur)))
+
+
+@jwtauth
+class AddBox(tornado.web.RequestHandler):
+    def put(self, sParent, sBoxName, sBoxSize):
+        sNewLocId = getNewLocId()
+        '''
+        '10', 'Vial tray', '-1', NULL, 'VIAL_TRAY.pj', '200', NULL,
+        '18', 'Bottle tray', '-1', NULL, 'VIAL_TRAY.pj', '50', NULL, NULL, NULL
+        '32', 'Eppie tray', '-1', NULL, 'VIAL_TRAY.pj', '64', NULL
+        '''
+        if sBoxSize == '200':
+            loc_type = 10
+        elif sBoxSize == '50':
+            loc_type = 18
+        elif sBoxSize == '64':
+            loc_type = 32
+
+        sSql = f'''
+        insert into loctree.locations (loc_id, parent, type_id, created_date, name)
+        values 
+        ('{sNewLocId}', '{sParent}', '{loc_type}', now(), '{sBoxName}')
+        '''
+        cur.execute(sSql)
