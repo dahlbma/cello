@@ -284,23 +284,7 @@
              </widget>
             </item>
             <item row="3" column="1">
-             <widget class="QComboBox" name="add_box_type_cb">
-              <item>
-               <property name="text">
-                <string>200</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>64</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>50</string>
-               </property>
-              </item>
-             </widget>
+             <widget class="QComboBox" name="add_box_type_cb"/>
             </item>
             <item row="3" column="0">
              <widget class="QLabel" name="label_6">

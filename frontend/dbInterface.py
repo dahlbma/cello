@@ -20,7 +20,6 @@ def login(user, password, database):
                               'database':database})
     return r
 
-
 def getDatabase():
     r = requests.get(f'{baseUrl}getDatabase')
     res = listify(r, False)
@@ -34,6 +33,16 @@ def getVialInfo(token, vialId):
     except:
         return r.content
 
+def getLocationsByStorage(token, storage):
+    r = requests.get(f'{baseUrl}getLocationByStorage/{storage}',
+                     headers={'token':token})
+    try:
+        res = r.content.decode()
+        res = json.loads(res)
+        return res
+    except:
+        return r.content
+    
 def getBatches(token, batchIds):
     r = requests.get(f'{baseUrl}searchBatches/{batchIds}',
             headers={'token':token})
@@ -102,6 +111,14 @@ def updateVialPosition(token, vial, box, pos):
 
 def transitVials(token, vials):
     r = requests.put(f'{baseUrl}transitVials/{vials}',
+                      headers={'token': token})
+    if r.status_code != 200:
+        return False
+    else:
+        return True
+
+def addBox(token, sParent, sBoxName, sBoxSize):
+    r = requests.put(f'{baseUrl}addBox/{sParent}/{sBoxName}/{sBoxSize}',
                       headers={'token': token})
     if r.status_code != 200:
         return False

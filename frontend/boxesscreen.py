@@ -21,13 +21,15 @@ class BoxesScreen(QMainWindow):
         self.boxes_tab_wg.setCurrentIndex(0)
         self.boxes_tab_wg.currentChanged.connect(self.tabChanged)
 
-        locations = [None, "Place 1", "Place 2", "Place 3"]
+        locations = [None,]
         self.add_location_cb.addItems(locations)
-        types = [None, "10mM", "50mM", "Solid", "2mM", "20mM"]
+        types = [None, "200", "64", "50",]
         self.add_box_type_cb.addItems(types)
         self.add_box_btn.clicked.connect(self.addBox)
         self.add_box_btn.setEnabled(False)
 
+        
+        self.add_storage_type_cb.currentTextChanged.connect(self.storage_change)
         self.add_location_cb.currentTextChanged.connect(self.check_addbox_input)
         self.add_box_type_cb.currentTextChanged.connect(self.check_addbox_input)
         self.add_description_eb.textChanged.connect(self.check_addbox_input)
@@ -83,13 +85,21 @@ class BoxesScreen(QMainWindow):
         self.window().setCurrentIndex(self.window().currentIndex() + 1)
         vials.edit_vial_id_eb.setFocus()
 
-    
     def addBox(self):
-        print("add box")
-        #validate description?
-        #confirm message?
-        return
+        sBoxName = self.add_description_eb.text()
+        sBoxSize = self.add_box_type_cb.currentText()
+        sParent = (self.add_location_cb.currentText()).split('|')[1]
+        dbInterface.addBox(self.token, sParent, sBoxName, sBoxSize)
 
+    def storage_change(self):
+        storage = self.add_storage_type_cb.currentText()
+        saRes = dbInterface.getLocationsByStorage(self.token, storage)
+        saLocations = list()
+        self.add_location_cb.clear()
+        for loc in saRes:
+            saLocations.append(f'''{loc['path']}|{loc['LOC_ID']}''')
+            self.add_location_cb.addItems(saLocations)
+            
     def check_addbox_input(self):
         if (self.add_location_cb.currentText()) != "" and \
             (self.add_box_type_cb.currentText() != "") and \
