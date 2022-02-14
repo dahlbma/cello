@@ -1180,8 +1180,8 @@ class AddBox(tornado.web.RequestHandler):
     def put(self, sParent, sBoxName, sBoxSize):
         sNewLocId = getNewLocId()
         '''
-        '10', 'Vial tray', '-1', NULL, 'VIAL_TRAY.pj', '200', NULL,
-        '18', 'Bottle tray', '-1', NULL, 'VIAL_TRAY.pj', '50', NULL, NULL, NULL
+        '10', 'Vial tray', '-1', NULL, 'VIAL_TRAY.pj', '200', NULL
+        '18', 'Bottle tray', '-1', NULL, 'VIAL_TRAY.pj', '50', NULL
         '32', 'Eppie tray', '-1', NULL, 'VIAL_TRAY.pj', '64', NULL
         '''
         if sBoxSize == '200':
