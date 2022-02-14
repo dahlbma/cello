@@ -24,7 +24,7 @@ class BoxesScreen(QMainWindow):
 
         locations = [None,]
         self.add_location_cb.addItems(locations)
-        types = [None, "200", "64", "50",]
+        types = [None, "200", "64", "50", 'Matrix',]
         self.add_box_type_cb.addItems(types)
         self.add_box_btn.clicked.connect(self.addBox)
         self.add_box_btn.setEnabled(False)
