@@ -35,7 +35,7 @@ def gotoBoxes(self):
     resize_window(self)
     self.window().setCurrentIndex(3)
     self.window().widget(3).boxes_tab_wg.setCurrentIndex(0)
-    self.window().widget(3).add_location_cb.setFocus()
+    self.window().widget(3).add_description_eb.setFocus()
     return
 
 def gotoLocations(self):

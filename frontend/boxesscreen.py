@@ -22,8 +22,8 @@ class BoxesScreen(QMainWindow):
         self.boxes_tab_wg.setCurrentIndex(0)
         self.boxes_tab_wg.currentChanged.connect(self.tabChanged)
 
-        locations = [None,]
-        self.add_location_cb.addItems(locations)
+        #locations = [None,]
+        #self.add_location_cb.addItems(locations)
         types = [None, "200", "64", "50", 'Matrix',]
         self.add_box_type_cb.addItems(types)
         self.add_box_btn.clicked.connect(self.addBox)
@@ -89,7 +89,7 @@ class BoxesScreen(QMainWindow):
     def addBox(self):
         sBoxName = self.add_description_eb.text()
         sBoxSize = self.add_box_type_cb.currentText()
-        sParent = (self.add_location_cb.currentText()).split('|')[1]
+        sParent = self.add_location_barcode
         dbInterface.addBox(self.token, sParent, sBoxName, sBoxSize)
 
     def storage_change(self):
@@ -102,7 +102,7 @@ class BoxesScreen(QMainWindow):
             self.add_location_cb.addItems(saLocations)
             
     def check_addbox_input(self):
-        if (self.add_location_cb.currentText()) != "" and \
+        if (self.add_location_lab.text()) != "" and \
             (self.add_box_type_cb.currentText() != "") and \
             (self.add_description_eb.text() != ""):
             self.add_box_btn.setEnabled(True)
