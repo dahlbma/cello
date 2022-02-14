@@ -117,6 +117,15 @@ def transitVials(token, vials):
     else:
         return True
 
+def getLocationChildren(token, location):
+    r = requests.get(f'{baseUrl}getLocationChildren/{location}',
+                     headers={'token': token})
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    return res
+
 def addBox(token, sParent, sBoxName, sBoxSize):
     r = requests.put(f'{baseUrl}addBox/{sParent}/{sBoxName}/{sBoxSize}',
                       headers={'token': token})

@@ -1,6 +1,6 @@
 import sys, os, logging, re
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QTreeWidgetItem
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
@@ -30,8 +30,19 @@ class BoxesScreen(QMainWindow):
         self.add_box_btn.setEnabled(False)
 
         
-        self.add_storage_type_cb.currentTextChanged.connect(self.storage_change)
-        self.add_location_cb.currentTextChanged.connect(self.check_addbox_input)
+
+        #self.root = self.client.get_root_node()
+        #self.add_node_to_tree(self.node_tree, self.root)
+        #self.node_tree.itemExpanded.connect(self.get_node_from_tree_item)
+        self.init_boxes_tree()
+        self.boxes_tree.itemExpanded.connect(self.get_children)
+        self.boxes_tree.itemCollapsed.connect(self.take_children)
+        self.boxes_tree.currentItemChanged.connect(self.setAddParams)
+        self.boxes_tree.currentItemChanged.connect(self.check_addbox_input)
+
+
+        #self.add_storage_type_cb.currentTextChanged.connect(self.storage_change)
+        #self.add_location_cb.currentTextChanged.connect(self.check_addbox_input)
         self.add_box_type_cb.currentTextChanged.connect(self.check_addbox_input)
         self.add_description_eb.textChanged.connect(self.check_addbox_input)
 
@@ -60,7 +71,9 @@ class BoxesScreen(QMainWindow):
     def tabChanged(self):
         page_index = self.boxes_tab_wg.currentIndex()
         if page_index == 0:
-            self.add_location_cb.setFocus()
+            self.boxes_tree.clear()
+            self.init_boxes_tree()
+            self.add_description_eb.setFocus()
             self.structure_lab.clear()
         elif page_index == 1:
             self.update_box_eb.setFocus()
@@ -69,42 +82,69 @@ class BoxesScreen(QMainWindow):
             self.freebox_table.setFocus()
             self.structure_lab.clear()
             self.fetch_free_boxes()
-            
-    #def gotoSearch(self):
-    #    from searchscreen import SearchScreen
-    #    resize_window(self)
-    #    search = SearchScreen(self.token)
-    #    self.window().addWidget(search)
-    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
-    #    search.vial_search_eb.setFocus()
 
-    #def gotoVials(self):
-    #    from vialsscreen import VialsScreen
-    #    resize_window(self)
-    #    vials = VialsScreen(self.token)
-    #    self.window().addWidget(vials)
-    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
-    #    vials.edit_vial_id_eb.setFocus()
+
+    def locationInput(self, js):
+        return [js['NAME'], js['type'], js['LOC_ID']]
+
+    def init_boxes_tree(self):
+        # get top level nodes
+        r = dbInterface.getLocationChildren(self.token, "root")
+        try:
+            root_items = json.loads(r)
+        except:
+            logging.getLogger(self.mod_name).error("bad response for getLocationChildren/root")
+            return
+
+        for js in root_items:
+            item = QTreeWidgetItem(self.boxes_tree, self.locationInput(js))
+            item.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+
+    def get_children(self, item):
+        loc = item.text(2)
+        r = dbInterface.getLocationChildren(self.token, loc)
+        try:
+            children = json.loads(r)
+        except:
+            logging.getLogger(self.mod_name).error(f"bad response for getLocationChildren/{loc}")
+            return
+        for child in children:
+            childItem = QTreeWidgetItem(item, self.locationInput(child))
+            print(f"{child}")
+            if child['has_children'] == -1:
+                childItem.setChildIndicatorPolicy(QTreeWidgetItem.DontShowIndicator)
+            else:
+                childItem.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+
+    def take_children(self, item):
+        children = item.takeChildren()
+        l = [f'({child.text(0)}:{child.text(2)})' for child in children]
+        #if len(l) > 0:
+            #print("took " + ', '.join(l))
+
+    def setAddParams(self, item):
+        self.add_location_lab.setText(item.text(0))
+        self.add_storage_type_lab.setText(item.text(1))
+        self.add_location_barcode = item.text(2)
 
     def addBox(self):
         sBoxName = self.add_description_eb.text()
         sBoxSize = self.add_box_type_cb.currentText()
         sParent = self.add_location_barcode
-        dbInterface.addBox(self.token, sParent, sBoxName, sBoxSize)
-
-    def storage_change(self):
-        storage = self.add_storage_type_cb.currentText()
-        saRes = dbInterface.getLocationsByStorage(self.token, storage)
-        saLocations = list()
-        self.add_location_cb.clear()
-        for loc in saRes:
-            saLocations.append(f'''{loc['path']}|{loc['LOC_ID']}''')
-            self.add_location_cb.addItems(saLocations)
+        r = dbInterface.addBox(self.token, sParent, sBoxName, sBoxSize)
+        if r:
+            self.add_description_eb.setText('')
+            self.add_box_type_cb.setCurrentText(None)
+            self.add_box_btn.setEnabled(False)
+        else:
+            #TODO send error message
+            logging.getLogger(self.mod_name).error(f"addBox failed with [{sBoxName}, {sBoxSize}, {sParent}]")
             
     def check_addbox_input(self):
         if (self.add_location_lab.text()) != "" and \
             (self.add_box_type_cb.currentText() != "") and \
-            (self.add_description_eb.text() != ""):
+            (self.add_description_eb.text() != "") and \
+            (self.boxes_tree.currentItem().childIndicatorPolicy() != QTreeWidgetItem.DontShowIndicator):
             self.add_box_btn.setEnabled(True)
         else:
             self.add_box_btn.setEnabled(False)

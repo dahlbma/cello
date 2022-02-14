@@ -49,21 +49,6 @@ class VialsScreen(QMainWindow):
             self.create_n_vial_eb.setFocus()
             self.structure_lab.clear()
 
-    #def gotoSearch(self):
-    #    from searchscreen import SearchScreen
-    #    resize_window(self)
-    #    search = SearchScreen(self.token)
-    #    self.window().addWidget(search)
-    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
-    #    search.vial_search_eb.setFocus()
-
-    #def gotoBoxes(self):
-    #    from boxesscreen import BoxesScreen
-    #    resize_window(self)
-    #    boxes = BoxesScreen(self.token)
-    #    self.window().addWidget(boxes)
-    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
-
 
     def check_vial_search_input(self):
         pattern = '^[vV][0-9]{6}$'

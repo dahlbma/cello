@@ -65,21 +65,6 @@ class SearchScreen(QMainWindow):
             self.batch_search_eb.setFocus()
             self.batch_moldisplay()
 
-    #def gotoVials(self):
-    #    from vialsscreen import VialsScreen
-    #    resize_window(self)
-    #    vials = VialsScreen(self.token)
-    #    self.window().addWidget(vials)
-    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
-    #    vials.edit_vial_id_eb.setFocus()
-
-    #def gotoBoxes(self):
-    #    from boxesscreen import BoxesScreen
-    #    resize_window(self)
-    #    boxes = BoxesScreen(self.token)
-    #    self.window().addWidget(boxes)
-    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
-
 
     def check_vial_search_input(self):
         pattern = '^[vV][0-9]{6}$'
