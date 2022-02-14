@@ -5,6 +5,11 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QMessageBox
 
 from cellolib import *
+from searchscreen import SearchScreen
+from vialsscreen import VialsScreen
+from boxesscreen import BoxesScreen
+#from locationsscreen import LocationsScreen
+#from microtubesboxesscreen import MicrotubesBoxesScreen
 
 class LoginScreen(QMainWindow):
     def __init__(self):
@@ -42,12 +47,20 @@ class LoginScreen(QMainWindow):
             self.errorlabel.setText("Wrong username/password")
             return
         self.jwt_token = r.content
-        self.gotoSearch()
+        self.startApp()
 
-    def gotoSearch(self):
-        from searchscreen import SearchScreen
-        resize_window(self)
+    def startApp(self):
+        # init
         search = SearchScreen(self.jwt_token)
+        vials = VialsScreen(self.jwt_token)
+        boxes = BoxesScreen(self.jwt_token)
+        #locations = LocationsScreen(self.jwt_token)
+        #microtubes = MicrotubesScreen(self.jwt_token)
+
+        # add screens to stackedwidget
         self.window().addWidget(search)
-        self.window().setCurrentIndex(self.window().currentIndex() + 1)
-        search.vial_search_eb.setFocus()
+        self.window().addWidget(vials)
+        self.window().addWidget(boxes)
+        #widget.addWidget(locations)
+        #widget.addWidget(microtubes)
+        gotoSearch(self)

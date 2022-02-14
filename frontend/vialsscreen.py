@@ -7,6 +7,7 @@ from PyQt5.QtGui import QColor
 from cellolib import *
 
 class VialsScreen(QMainWindow):
+    from cellolib import gotoSearch, gotoVials, gotoBoxes#, gotoLocations, gotoMicrotubes
     def __init__(self, token):
         super(VialsScreen, self).__init__()
         self.token = token
@@ -48,20 +49,20 @@ class VialsScreen(QMainWindow):
             self.create_n_vial_eb.setFocus()
             self.structure_lab.clear()
 
-    def gotoSearch(self):
-        from searchscreen import SearchScreen
-        resize_window(self)
-        search = SearchScreen(self.token)
-        self.window().addWidget(search)
-        self.window().setCurrentIndex(self.window().currentIndex() + 1)
-        search.vial_search_eb.setFocus()
+    #def gotoSearch(self):
+    #    from searchscreen import SearchScreen
+    #    resize_window(self)
+    #    search = SearchScreen(self.token)
+    #    self.window().addWidget(search)
+    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
+    #    search.vial_search_eb.setFocus()
 
-    def gotoBoxes(self):
-        from boxesscreen import BoxesScreen
-        resize_window(self)
-        boxes = BoxesScreen(self.token)
-        self.window().addWidget(boxes)
-        self.window().setCurrentIndex(self.window().currentIndex() + 1)
+    #def gotoBoxes(self):
+    #    from boxesscreen import BoxesScreen
+    #    resize_window(self)
+    #    boxes = BoxesScreen(self.token)
+    #    self.window().addWidget(boxes)
+    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
 
 
     def check_vial_search_input(self):

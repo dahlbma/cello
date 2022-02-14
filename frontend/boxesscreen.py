@@ -7,6 +7,7 @@ from PyQt5.QtGui import QColor
 from cellolib import *
 
 class BoxesScreen(QMainWindow):
+    from cellolib import gotoSearch, gotoVials, gotoBoxes#, gotoLocations, gotoMicrotubes
     def __init__(self, token):
         super(BoxesScreen, self).__init__()
         self.token = token
@@ -69,21 +70,21 @@ class BoxesScreen(QMainWindow):
             self.structure_lab.clear()
             self.fetch_free_boxes()
             
-    def gotoSearch(self):
-        from searchscreen import SearchScreen
-        resize_window(self)
-        search = SearchScreen(self.token)
-        self.window().addWidget(search)
-        self.window().setCurrentIndex(self.window().currentIndex() + 1)
-        search.vial_search_eb.setFocus()
+    #def gotoSearch(self):
+    #    from searchscreen import SearchScreen
+    #    resize_window(self)
+    #    search = SearchScreen(self.token)
+    #    self.window().addWidget(search)
+    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
+    #    search.vial_search_eb.setFocus()
 
-    def gotoVials(self):
-        from vialsscreen import VialsScreen
-        resize_window(self)
-        vials = VialsScreen(self.token)
-        self.window().addWidget(vials)
-        self.window().setCurrentIndex(self.window().currentIndex() + 1)
-        vials.edit_vial_id_eb.setFocus()
+    #def gotoVials(self):
+    #    from vialsscreen import VialsScreen
+    #    resize_window(self)
+    #    vials = VialsScreen(self.token)
+    #    self.window().addWidget(vials)
+    #    self.window().setCurrentIndex(self.window().currentIndex() + 1)
+    #    vials.edit_vial_id_eb.setFocus()
 
     def addBox(self):
         sBoxName = self.add_description_eb.text()
@@ -265,7 +266,7 @@ class BoxesScreen(QMainWindow):
                 newItem = QCustomTableWidgetItem(f"{data[n]['free_positions']}")
                 newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.freebox_table.setItem(n, 0, newItem)
-                newItem = QTableWidgetItem(f"{data[n]['path']}")
+                newItem = QTableWidgetItem(f"{data[n]['name']}")
                 newItem.setToolTip(f"{data[n]['location']}")
                 newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.freebox_table.setItem(n, 1, newItem)

@@ -16,6 +16,34 @@ class QCustomTableWidgetItem (QTableWidgetItem):
         else:
             return QTableWidgetItem.__lt__(self, other)
 
+
+def gotoSearch(self):
+    resize_window(self)
+    self.window().setCurrentIndex(1)
+    self.window().widget(1).search_tab_wg.setCurrentIndex(0)
+    self.window().widget(1).vial_search_eb.setFocus()
+    return
+
+def gotoVials(self):
+    resize_window(self)
+    self.window().setCurrentIndex(2)
+    self.window().widget(2).vials_tab_wg.setCurrentIndex(0)
+    self.window().widget(2).edit_vial_id_eb.setFocus()
+    return
+
+def gotoBoxes(self):
+    resize_window(self)
+    self.window().setCurrentIndex(3)
+    self.window().widget(3).boxes_tab_wg.setCurrentIndex(0)
+    self.window().widget(3).add_location_cb.setFocus()
+    return
+
+def gotoLocations(self):
+    return
+
+def gotoMicrotubes(self):
+    return
+
 def send_msg(title, text, icon=QMessageBox.Information, e=None):
     msg = QMessageBox()
     msg.setWindowTitle(title)
