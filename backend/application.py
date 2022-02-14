@@ -1158,6 +1158,24 @@ class GetLocationByStorage(tornado.web.RequestHandler):
 
 
 @jwtauth
+class GetLocationChildren(tornado.web.RequestHandler):
+    def get(self, sLocation):
+        if sLocation == 'root':
+            sSql = f'''
+            select loc_id, name, path
+            from loctree.v_all_locations where parent is null
+            '''        
+        else:
+            sSql = f'''
+            select loc_id, name, path
+            from loctree.v_all_locations where parent = '{sLocation}'
+            '''        
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        self.write(json.dumps(res_to_json(tRes, cur)))
+
+
+@jwtauth
 class AddBox(tornado.web.RequestHandler):
     def put(self, sParent, sBoxName, sBoxSize):
         sNewLocId = getNewLocId()
@@ -1172,6 +1190,8 @@ class AddBox(tornado.web.RequestHandler):
             loc_type = 18
         elif sBoxSize == '64':
             loc_type = 32
+        elif sBoxSize == 'Matrix':
+            loc_type = 7
 
         sSql = f'''
         insert into loctree.locations (loc_id, parent, type_id, created_date, name)

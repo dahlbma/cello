@@ -85,6 +85,7 @@ def make_app():
         (r"/createMolImage", application.CreateMolImage),
         (r"/uploadEmptyVials", application.uploadEmptyVials),
         (r"/getLocations", application.getLocations),
+        (r"/getLocationChildren/(?P<sLocation>[^\/]+)", application.GetLocationChildren),
         (r"/getLocationByStorage/(?P<sStorage>[^\/]+)", application.GetLocationByStorage),
         (r"/createManyVialsNLabels", application.createManyVialsNLabels),
         (r"/addBox/(?P<sParent>[^\/]+)/(?P<sBoxName>[^\/]+)/(?P<sBoxSize>[^\/]+)", application.AddBox),
