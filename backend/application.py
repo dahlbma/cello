@@ -1102,6 +1102,23 @@ class MoveVialToLocation(tornado.web.RequestHandler):
 class GetFreeBoxes(tornado.web.RequestHandler):
     def get(self):
         sSql = f"""
+        select ll.loc_id location,
+        FORMAT(ll.subpos - IFNULL(v_count, 0), 0) free_positions,
+        ll.path, ll.loc_type, ll.name name
+        from
+        (select location, count(vial_id) v_count
+        from glass.vial group by location) v
+        right outer join
+        (select l.loc_id, t.subpos, l.name, l.path, t.name loc_type
+        from loctree.v_all_locations l, loctree.location_type t
+        where l.type_id = t.type_id
+        and t.subpos is not null and t.subpos < 300) ll
+        on v.location = ll.loc_id  order by path, free_positions
+        """
+
+
+
+        '''
         select location, FORMAT(FLOOR(subpos-count(vial_id)), 0) free_positions,
         min(path) path, min(loctree.location_type.name) loc_type, loctree.locations.name
         from glass.vial, loctree.locations, loctree.location_type, loctree.v_all_locations
@@ -1112,10 +1129,11 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         and loctree.location_type.label_format = 'VIAL_TRAY.pj'
         and subpos is not null and subpos < 300
         group by glass.vial.location order by path"""
+        '''
+
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
-
         
 @jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
@@ -1157,18 +1175,18 @@ class GetLocationByStorage(tornado.web.RequestHandler):
         self.write(json.dumps(res_to_json(tRes, cur)))
 
 
-#@jwtauth
+@jwtauth
 class GetLocationChildren(tornado.web.RequestHandler):
     def get(self, sLocation):
         if sLocation == 'root':
             sSql = f'''
-            select loc_id, name, path, '' type, t.use_subpos has_chidren
-            from loctree.v_all_locations
-            where parent is null
-            '''        
+            select l.loc_id, l.name, l.path, t.name type, t.use_subpos has_children
+            from loctree.v_all_locations l, loctree.location_type t
+            where l.type_id = t.type_id and
+            l.parent is null'''        
         else:
             sSql = f'''
-            select l.loc_id, l.name, l.path, t.name type, t.use_subpos has_chidren
+            select l.loc_id, l.name, l.path, t.name type, t.use_subpos has_children
             from loctree.v_all_locations l, loctree.location_type t
             where l.type_id = t.type_id and
             l.parent = '{sLocation}'
