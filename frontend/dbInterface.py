@@ -65,6 +65,12 @@ def printBoxLabel(token, sBox):
     res = r.content.decode()
     return res
 
+def printVialLabel(token, sVial):
+    r = requests.get(f'{baseUrl}printVial/{sVial}',
+                     headers={'token': token})
+    res = r.content.decode()
+    return res
+
 def getFreePositions(token):
     r = requests.get(f'{baseUrl}getFreeBoxes',
                      headers={'token': token})
