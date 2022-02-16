@@ -1060,6 +1060,41 @@ class getLocation(tornado.web.RequestHandler):
 
 
 @jwtauth
+class DeleteLocation(tornado.web.RequestHandler):
+    def put(self, sLocation):
+        sSlask = cur.execute(f"""
+        select * from loctree.locations where parent = '{sLocation}'
+        """)
+        tRes = cur.fetchall()
+        if len(tRes) != 0:
+            self.set_status(400)
+            self.finish('Location not empty')
+            return
+        
+        sSlask = cur.execute(f"""
+        select * from glass.vial where location = '{sLocation}'
+        """)
+        tRes = cur.fetchall()
+        if len(tRes) != 0:
+            self.set_status(400)
+            self.finish('Location not empty')
+            return
+        
+        sSlask = cur.execute(f"""
+        select * from microtube.matrix where location = '{sLocation}'
+        """)
+        tRes = cur.fetchall()
+        if len(tRes) != 0:
+            self.set_status(400)
+            self.finish('Location not empty')
+            return
+
+        #sSlask = cur.execute(f"""
+        #delete from loctree.locations where loc_id = '{sLocation}'
+        #""")
+        
+
+@jwtauth
 class MoveVialToLocation(tornado.web.RequestHandler):
     def get(self, sVial, sUser):
         sSlask = cur.execute("""
