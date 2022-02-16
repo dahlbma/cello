@@ -218,7 +218,7 @@ class BoxesScreen(QMainWindow):
         r, ret = dbInterface.deleteLocation(self.token, self.add_location_barcode)
         if ret is False:
             #TODO send error message
-            logging.getLogger(self.mod_name).error(f"error removing {target}: {r.content().decode()}")
+            logging.getLogger(self.mod_name).error(f"error removing {target}: {r.content.decode()}")
             self.resetInput()
             return
         #reload parents children
