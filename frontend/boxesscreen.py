@@ -123,9 +123,14 @@ class BoxesScreen(QMainWindow):
             #print("took " + ', '.join(l))
 
     def setAddParams(self, item):
-        self.add_location_lab.setText(item.text(0))
-        self.add_storage_type_lab.setText(item.text(1))
-        self.add_location_barcode = item.text(2)
+        if (item is not None):
+            self.add_location_lab.setText(item.text(0))
+            self.add_storage_type_lab.setText(item.text(1))
+            self.add_location_barcode = item.text(2)
+        else:
+            self.add_location_lab.setText("")
+            self.add_storage_type_lab.setText("")
+            self.add_location_barcode = None
 
     def addBox(self):
         sBoxName = self.add_description_eb.text()
