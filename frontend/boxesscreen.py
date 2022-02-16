@@ -1,6 +1,6 @@
 import sys, os, logging, re
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QTreeWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QTreeWidgetItem, QAbstractItemView
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
@@ -214,7 +214,6 @@ class BoxesScreen(QMainWindow):
         self.box_table.itemChanged.disconnect()
         self.box_table.setRowCount(0)
         self.box_table.setRowCount(len(data))
-        self.box_table.setSortingEnabled(False)
         for n in range(len(data)):
             try:
                 newItem = QTableWidgetItem(f"{data[n]['vial_id']}")
@@ -235,7 +234,6 @@ class BoxesScreen(QMainWindow):
                         self.box_table.item(n, m).setBackground(QColor(63, 186, 120))
             except:
                 logging.error(f"search for {box} returned bad response: {data[n]}")
-        self.box_table.setSortingEnabled(True)
         self.box_table.itemChanged.connect(self.updateVialPosition)
         return
 
@@ -250,9 +248,15 @@ class BoxesScreen(QMainWindow):
         r = dbInterface.updateVialPosition(self.token, vial, box, pos)
 
         self.search_for_box(box)
-        if row < self.box_table.rowCount() - 1:
-            row += 1
-        self.box_table.editItem(self.box_table.item(row, col))
+        r = getNextFreeRow(self.box_table, row)
+        if r == -1:
+            self.box_table.setCurrentCell(0, 0)
+            self.box_table.scrollToItem(self.box_table.item(0, 0), QAbstractItemView.PositionAtCenter)
+        else:
+            self.box_table.editItem(self.box_table.item(r, col))
+            self.box_table.scrollToItem(self.box_table.item(r, col), QAbstractItemView.PositionAtCenter)
+            
+            
         return
 
     def transitVials(self):

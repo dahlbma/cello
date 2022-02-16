@@ -96,3 +96,10 @@ def export_table(table):
         clipboard = QApplication.clipboard()
         clipboard.setText(csv)
         send_msg("Export data", "Data copied to clipboard!")
+
+def getNextFreeRow(table, row):
+    for r in range(row + 1, table.rowCount()):
+        if table.item(r, 0).text() == "":
+            return r
+    return -1
+
