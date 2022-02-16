@@ -376,6 +376,7 @@ def getBoxFromDb(sBox):
     #                 "boxDescription":row.box_description})
     return res_to_json(tRes, cur)#jRes
 
+#def doPrint(sCmp, sBatch, sType, sDate, sVial):
 def doPrint(sCmp, sBatch, sType, sDate, sVial):
     zplVial = """^XA
 ^CFA,20
@@ -552,17 +553,17 @@ class editVial(tornado.web.RequestHandler):
 class printVial(tornado.web.RequestHandler):
     def get(self, sVial):
         logging.info("Printing label for " + sVial)
-        sSql = """
-               select batch_id, compound_id, vial_type_desc
-               from vialdb.vial_type vt, vialdb.vial v
-               where v.vial_id=%s and v.vial_type = vt.vial_type
-        """ % (sVial)
+        sSql = f"""
+        select v.notebook_ref batch_id, b.compound_id, IFNULL(v.conc, 'Solid')
+        from glass.vial v, bcpvs.batch b
+        where v.vial_id='{sVial}' and v.notebook_ref = b.notebook_ref
+        """
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         if len(tRes) > 0:
             sDate = (time.strftime("%Y-%m-%d"))
-            doPrint(tRes[0].compound_id, tRes[0].batch_id,
-                    tRes[0].vial_type_desc, sDate, sVial)
+            doPrint(tRes[0][1], tRes[0][0],
+                    tRes[0][2], sDate, sVial)
             self.finish("Printed")
             return
 
@@ -1058,6 +1059,41 @@ class getLocation(tornado.web.RequestHandler):
         self.write(json.dumps(res_to_json(tRes, cur),
                               ensure_ascii=False).encode('utf8'))
 
+
+@jwtauth
+class DeleteLocation(tornado.web.RequestHandler):
+    def put(self, sLocation):
+        sSlask = cur.execute(f"""
+        select * from loctree.locations where parent = '{sLocation}'
+        """)
+        tRes = cur.fetchall()
+        if len(tRes) != 0:
+            self.set_status(400)
+            self.finish('Location not empty, sublocations')
+            return
+        
+        sSlask = cur.execute(f"""
+        select * from glass.vial where location = '{sLocation}'
+        """)
+        tRes = cur.fetchall()
+        if len(tRes) != 0:
+            self.set_status(400)
+            self.finish('Vials in location, not empty')
+            return
+        
+        sSlask = cur.execute(f"""
+        select * from microtube.matrix where location = '{sLocation}'
+        """)
+        tRes = cur.fetchall()
+        if len(tRes) != 0:
+            self.set_status(400)
+            self.finish('Matrix location not empty')
+            return
+
+        sSlask = cur.execute(f"""
+        delete from loctree.locations where loc_id = '{sLocation}'
+        """)
+        
 
 @jwtauth
 class MoveVialToLocation(tornado.web.RequestHandler):

@@ -107,8 +107,7 @@ class SearchScreen(QMainWindow):
         print(f"discard vial {self.vial_search_eb.text()}")
 
     def printLabel(self):
-        print(f"print label {self.vial_search_eb.text()}")
-
+        dbInterface.printVialLabel(self.token, self.vial_search_eb.text())
         
     def search_many_vials(self):
         vials = self.mult_vial_search_eb.text()
