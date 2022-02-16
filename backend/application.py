@@ -1069,7 +1069,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         if len(tRes) != 0:
             self.set_status(400)
-            self.finish('Location not empty')
+            self.finish('Location not empty, sublocations')
             return
         
         sSlask = cur.execute(f"""
@@ -1078,7 +1078,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         if len(tRes) != 0:
             self.set_status(400)
-            self.finish('Location not empty')
+            self.finish('Vials in location, not empty')
             return
         
         sSlask = cur.execute(f"""
@@ -1087,7 +1087,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         if len(tRes) != 0:
             self.set_status(400)
-            self.finish('Location not empty')
+            self.finish('Matrix location not empty')
             return
 
         sSlask = cur.execute(f"""
