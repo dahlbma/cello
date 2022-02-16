@@ -1068,6 +1068,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         """)
         tRes = cur.fetchall()
         if len(tRes) != 0:
+            print(tRes)
             self.set_status(400)
             self.finish('Location not empty, sublocations')
             return
@@ -1077,6 +1078,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         """)
         tRes = cur.fetchall()
         if len(tRes) != 0:
+            print(tRes)
             self.set_status(400)
             self.finish('Vials in location, not empty')
             return
@@ -1086,6 +1088,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         """)
         tRes = cur.fetchall()
         if len(tRes) != 0:
+            print(tRes)
             self.set_status(400)
             self.finish('Matrix location not empty')
             return
@@ -1236,11 +1239,6 @@ class GetLocationChildren(tornado.web.RequestHandler):
 class AddBox(tornado.web.RequestHandler):
     def put(self, sParent, sBoxName, sBoxSize):
         sNewLocId = getNewLocId()
-        '''
-        '10', 'Vial tray', '-1', NULL, 'VIAL_TRAY.pj', '200', NULL
-        '18', 'Bottle tray', '-1', NULL, 'VIAL_TRAY.pj', '50', NULL
-        '32', 'Eppie tray', '-1', NULL, 'VIAL_TRAY.pj', '64', NULL
-        '''
         if sBoxSize == '200':
             loc_type = 10
         elif sBoxSize == '50':
