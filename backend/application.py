@@ -1089,9 +1089,9 @@ class DeleteLocation(tornado.web.RequestHandler):
             self.finish('Location not empty')
             return
 
-        #sSlask = cur.execute(f"""
-        #delete from loctree.locations where loc_id = '{sLocation}'
-        #""")
+        sSlask = cur.execute(f"""
+        delete from loctree.locations where loc_id = '{sLocation}'
+        """)
         
 
 @jwtauth
