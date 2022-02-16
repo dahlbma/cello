@@ -250,7 +250,9 @@ class BoxesScreen(QMainWindow):
         r = dbInterface.updateVialPosition(self.token, vial, box, pos)
 
         self.search_for_box(box)
-        self.box_table.setCurrentCell(row, col)
+        if row < self.box_table.rowCount() - 1:
+            row += 1
+        self.box_table.editItem(self.box_table.item(row, col))
         return
 
     def transitVials(self):
