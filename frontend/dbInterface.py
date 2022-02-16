@@ -133,3 +133,19 @@ def addBox(token, sParent, sBoxName, sBoxSize):
         return False
     else:
         return True
+
+def addLocation(token, sParent, sLocationName, sLocationType):
+    r = requests.put(f'{baseUrl}addLocation/{sParent}/{sLocationName}/{sLocationType}',
+                      headers={'token': token})
+    if r.status_code != 200:
+        return False
+    else:
+        return True
+
+def deleteLocation(token, location):
+    r = requests.put(f'{baseUrl}deleteLocation/{location}',
+                      headers={'token': token})
+    if r.status_code != 200:
+        return r, False
+    else:
+        return r, True

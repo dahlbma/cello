@@ -29,22 +29,29 @@ class BoxesScreen(QMainWindow):
         self.add_box_btn.clicked.connect(self.addBox)
         self.add_box_btn.setEnabled(False)
 
-        
+        types = [None, "Room", "Fridge-Freezer", "Shelf"]
+        self.add_location_type_cb.addItems(types)
+        self.add_location_btn.clicked.connect(self.addLocation)
+        self.add_location_btn.setEnabled(False)
 
-        #self.root = self.client.get_root_node()
-        #self.add_node_to_tree(self.node_tree, self.root)
-        #self.node_tree.itemExpanded.connect(self.get_node_from_tree_item)
         self.init_boxes_tree()
         self.boxes_tree.itemExpanded.connect(self.get_children)
         self.boxes_tree.itemCollapsed.connect(self.take_children)
         self.boxes_tree.currentItemChanged.connect(self.setAddParams)
         self.boxes_tree.currentItemChanged.connect(self.check_addbox_input)
+        self.boxes_tree.currentItemChanged.connect(self.check_addlocation_input)
+        self.boxes_tree.currentItemChanged.connect(self.check_deletion_params)
 
-
-        #self.add_storage_type_cb.currentTextChanged.connect(self.storage_change)
-        #self.add_location_cb.currentTextChanged.connect(self.check_addbox_input)
         self.add_box_type_cb.currentTextChanged.connect(self.check_addbox_input)
         self.add_description_eb.textChanged.connect(self.check_addbox_input)
+
+        self.add_location_type_cb.currentTextChanged.connect(self.check_addlocation_input)
+        self.location_description_eb.textChanged.connect(self.check_addlocation_input)
+
+        self.delete_checkbox.setEnabled(False)
+        self.delete_location_btn.setEnabled(False)
+        self.delete_checkbox.stateChanged.connect(self.enableDelete)
+        self.delete_location_btn.clicked.connect(self.deleteLocation)
 
         self.update_box_eb.textChanged.connect(self.check_search_input)
         self.update_print_btn.clicked.connect(self.printLabel)
@@ -101,8 +108,10 @@ class BoxesScreen(QMainWindow):
             item.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
     def get_children(self, item):
+        self.take_children(item)
         loc = item.text(2)
         r = dbInterface.getLocationChildren(self.token, loc)
+        children = []
         try:
             children = json.loads(r)
         except:
@@ -115,6 +124,8 @@ class BoxesScreen(QMainWindow):
                 childItem.setChildIndicatorPolicy(QTreeWidgetItem.DontShowIndicator)
             else:
                 childItem.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+        return len(children)
+        
 
     def take_children(self, item):
         children = item.takeChildren()
@@ -126,11 +137,33 @@ class BoxesScreen(QMainWindow):
         if (item is not None):
             self.add_location_lab.setText(item.text(0))
             self.add_storage_type_lab.setText(item.text(1))
+
+            self.location_location_lab.setText(item.text(0))
+            self.location_storage_type_lab.setText(item.text(1))
+
+            self.delete_location_lab.setText(item.text(0))
+            self.delete_storage_type_lab.setText(item.text(1))
+
             self.add_location_barcode = item.text(2)
         else:
             self.add_location_lab.setText("")
             self.add_storage_type_lab.setText("")
+
+            self.location_location_lab.setText("")
+            self.location_storage_type_lab.setText("")
+
+            self.delete_location_lab.setText("")
+            self.delete_storage_type_lab.setText("")
+
             self.add_location_barcode = None
+
+    def resetInput(self):
+        self.add_description_eb.setText('')
+        self.add_box_type_cb.setCurrentText(None)
+        self.add_box_btn.setEnabled(False)
+
+        self.add_location_type_cb.setCurrentText(None)
+        self.location_description_eb.setText('')
 
     def addBox(self):
         sBoxName = self.add_description_eb.text()
@@ -138,15 +171,13 @@ class BoxesScreen(QMainWindow):
         sParent = self.add_location_barcode
         r = dbInterface.addBox(self.token, sParent, sBoxName, sBoxSize)
         if r:
-            self.add_description_eb.setText('')
-            self.add_box_type_cb.setCurrentText(None)
-            self.add_box_btn.setEnabled(False)
+            self.resetInput()
             self.boxes_tree.collapseItem(self.boxes_tree.currentItem())
             self.boxes_tree.expandItem(self.boxes_tree.currentItem())
         else:
             #TODO send error message
             logging.getLogger(self.mod_name).error(f"addBox failed with [{sBoxName}, {sBoxSize}, {sParent}]")
-            
+
     def check_addbox_input(self):
         if (self.add_location_lab.text()) != "" and \
             (self.add_box_type_cb.currentText() != "") and \
@@ -155,6 +186,68 @@ class BoxesScreen(QMainWindow):
             self.add_box_btn.setEnabled(True)
         else:
             self.add_box_btn.setEnabled(False)
+
+    def addLocation(self):
+        sLocationName = self.location_description_eb.text()
+        sLocationType = self.add_location_type_cb.currentText()
+        sParent = self.add_location_barcode
+        r = dbInterface.addLocation(self.token, sParent, sLocationName, sLocationType)
+        if r:
+            self.resetInput()
+            self.boxes_tree.collapseItem(self.boxes_tree.currentItem())
+            self.boxes_tree.expandItem(self.boxes_tree.currentItem())
+        else:
+            #TODO send error message
+            logging.getLogger(self.mod_name).error(f"addLocation failed with [{sLocationName}, {sLocationType}, {sParent}]")
+
+    def check_addlocation_input(self):
+        if (self.location_location_lab.text() != "") and \
+            (self.add_location_type_cb.currentText() != "") and \
+            (self.location_description_eb.text() != "") and \
+            (self.boxes_tree.currentItem().childIndicatorPolicy() != QTreeWidgetItem.DontShowIndicator):
+            self.add_location_btn.setEnabled(True)
+        else:
+            self.add_location_btn.setEnabled(False)
+
+    def deleteLocation(self):
+        target = f"{self.delete_location_lab.text()}/{self.add_location_barcode}"
+        #target_barcode = self.add_location_barcode 
+        print(f"delete {target}!")
+        
+        #delete request
+        r, ret = dbInterface.deleteLocation(self.token, self.add_location_barcode)
+        if ret is False:
+            #TODO send error message
+            logging.getLogger(self.mod_name).error(f"error removing {target}: {r.content().decode()}")
+            self.resetInput()
+            return
+        #reload parents children
+        #select parent
+        self.boxes_tree.setCurrentItem(self.boxes_tree.currentItem().parent())
+        self.boxes_tree.collapseItem(self.boxes_tree.currentItem())
+        self.boxes_tree.expandItem(self.boxes_tree.currentItem())
+        self.resetInput()
+
+    def check_deletion_params(self):
+        if self.boxes_tree.currentItem() is not None:
+            #self.take_children(self.boxes_tree.currentItem())
+            nr_o_children = self.get_children(self.boxes_tree.currentItem())
+            if (nr_o_children == 0) or (self.boxes_tree.currentItem().childIndicatorPolicy() == QTreeWidgetItem.DontShowIndicator):
+                print(f"deletable: {self.boxes_tree.currentItem().text(0)}/{self.boxes_tree.currentItem().text(2)}")
+                self.delete_checkbox.setEnabled(True)
+                self.delete_checkbox.setChecked(False)
+                self.delete_location_btn.setEnabled(False)
+                return
+        self.delete_checkbox.setEnabled(False)
+        self.delete_checkbox.setChecked(False)
+        self.delete_location_btn.setEnabled(False)
+
+    def enableDelete(self, state):
+        if state == 2:
+            self.delete_location_btn.setEnabled(True)
+        else:
+            self.delete_location_btn.setEnabled(False)
+
 
     def check_search_input(self):
         pattern = '^[a-zA-Z]{2}[0-9]{5}$'
