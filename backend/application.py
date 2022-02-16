@@ -1256,3 +1256,23 @@ class AddBox(tornado.web.RequestHandler):
         ('{sNewLocId}', '{sParent}', '{loc_type}', now(), '{sBoxName}')
         '''
         cur.execute(sSql)
+
+
+@jwtauth
+class AddLocation(tornado.web.RequestHandler):
+    def put(self, sParent, sLocationName, sLocationType):
+        sNewLocId = getNewLocId()
+        if sLocationType == 'Room':
+            loc_type = 3
+        elif sLocationType == 'Fridge-Freezer':
+            loc_type = 24
+        elif sLocationType == 'Shelf':
+            loc_type = 7
+            
+        sSql = f'''
+        insert into loctree.locations (loc_id, parent, type_id, created_date, name)
+        values 
+        ('{sNewLocId}', '{sParent}', '{loc_type}', now(), '{sLocationName}')
+        '''
+        cur.execute(sSql)
+
