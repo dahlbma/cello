@@ -141,6 +141,8 @@ class BoxesScreen(QMainWindow):
             self.add_description_eb.setText('')
             self.add_box_type_cb.setCurrentText(None)
             self.add_box_btn.setEnabled(False)
+            self.boxes_tree.collapseItem(self.boxes_tree.currentItem())
+            self.boxes_tree.expandItem(self.boxes_tree.currentItem())
         else:
             #TODO send error message
             logging.getLogger(self.mod_name).error(f"addBox failed with [{sBoxName}, {sBoxSize}, {sParent}]")
