@@ -47,7 +47,7 @@ try:
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
     app = QApplication(['Cello'])
     clipboard = app.clipboard()
-
+    app.setApplicationName("Cello")
     welcome = LoginScreen()
     widget = QtWidgets.QStackedWidget()
     widget.addWidget(welcome)
