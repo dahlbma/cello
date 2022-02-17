@@ -3,9 +3,16 @@ from PyQt5.uic import loadUi
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import QtGui
-
 from cellolib import *
 from loginscreen import LoginScreen
+
+os_name = platform.system()
+exec_path = ""
+if os_name == 'Windows':
+    import ctypes
+    myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
 
 def error_handler(etype, value, tb):
     err_msg = "".join(traceback.format_exception(etype, value, tb))
