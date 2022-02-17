@@ -167,7 +167,7 @@ class readScannedRack(tornado.web.RequestHandler):
         }))
 
 
-@jwtauth
+#@jwtauth
 class getRack(tornado.web.RequestHandler):
     def get(self, sRack):
         logging.info(sRack)
@@ -1070,7 +1070,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         if len(tRes) != 0:
             print(tRes)
             self.set_status(400)
-            self.finish('Location not empty, sublocations')
+            self.finish(f'{sLocation} not empty, location has sublocations')
             return
         
         sSlask = cur.execute(f"""
@@ -1080,7 +1080,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         if len(tRes) != 0:
             print(tRes)
             self.set_status(400)
-            self.finish('Vials in location, not empty')
+            self.finish(f'Vials in {sLocation}, location not empty')
             return
         
         sSlask = cur.execute(f"""
@@ -1090,7 +1090,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         if len(tRes) != 0:
             print(tRes)
             self.set_status(400)
-            self.finish('Matrix location not empty')
+            self.finish(f'Matrix location {sLocation} not empty')
             return
 
         sSlask = cur.execute(f"""
