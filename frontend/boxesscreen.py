@@ -121,7 +121,6 @@ class BoxesScreen(QMainWindow):
             return
         for child in children:
             childItem = QTreeWidgetItem(item, self.locationInput(child))
-            print(f"{child}")
             if child['has_children'] == -1:
                 childItem.setChildIndicatorPolicy(QTreeWidgetItem.DontShowIndicator)
             else:
@@ -410,7 +409,6 @@ class BoxesScreen(QMainWindow):
             return
         self.freebox_table.setRowCount(len(data))
         self.freebox_table.setSortingEnabled(False)
-        print(data[0])
         try:
             for n in range(len(data)):
                 newItem = QCustomTableWidgetItem(f"{data[n]['free_positions']}")

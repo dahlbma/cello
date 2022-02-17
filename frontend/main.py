@@ -10,7 +10,7 @@ os_name = platform.system()
 exec_path = ""
 if os_name == 'Windows':
     import ctypes
-    myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
+    myappid = 'cello.vial.microtubes'
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
