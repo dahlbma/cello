@@ -778,7 +778,6 @@ class printBox(tornado.web.RequestHandler):
         #                        and box_id = '%s'""" % (sBox))
         cur.execute(sSql)
         tRes = cur.fetchall()
-        print(tRes)
         sType = tRes[0][1]
         sDescription = tRes[0][0]
         zplVial = """^XA
@@ -1068,7 +1067,6 @@ class DeleteLocation(tornado.web.RequestHandler):
         """)
         tRes = cur.fetchall()
         if len(tRes) != 0:
-            print(tRes)
             self.set_status(400)
             self.finish(f'{sLocation} not empty, location has sublocations')
             return
@@ -1078,7 +1076,6 @@ class DeleteLocation(tornado.web.RequestHandler):
         """)
         tRes = cur.fetchall()
         if len(tRes) != 0:
-            print(tRes)
             self.set_status(400)
             self.finish(f'Vials in {sLocation}, location not empty')
             return
@@ -1088,7 +1085,6 @@ class DeleteLocation(tornado.web.RequestHandler):
         """)
         tRes = cur.fetchall()
         if len(tRes) != 0:
-            print(tRes)
             self.set_status(400)
             self.finish(f'Matrix location {sLocation} not empty')
             return
