@@ -1,6 +1,7 @@
 import sys, os, logging, re
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QTreeWidgetItem, QAbstractItemView
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget
+from PyQt5.QtWidgets import QTreeWidgetItem, QAbstractItemView
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
@@ -108,6 +109,7 @@ class BoxesScreen(QMainWindow):
             item.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
     def get_children(self, item):
+        self.delete_location_error_lab.setText('')
         self.take_children(item)
         loc = item.text(2)
         r = dbInterface.getLocationChildren(self.token, loc)
@@ -218,6 +220,7 @@ class BoxesScreen(QMainWindow):
         r, ret = dbInterface.deleteLocation(self.token, self.add_location_barcode)
         if ret is False:
             #TODO send error message
+            self.delete_location_error_lab.setText(r.content.decode())
             logging.getLogger(self.mod_name).error(f"error removing {target}: {r.content.decode()}")
             self.resetInput()
             return
@@ -232,7 +235,8 @@ class BoxesScreen(QMainWindow):
         if self.boxes_tree.currentItem() is not None:
             #self.take_children(self.boxes_tree.currentItem())
             nr_o_children = self.get_children(self.boxes_tree.currentItem())
-            if (nr_o_children == 0) or (self.boxes_tree.currentItem().childIndicatorPolicy() == QTreeWidgetItem.DontShowIndicator):
+            if (nr_o_children == 0) or \
+               (self.boxes_tree.currentItem().childIndicatorPolicy() == QTreeWidgetItem.DontShowIndicator):
                 print(f"deletable: {self.boxes_tree.currentItem().text(0)}/{self.boxes_tree.currentItem().text(2)}")
                 self.delete_checkbox.setEnabled(True)
                 self.delete_checkbox.setChecked(False)
