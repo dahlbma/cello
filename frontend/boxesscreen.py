@@ -8,7 +8,7 @@ from PyQt5.QtGui import QColor
 from cellolib import *
 
 class BoxesScreen(QMainWindow):
-    from cellolib import gotoSearch, gotoVials, gotoBoxes#, gotoLocations, gotoMicrotubes
+    from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoMicrotubes#, gotoLocations
     def __init__(self, token):
         super(BoxesScreen, self).__init__()
         self.token = token
@@ -19,6 +19,7 @@ class BoxesScreen(QMainWindow):
 
         self.goto_search_btn.clicked.connect(self.gotoSearch)
         self.goto_vials_btn.clicked.connect(self.gotoVials)
+        self.goto_microtubes_btn.clicked.connect(self.gotoMicrotubes)
         
         self.boxes_tab_wg.setCurrentIndex(0)
         self.boxes_tab_wg.currentChanged.connect(self.tabChanged)
@@ -101,6 +102,7 @@ class BoxesScreen(QMainWindow):
         try:
             root_items = json.loads(r)
         except:
+            print(r)
             logging.getLogger(self.mod_name).error("bad response for getLocationChildren/root")
             return
 

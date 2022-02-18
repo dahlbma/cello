@@ -42,6 +42,10 @@ def gotoLocations(self):
     return
 
 def gotoMicrotubes(self):
+    resize_window(self)
+    self.window().setCurrentIndex(5)
+    self.window().widget(5).microtubes_tab_wg.setCurrentIndex(0)
+    self.window().widget(5).tubes_batch_eb.setFocus()
     return
 
 def send_msg(title, text, icon=QMessageBox.Information, e=None):

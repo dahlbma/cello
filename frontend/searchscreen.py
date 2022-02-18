@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 from cellolib import *
 
 class SearchScreen(QMainWindow):
-    from cellolib import gotoSearch, gotoVials, gotoBoxes#, gotoLocations, gotoMicrotubes
+    from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoMicrotubes#, gotoLocations
     def __init__(self, token):
         super(SearchScreen, self).__init__()
         self.token = token
@@ -15,7 +15,8 @@ class SearchScreen(QMainWindow):
         self.window().setWindowTitle("Search")
 
         self.goto_vials_btn.clicked.connect(self.gotoVials)
-        self.goto_boxes_btn.clicked.connect(self.gotoBoxes)        
+        self.goto_boxes_btn.clicked.connect(self.gotoBoxes)  
+        self.goto_microtubes_btn.clicked.connect(self.gotoMicrotubes)      
 
         self.search_tab_wg.setCurrentIndex(0)
         self.search_tab_wg.currentChanged.connect(self.tabChanged)
@@ -137,14 +138,14 @@ class SearchScreen(QMainWindow):
                 if f"{data[n]['boxId']}" == "Not found":
                     newItem = QTableWidgetItem(f"{data[n]['vialId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    self.batch_table.setItem(n, 0, newItem)
+                    self.multvial_table.setItem(n, 0, newItem)
                     newItem = QTableWidgetItem(f"{data[n]['boxId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    self.batch_table.setItem(n, 1, newItem)
+                    self.multvial_table.setItem(n, 1, newItem)
                     for i in range(2, 8):
                         newItem = QTableWidgetItem("")
                         newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                        self.batch_table.setItem(n, i, newItem)
+                        self.multvial_table.setItem(n, i, newItem)
                 else:
                     newItem = QTableWidgetItem(f"{data[n]['vialId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
