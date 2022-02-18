@@ -27,15 +27,18 @@ class MicrotubesScreen(QMainWindow):
         self.tubes_search_btn.clicked.connect(self.search_microtubes)
         self.tubes_export_btn.clicked.connect(self.export_tubes_batches_data)
         
+        self.rack_search_btn.clicked.connect(self.search_rack)
+        self.rack_export_btn.clicked.connect(self.export_rack_data)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.microtubes_tab_wg.currentIndex() == 0:
-                # press button
+                self.search_microtubes()
                 return
-            else: # index = 1
-                # maybe not?
+            elif self.microtubes_tab_wg.currentIndex() == 1:
+                self.search_rack()
                 return
+            
 
     def tabChanged(self):
         page_index = self.microtubes_tab_wg.currentIndex()
@@ -49,7 +52,7 @@ class MicrotubesScreen(QMainWindow):
     def search_microtubes(self):
         batches = self.tubes_batch_eb.text()
         batches = re.sub("[^0-9a-zA-Z]+", " ", batches)
-        if len(batches < 1):
+        if len(batches) < 1:
             return
         logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}]")
         res = dbInterface.getMicroTubeByBatch(self.token, batches)
@@ -111,3 +114,76 @@ class MicrotubesScreen(QMainWindow):
 
     def export_tubes_batches_data(self):
         export_table(self.tubes_batches_table)
+
+    
+    def search_rack(self):
+        rack = self.rack_search_eb.text().split(" ")[0]
+        rack = re.sub("[^0-9a-zA-Z]+", "", rack)
+        if len(rack) < 1:
+            return
+        logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}]")
+        res = dbInterface.getRack(self.token, rack)
+        self.rack_data = None
+        try:
+            self.rack_data = json.loads(res)
+        except:
+            self.rack_data = None
+            self.rack_export_btn.setEnabled(False)
+            self.rack_table.setRowCount(0)
+            self.structure_lab.clear()
+            return
+        logging.getLogger(self.mod_name).info(f"receieved {len(self.rack_data)} responses")
+        self.setRackTableData(self.rack_data)
+        self.rack_table.setCurrentCell(0,0)
+        self.rack_export_btn.setEnabled(True)
+
+    def setRackTableData(self, data):
+        self.rack_table.setRowCount(0)
+        self.rack_table.setRowCount(len(self.rack_data))
+        self.rack_table.setSortingEnabled(False)
+        for n in range(len(data)):
+            try:
+                if f"{data[n]['batchId']}" == "Not found":
+                    newItem = QTableWidgetItem(f"{data[n]['batchId']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 0, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['tubeId']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 1, newItem)
+                    for i in range(2, 8):
+                        newItem = QTableWidgetItem("")
+                        newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                        self.rack_table.setItem(n, i, newItem)
+                else:
+                    newItem = QTableWidgetItem(f"{data[n]['batchId']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 0, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['tubeId']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 1, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['compoundId']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 2, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['ssl']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 3, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['volume']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 4, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['matrixId']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 5, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['position']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 6, newItem)
+                    newItem = QTableWidgetItem(f"{data[n]['location']}")
+                    newItem.setToolTip(f"{data[n]['location']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.rack_table.setItem(n, 7, newItem)
+            except:
+                logging.error(f"search for {data[n]['batchId']} returned bad response: {data[n]}")
+        self.rack_table.setSortingEnabled(True)
+        return
+
+    def export_rack_data(self):
+        export_table(self.rack_table)
