@@ -62,12 +62,12 @@ class VialsScreen(QMainWindow):
         logging.getLogger(self.mod_name).info(f"vial search {vialId}")
         res = [{'':5}]#dbInterface.<>(self.token, vialId)
         try:
-            self.vial_data = json.loads(res)
+            self.vial_data = json.loads(str(res))
         except:
             self.vial_data = None
             self.v_search = False
             self.edit_update_btn.setEnabled(False)
-            self.errorlabel.setText(res)
+            self.errorlabel.setText(str(res))
             self.edit_batch_id_eb.setText('')
             self.edit_compound_id_eb.setText('')
             self.edit_form_weight_eb.setText('')

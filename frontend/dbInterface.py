@@ -77,9 +77,8 @@ def getFreePositions(token):
     res = r.content.decode()
     return res
 
-def createMolImage(token, vial):
-    r = requests.get(f'{baseUrl}createMolImage',
-                     params={'vial': vial},
+def createMolImage(token, sId):
+    r = requests.get(f'{baseUrl}createMolImage/{sId}',
                      headers={'token': token})
     res = r.content.decode()
     return res
