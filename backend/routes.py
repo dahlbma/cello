@@ -82,7 +82,7 @@ def make_app():
         ("/login",util.LoginHandler),
         ("/logout", util.LogoutHandler),
         ("/unauthorized", util.UnAuthorizedHandler),
-        (r"/createMolImage", application.CreateMolImage),
+        (r"/createMolImage/(?P<sId>[^\/]+)", application.CreateMolImage),
         (r"/uploadEmptyVials", application.uploadEmptyVials),
         (r"/getLocations", application.getLocations),
         (r"/getLocationChildren/(?P<sLocation>[^\/]+)", application.GetLocationChildren),
