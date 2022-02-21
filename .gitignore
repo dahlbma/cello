@@ -3,6 +3,7 @@ Linux/
 Windows/
 ver.dat
 mols/
+uploads/
 *.sdf
 *.mol
 error_msg.txt
