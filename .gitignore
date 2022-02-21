@@ -7,7 +7,6 @@ uploads/
 *.sdf
 *.mol
 error_msg.txt
-nohup,out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -61,7 +60,4 @@ coverage.xml
 docs/_build/
 
 # Excluded Files
-chemReg/test.py
-chemReg/test.txt
-chemReg/ver.dat
-chemReg/chemreg
+backend/nohup,out
