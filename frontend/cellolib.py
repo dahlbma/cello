@@ -87,11 +87,11 @@ def resize_window(self, height=800, width=1200):
 
     self.window().resize(windowWidth, windowHeight)
 
-def displayMolfile(self, vialOrCompound):
-    dbInterface.createMolImage(self.token, vialOrCompound.upper())
+def displayMolfile(self, sId):
+    dbInterface.createMolImage(self.token, sId.upper())
     image = QImage()
     self.structure_lab.setScaledContents(True)
-    image.loadFromData(dbInterface.getMolImage(vialOrCompound.upper()))
+    image.loadFromData(dbInterface.getMolImage(sId.upper()))
     self.structure_lab.setPixmap(QPixmap(image))
 
 def export_table(table):
