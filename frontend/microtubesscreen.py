@@ -30,6 +30,8 @@ class MicrotubesScreen(QMainWindow):
         self.rack_search_btn.clicked.connect(self.search_rack)
         self.rack_export_btn.clicked.connect(self.export_rack_data)
 
+        self.rack_table.currentItemChanged.connect(self.rack_moldisplay)
+
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.microtubes_tab_wg.currentIndex() == 0:
@@ -42,12 +44,14 @@ class MicrotubesScreen(QMainWindow):
 
     def tabChanged(self):
         page_index = self.microtubes_tab_wg.currentIndex()
+        self.structure_lab.clear()
         if page_index == 0:
-            self.structure_lab.clear()
+            self.tubes_batch_eb.setFocus()
         elif page_index == 1:
-            self.structure_lab.clear()
+            self.rack_search_eb.setFocus()
+            self.rack_moldisplay()
         elif page_index == 2:
-            self.structure_lab.clear()
+            self.choose_file_btn.setFocus()
 
     def search_microtubes(self):
         batches = self.tubes_batch_eb.text()
@@ -184,6 +188,15 @@ class MicrotubesScreen(QMainWindow):
                 logging.error(f"search for {data[n]['batchId']} returned bad response: {data[n]}")
         self.rack_table.setSortingEnabled(True)
         return
+
+    def rack_moldisplay(self):
+        try:
+            if self.rack_table.rowCount() > 0:
+                row = self.rack_table.row(self.rack_table.currentItem())
+                compoundId = self.rack_table.item(row, 2).text()
+                displayMolfile(self, compoundId)
+        except:
+            return    
 
     def export_rack_data(self):
         export_table(self.rack_table)
