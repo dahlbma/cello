@@ -1,6 +1,6 @@
 import sys, os, logging, re
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QFileDialog
 from PyQt5.QtWidgets import QTreeWidgetItem, QAbstractItemView
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
@@ -31,6 +31,10 @@ class MicrotubesScreen(QMainWindow):
         self.rack_export_btn.clicked.connect(self.export_rack_data)
 
         self.rack_table.currentItemChanged.connect(self.rack_moldisplay)
+
+        self.choose_file_btn.clicked.connect(self.getRackFile)
+        self.upload_file_btn.clicked.connect(self.uploadRackFile)
+
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
@@ -200,3 +204,19 @@ class MicrotubesScreen(QMainWindow):
 
     def export_rack_data(self):
         export_table(self.rack_table)
+
+
+    def getRackFile(self):
+        self.upload_fname = QFileDialog.getOpenFileName(self, 'Open file', 
+                                                '.', "")
+        if self.upload_fname[0] == '':
+            return
+        
+        filename = os.path.basename(self.upload_fname[0])
+        self.path_lab.setText(filename)
+        self.path_lab.setToolTip(self.upload_fname[0])
+
+    def uploadRackFile(self):
+        f = open(self.upload_fname[0], "rb")
+        r, b = dbInterface.readScannedRack(self.token, f)
+        print(r)

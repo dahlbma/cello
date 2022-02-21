@@ -181,3 +181,12 @@ def getRack(token, rack):
     except:
         res = r.content
     return res
+
+def readScannedRack(token, file):
+    r = requests.post(f'{baseUrl}readScannedRack',
+                      headers={'token': token},
+                      files={'file':file})
+    if r.status_code != 200:
+        return r, False
+    else:
+        return r, True
