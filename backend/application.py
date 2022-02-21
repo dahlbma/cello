@@ -1,5 +1,4 @@
 import tornado.gen
-import MySQLdb 
 import json
 import logging
 import ast
@@ -12,26 +11,19 @@ import codecs
 from auth import jwtauth
 from rdkit import Chem
 from rdkit.Chem import Draw
+import mydb
 import config
 
-db_connection = MySQLdb.connect(
-    host=config.database['host'],
-    user=config.database['user'],
-    passwd=config.database['password'],
-    database=config.database['db']
-)
-
-db_connection.autocommit(True)
-cur = db_connection.cursor()
+db = mydb.DisconnectSafeConnection()
+cur = db.cursor()
 
 NR_OF_VIALS_IN_BOX = 200
 
 def res_to_json(response, cursor):
-    columns = cursor.description 
+    columns = cursor.description()
     to_js = [{columns[index][0]:column for index,
               column in enumerate(value)} for value in response]
     return to_js
-
 
 def createPngFromMolfile(regno, molfile):
     m = Chem.MolFromMolBlock(molfile)
@@ -392,7 +384,6 @@ def getBoxFromDb(sBox):
     #                 "boxDescription":row.box_description})
     return res_to_json(tRes, cur)#jRes
 
-#def doPrint(sCmp, sBatch, sType, sDate, sVial):
 def doPrint(sCmp, sBatch, sType, sDate, sVial):
     zplVial = """^XA
 ^CFA,20
@@ -1186,7 +1177,7 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
         
-#@jwtauth
+@jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
     def get(self, sId):
         sId = sId.lower()
@@ -1210,7 +1201,7 @@ class CreateMolImage(tornado.web.RequestHandler):
         cur.execute(sSql)
         molfile = cur.fetchall()
         if len(molfile) > 0 and molfile[0][0] != None:
-            createPngFromMolfile(sId, molfile[0][0])
+            createPngFromMolfile(sId.upper(), molfile[0][0])
         self.finish()
 
 
