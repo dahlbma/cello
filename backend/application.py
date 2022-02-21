@@ -176,7 +176,6 @@ class ReadScannedRack(tornado.web.RequestHandler):
                     logging.error(f'Failed updating tube {err}')
                     print(f'Failed updating tube {sTube} {err}')
             iOk += 1
-        print(saError, iOk, iError, sRackId)
         self.finish(json.dumps({'FailedTubes': saError,
                                 'iOk': iOk,
                                 'iError': iError,
