@@ -217,6 +217,13 @@ class MicrotubesScreen(QMainWindow):
         self.path_lab.setToolTip(self.upload_fname[0])
 
     def uploadRackFile(self):
-        f = open(self.upload_fname[0], "rb")
-        r, b = dbInterface.readScannedRack(self.token, f)
-        print(r)
+        try:
+            f = open(self.upload_fname[0], "rb")
+            r, b = dbInterface.readScannedRack(self.token, f)
+            res = json.loads(r)
+            self.upload_result_lab.setText(f'''Rack updated: {res['sRack']}
+Failed tubes: {res['FailedTubes']}
+Nr of ok tubes: {res['iOk']}
+Nr of failed tubes: {res['iError']}''')
+        except:
+            return

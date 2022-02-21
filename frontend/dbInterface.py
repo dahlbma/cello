@@ -187,6 +187,6 @@ def readScannedRack(token, file):
                       headers={'token': token},
                       files={'file':file})
     if r.status_code != 200:
-        return r, False
+        return r.content.decode(), False
     else:
-        return r, True
+        return r.content.decode(), True
