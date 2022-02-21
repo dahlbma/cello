@@ -99,7 +99,7 @@ def make_app():
         (r"/printBox/(?P<sBox>[^\/]+)", application.printBox),
         (r"/getMicroTubeByBatch/(?P<sBatches>[^\/]+)", application.getMicroTubeByBatch),
         (r"/getRack/(?P<sRack>[^\/]+)", application.getRack),
-        (r"/readScannedRack", application.readScannedRack),
+        (r"/readScannedRack", application.ReadScannedRack),
         (r"/updateBox/(?P<sBox>[^\/]+)", application.updateBox),
         (r"/createLocation", application.createLocation),
         (r"/getFreeBoxes", application.GetFreeBoxes),

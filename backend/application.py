@@ -107,17 +107,18 @@ class getMicroTubeByBatch(tornado.web.RequestHandler):
 
 
 @jwtauth
-class readScannedRack(tornado.web.RequestHandler):
+class ReadScannedRack(tornado.web.RequestHandler):
     def post(self):
         try:
             # self.request.files['file'][0]:
             # {'body': 'Label Automator ___', 'content_type': u'text/plain', 'filename': u'k.txt'}
             file1 = self.request.files['file'][0]
+            sFile = tornado.escape.xhtml_unescape(file1.body)
         except:
             logging.error("Error cant find file1 in the argument list")
             return
 
-        m = re.search("Rack Base Name: (\w\w\d+)", file1['body'])
+        m = re.search("Rack Base Name: (\w\w\d+)", str(file1['body']))
         if m:
             sRackId = m.groups()[0]
         else:
@@ -129,7 +130,7 @@ class readScannedRack(tornado.web.RequestHandler):
         fname = ''.join(random.choice(string.ascii_lowercase + string.digits) for x in range(6))
         finalFilename = "uploads/" + original_fname
         output_file = open("uploads/" + original_fname, 'w')
-        output_file.write(file1['body'])
+        output_file.write(sFile)
         output_file.close()
 
         fNewFile = open(finalFilename, mode='rU')
@@ -138,7 +139,7 @@ class readScannedRack(tornado.web.RequestHandler):
         iError = 0
         saError = []
         for sLine in saFile:
-            m = re.search("  (\w\d\d);\t(\d+)", sLine)
+            m = re.search("\s+(\w\d\d);\s+(\d+)", sLine)
             if m:
                 sPosition = m.groups()[0]
                 sTube = m.groups()[1]
@@ -149,17 +150,33 @@ class readScannedRack(tornado.web.RequestHandler):
             """ % sTube
             sSlask = cur.execute(sSql)
             tRes = cur.fetchall()
+
             if len(tRes) < 1:
-                iError += 1
-                saError.append(sTube)
-                logging.info("tube_id " + sTube + ' does not exists')
-                continue
-            sSql = """update microtube.matrix_tube set position = '%s', matrix_id = '%s'
-                      where tube_id = '%s'
-                   """ % (sPosition, sRackId, sTube)
-            sSlask = cur.execute(sSql)
-            #con.commit()
+                sSql = f'''insert into microtube.matrix_tube
+                (position, matrix_id, tube_id)
+                values
+                ('{sPosition}', '{sRackId}', '{sTube}')
+                '''
+                try:
+                    sSlask = cur.execute(sSql)
+                except Exception as e:
+                    iError += 1
+                    saError.append(sTube)
+                    err = str(e)
+            else:
+                sSql = """update microtube.matrix_tube set position = '%s', matrix_id = '%s'
+                where tube_id = '%s'
+                """ % (sPosition, sRackId, sTube)
+                try:
+                    sSlask = cur.execute(sSql)
+                except Exception as e:
+                    iError += 1
+                    saError.append(sTube)
+                    err = str(e)
+                    logging.error(f'Failed updating tube {err}')
+                    print(f'Failed updating tube {sTube} {err}')
             iOk += 1
+        print(saError, iOk, iError, sRackId)
         self.finish(json.dumps({'FailedTubes': saError,
                                 'iOk': iOk,
                                 'iError': iError,
@@ -167,7 +184,7 @@ class readScannedRack(tornado.web.RequestHandler):
         }))
 
 
-#@jwtauth
+@jwtauth
 class getRack(tornado.web.RequestHandler):
     def get(self, sRack):
         logging.info(sRack)
