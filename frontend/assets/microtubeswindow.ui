@@ -74,7 +74,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="microtubes_tab_wg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="tubes_tab">
          <attribute name="title">
@@ -557,6 +557,45 @@
          <attribute name="title">
           <string>Update rack contents</string>
          </attribute>
+         <widget class="QPushButton" name="choose_file_btn">
+          <property name="geometry">
+           <rect>
+            <x>70</x>
+            <y>80</y>
+            <width>89</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Choose File</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="path_lab">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>80</y>
+            <width>411</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>No file chosen</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="upload_file_btn">
+          <property name="geometry">
+           <rect>
+            <x>590</x>
+            <y>80</y>
+            <width>89</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Upload</string>
+          </property>
+         </widget>
         </widget>
        </widget>
       </item>
