@@ -1170,21 +1170,31 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
         
-@jwtauth
+#@jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
-    def get(self):
-        vial = self.get_argument("vial")
-        vial = vial.lower()
-        sSql = f"""select mol
-        from bcpvs.JCMOL_MOLTABLE m, glass.vial v, bcpvs.batch c
-        where v.notebook_ref = c.notebook_ref
-        and c.compound_id = m.compound_id and
-        vial_id = '{vial}'
-        """
+    def get(self, sId):
+        sId = sId.lower()
+        m = re.search("v\d\d\d\d\d\d", sId)
+        if m:
+            sSql = f"""select mol
+            from bcpvs.JCMOL_MOLTABLE m, glass.vial v, bcpvs.batch c
+            where v.notebook_ref = c.notebook_ref
+            and c.compound_id = m.compound_id and
+            vial_id = '{sId}'
+            """
+        else:
+            sId = sId.upper()
+            m = re.search("CBK\d\d\d\d\d\d", sId)
+            if m:
+                sSql = f"""select mol
+                from bcpvs.JCMOL_MOLTABLE m
+                where
+                m.compound_id = '{sId}'
+                """
         cur.execute(sSql)
         molfile = cur.fetchall()
         if len(molfile) > 0 and molfile[0][0] != None:
-            createPngFromMolfile(vial, molfile[0][0])
+            createPngFromMolfile(sId, molfile[0][0])
         self.finish()
 
 
