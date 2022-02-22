@@ -4,6 +4,7 @@ Windows/
 ver.dat
 mols/
 uploads/
+dist/
 *.sdf
 *.mol
 error_msg.txt

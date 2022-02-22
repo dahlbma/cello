@@ -79,6 +79,7 @@ def make_app():
         (r"/getDatabase", application.GetDatabase),
         (r"/", application.home),
         (r"/mols/(.*)", tornado.web.StaticFileHandler, {"path": "mols/"}),
+        (r"/dist/(.*)", tornado.web.StaticFileHandler, {"path": "dist/"}),
         ("/login",util.LoginHandler),
         ("/logout", util.LogoutHandler),
         ("/unauthorized", util.UnAuthorizedHandler),

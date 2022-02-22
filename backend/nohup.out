@@ -1,0 +1,79 @@
+[D 220221 17:00:01 selector_events:59] Using selector: EpollSelector
+[I 220221 17:00:14 web:2239] 200 GET /getDatabase (130.237.250.6) 0.76ms
+[I 220221 17:00:20 web:2239] 200 POST /login (130.237.250.6) 13.37ms
+[I 220221 17:00:20 web:2239] 200 GET /getLocationChildren/root (130.237.250.6) 24.95ms
+[I 220221 17:00:27 web:2239] 200 GET /getFreeBoxes (130.237.250.6) 94.34ms
+[I 220221 17:00:32 web:2239] 200 GET /getBox/SL20125 (130.237.250.6) 3.70ms
+[I 220221 17:00:32 web:2239] 200 GET /getBoxLocation/SL20125 (130.237.250.6) 23.60ms
+[I 220221 17:00:37 application:346] (('SL11013', 'Compound collection', ''),)
+[I 220221 17:00:37 application:764] Placed v000104 in SL20125
+[I 220221 17:00:37 web:2239] 200 PUT /updateVialPosition/v000104/SL20125/010 (130.237.250.6) 5.91ms
+[I 220221 17:00:37 web:2239] 200 GET /getBox/SL20125 (130.237.250.6) 4.17ms
+[I 220221 17:00:37 web:2239] 200 GET /getBoxLocation/SL20125 (130.237.250.6) 25.76ms
+[I 220221 17:00:37 web:2239] 200 GET /createMolImage/V000104 (130.237.250.6) 10.67ms
+[I 220221 17:00:37 web:2239] 200 GET /mols/V000104.png (130.237.250.6) 4.11ms
+[I 220221 17:00:37 web:2239] 200 GET /createMolImage/V000104 (130.237.250.6) 9.56ms
+[I 220221 17:00:37 web:2239] 200 GET /mols/V000104.png (130.237.250.6) 0.58ms
+[I 220221 17:00:40 web:2239] 200 GET /createMolImage/V908883 (130.237.250.6) 9.40ms
+[I 220221 17:00:40 web:2239] 200 GET /mols/V908883.png (130.237.250.6) 0.73ms
+[I 220221 17:00:42 web:2239] 200 GET /createMolImage/V000104 (130.237.250.6) 9.95ms
+[I 220221 17:00:42 web:2239] 200 GET /mols/V000104.png (130.237.250.6) 0.67ms
+[I 220221 17:00:43 web:2239] 200 GET /createMolImage/V908883 (130.237.250.6) 9.22ms
+[I 220221 17:00:43 web:2239] 200 GET /mols/V908883.png (130.237.250.6) 0.55ms
+[I 220221 17:00:45 web:2239] 200 GET /createMolImage/V901309 (130.237.250.6) 7.28ms
+[I 220221 17:00:45 web:2239] 200 GET /mols/V901309.png (130.237.250.6) 0.59ms
+[I 220221 17:00:50 web:2239] 200 GET /createMolImage/V901312 (130.237.250.6) 9.61ms
+[I 220221 17:00:50 web:2239] 200 GET /mols/V901312.png (130.237.250.6) 0.67ms
+[I 220221 17:00:52 web:2239] 200 GET /createMolImage/V901312 (130.237.250.6) 8.15ms
+[I 220221 17:00:52 web:2239] 200 GET /mols/V901312.png (130.237.250.6) 0.65ms
+[I 220221 17:00:54 web:2239] 200 GET /createMolImage/V000104 (130.237.250.6) 8.23ms
+[I 220221 17:00:54 web:2239] 200 GET /mols/V000104.png (130.237.250.6) 0.66ms
+[I 220222 09:00:03 web:2239] 200 GET /getDatabase (130.237.250.6) 0.93ms
+[I 220222 09:00:09 web:2239] 200 POST /login (130.237.250.6) 12.47ms
+[E 220222 09:00:09 web:1789] Uncaught exception GET /getLocationChildren/root (130.237.250.6)
+    HTTPServerRequest(protocol='http', host='esox3.scilifelab.se:8084', method='GET', uri='/getLocationChildren/root', version='HTTP/1.1', remote_ip='130.237.250.6')
+    Traceback (most recent call last):
+      File "/home/mats.dahlberg/anaconda3/envs/my-rdkit-env/lib/python3.9/site-packages/tornado/web.py", line 1702, in _execute
+        result = method(*self.path_args, **self.path_kwargs)
+      File "/opt/vials/cello/backend/application.py", line 1248, in get
+        self.write(json.dumps(res_to_json(tRes, cur)))
+      File "/opt/vials/cello/backend/application.py", line 24, in res_to_json
+        to_js = [{columns[index][0]:column for index,
+      File "/opt/vials/cello/backend/application.py", line 24, in <listcomp>
+        to_js = [{columns[index][0]:column for index,
+      File "/opt/vials/cello/backend/application.py", line 24, in <dictcomp>
+        to_js = [{columns[index][0]:column for index,
+    TypeError: 'method' object is not subscriptable
+[E 220222 09:00:09 web:2239] 500 GET /getLocationChildren/root (130.237.250.6) 29.18ms
+[E 220222 09:00:21 web:1789] Uncaught exception GET /getFreeBoxes (130.237.250.6)
+    HTTPServerRequest(protocol='http', host='esox3.scilifelab.se:8084', method='GET', uri='/getFreeBoxes', version='HTTP/1.1', remote_ip='130.237.250.6')
+    Traceback (most recent call last):
+      File "/home/mats.dahlberg/anaconda3/envs/my-rdkit-env/lib/python3.9/site-packages/tornado/web.py", line 1702, in _execute
+        result = method(*self.path_args, **self.path_kwargs)
+      File "/opt/vials/cello/backend/application.py", line 1178, in get
+        self.write(json.dumps(res_to_json(tRes, cur)))
+      File "/opt/vials/cello/backend/application.py", line 24, in res_to_json
+        to_js = [{columns[index][0]:column for index,
+      File "/opt/vials/cello/backend/application.py", line 24, in <listcomp>
+        to_js = [{columns[index][0]:column for index,
+      File "/opt/vials/cello/backend/application.py", line 24, in <dictcomp>
+        to_js = [{columns[index][0]:column for index,
+    TypeError: 'method' object is not subscriptable
+[E 220222 09:00:21 web:2239] 500 GET /getFreeBoxes (130.237.250.6) 91.91ms
+[I 220222 09:00:46 web:2239] 200 GET /getDatabase (130.237.250.6) 0.51ms
+[I 220222 09:00:52 web:2239] 200 POST /login (130.237.250.6) 11.47ms
+[E 220222 09:00:52 web:1789] Uncaught exception GET /getLocationChildren/root (130.237.250.6)
+    HTTPServerRequest(protocol='http', host='esox3.scilifelab.se:8084', method='GET', uri='/getLocationChildren/root', version='HTTP/1.1', remote_ip='130.237.250.6')
+    Traceback (most recent call last):
+      File "/home/mats.dahlberg/anaconda3/envs/my-rdkit-env/lib/python3.9/site-packages/tornado/web.py", line 1702, in _execute
+        result = method(*self.path_args, **self.path_kwargs)
+      File "/opt/vials/cello/backend/application.py", line 1248, in get
+        self.write(json.dumps(res_to_json(tRes, cur)))
+      File "/opt/vials/cello/backend/application.py", line 24, in res_to_json
+        to_js = [{columns[index][0]:column for index,
+      File "/opt/vials/cello/backend/application.py", line 24, in <listcomp>
+        to_js = [{columns[index][0]:column for index,
+      File "/opt/vials/cello/backend/application.py", line 24, in <dictcomp>
+        to_js = [{columns[index][0]:column for index,
+    TypeError: 'method' object is not subscriptable
+[E 220222 09:00:52 web:2239] 500 GET /getLocationChildren/root (130.237.250.6) 24.88ms
