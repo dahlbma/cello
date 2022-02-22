@@ -61,5 +61,4 @@ coverage.xml
 docs/_build/
 
 # Excluded Files
-backend/nohup,out
-nohup,out
+nohup.out
