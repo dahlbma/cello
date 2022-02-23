@@ -153,6 +153,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
                     sSlask = cur.execute(sSql)
                 except Exception as e:
                     iError += 1
+                    iOk -= 1
                     saError.append(sTube)
                     err = str(e)
             else:
@@ -163,6 +164,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
                     sSlask = cur.execute(sSql)
                 except Exception as e:
                     iError += 1
+                    iOk -= 1
                     saError.append(sTube)
                     err = str(e)
                     logging.error(f'Failed updating tube {err}')
