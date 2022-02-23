@@ -357,8 +357,11 @@ def getBoxFromDb(sBox):
     tRes = cur.fetchall()
     if len(tRes) != 1:
         return
-    elif tRes[0][0] > 0:
+
+    try:
         positions = int(tRes[0][0])
+    except:
+        pass
 
     sSlask = cur.execute(f"""select a.coordinate, tt.vial_id,
     tt.compound_id, tt.notebook_ref batch_id

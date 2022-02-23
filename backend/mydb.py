@@ -53,6 +53,8 @@ class DisconnectSafeConnection(object):
 
     def cursor(self, *args, **kwargs):
         cur = self.conn.cursor(*args, **kwargs)
-        
+        #sSql = 'set global wait_timeout = 99000'
+        #sSql = 'set global interactive_timeout = 99000'
+        #cur.execute(sSql)
         return DisconnectSafeCursor(self, cur)
 
