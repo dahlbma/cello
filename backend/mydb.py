@@ -1,7 +1,6 @@
 import MySQLdb 
 import config
 
-
 class DisconnectSafeCursor(object):
     db = None
     cursor = None
@@ -16,10 +15,13 @@ class DisconnectSafeCursor(object):
     def execute(self, *args, **kwargs):
         try:
             return self.cursor.execute(*args, **kwargs)
-        except MySQLdb.OperationalError:
-            self.db.reconnect()
-            self.cursor = self.db.cursor()
-            return self.cursor.execute(*args, **kwargs)
+        except (MySQLdb.Error, MySQLdb.Warning) as e:
+            print(*args)
+            print(e)
+            if '4031' in e:
+                self.db.reconnect()
+                self.cursor = self.db.cursor()
+                return self.cursor.execute(*args, **kwargs)
 
     def fetchone(self):
         return self.cursor.fetchone()
