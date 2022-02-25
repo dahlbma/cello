@@ -49,6 +49,12 @@ def getNewLocId():
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
     def put(self, sTubeId, sBatchId, sVolume, sConc):
+        #0019953454    10 digits
+        try:
+            ss = re.search(r'^(\d){10}$', sTubeId).group(0)
+            print(ss)
+        except:
+            pass
         pass
         
 
