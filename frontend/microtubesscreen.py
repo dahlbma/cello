@@ -35,6 +35,11 @@ class MicrotubesScreen(QMainWindow):
         self.choose_file_btn.clicked.connect(self.getRackFile)
         self.upload_file_btn.clicked.connect(self.uploadRackFile)
 
+        self.addRows()
+        self.create_add_rows_btn.clicked.connect(self.addRows)
+        self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
+        self.create_microtubes_btn.clicked.connect(self.sendMicrotubes)
+
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
@@ -57,6 +62,8 @@ class MicrotubesScreen(QMainWindow):
         elif page_index == 2:
             self.choose_file_btn.setFocus()
             self.upload_result_lab.setText('')
+        elif page_index == 3:
+            self.create_add_rows_btn.setFocus()
 
     def search_microtubes(self):
         batches = self.tubes_batch_eb.text()
@@ -229,3 +236,41 @@ Nr of ok tubes: {res['iOk']}
 Nr of failed tubes: {res['iError']}''')
         except:
             return
+    
+    
+    def addRow(self):
+        self.create_microtubes_table.insertRow(self.create_microtubes_table.rowCount())
+
+    def addRows(self):
+        for i in range(0, 10):
+            self.create_microtubes_table.insertRow(self.create_microtubes_table.rowCount())
+
+
+    def checkEmpty(self):
+        noempty = True
+        for row in range(self.create_microtubes_table.rowCount()):
+            item = self.create_microtubes_table.item(row, 0)
+            if not item or not item.text():
+                noempty = False
+        if noempty:
+            self.addRow()
+        item = self.create_microtubes_table.currentItem()
+        r = getNextFreeRow(self.create_microtubes_table, item.row())
+        self.create_microtubes_table.setCurrentCell(r, 0)
+        self.create_microtubes_table.editItem(self.create_microtubes_table.item(r, 0))
+        self.create_microtubes_table.scrollToItem(self.create_microtubes_table.item(r, 0), QAbstractItemView.PositionAtCenter)
+
+    def sendMicrotubes(self):
+        self.create_microtubes_table.cellChanged.disconnect()
+        for i in range(self.create_microtubes_table.rowCount()):
+            for j in range(self.create_microtubes_table.columnCount()):
+                continue
+
+        # send microtubes
+
+        # flush table
+        self.create_microtubes_table.setRowCount(0)
+        self.addRows()
+        self.create_microtubes_table.setCurrentCell(0, 0)
+        self.create_microtubes_table.editItem(self.create_microtubes_table.item(0, 0))
+        self.create_microtubes_table.cellChanged.connect(self.checkEmpty)

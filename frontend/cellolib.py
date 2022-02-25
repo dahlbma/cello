@@ -38,14 +38,11 @@ def gotoBoxes(self):
     self.window().widget(3).add_description_eb.setFocus()
     return
 
-def gotoLocations(self):
-    return
-
 def gotoMicrotubes(self):
     resize_window(self)
-    self.window().setCurrentIndex(5)
-    self.window().widget(5).microtubes_tab_wg.setCurrentIndex(0)
-    self.window().widget(5).tubes_batch_eb.setFocus()
+    self.window().setCurrentIndex(4)
+    self.window().widget(4).microtubes_tab_wg.setCurrentIndex(0)
+    self.window().widget(4).tubes_batch_eb.setFocus()
     return
 
 def send_msg(title, text, icon=QMessageBox.Information, e=None):
@@ -103,7 +100,8 @@ def export_table(table):
 
 def getNextFreeRow(table, row):
     for r in range(row + 1, table.rowCount()):
-        if table.item(r, 0).text() == "":
+        item = table.item(r, 0)
+        if (item is None) or (item.text() == ""):
             return r
     return -1
 
