@@ -353,6 +353,7 @@ class BoxesScreen(QMainWindow):
             self.box_table.setCurrentCell(0, 0)
             self.box_table.scrollToItem(self.box_table.item(0, 0), QAbstractItemView.PositionAtCenter)
         else:
+            self.box_table.setCurrentCell(r, 0)
             self.box_table.editItem(self.box_table.item(r, col))
             self.box_table.scrollToItem(self.box_table.item(r, col), QAbstractItemView.PositionAtCenter)
             
