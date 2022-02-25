@@ -348,7 +348,7 @@ class BoxesScreen(QMainWindow):
         r = dbInterface.updateVialPosition(self.token, vial, box, pos)
 
         self.search_for_box(box)
-        r = getNextFreeRow(self.box_table, row)
+        r, c = getNextFreeRow(self.box_table, row, 0)
         if r == -1:
             self.box_table.setCurrentCell(0, 0)
             self.box_table.scrollToItem(self.box_table.item(0, 0), QAbstractItemView.PositionAtCenter)
