@@ -72,10 +72,38 @@ class login(tornado.web.RequestHandler):
     def get(self):
         pass
 
+class getVersionData(tornado.web.RequestHandler):
+    def post(self):
+        pass
 
+    def get(self):
+        # send verdat
+
+        # tentative
+        #os_name = self.get_argument('os_name')
+        ## query db for version
+        #sSql = f'''select version
+        #           from `chem_reg`.`chemreg_dist`
+        #           where os = {os_name};
+        #        '''
+        #cur.execute(sSql)
+        #res = cur.fetchall()
+        #self.write({"version": f'{res[0][0]}'})
+
+        try:
+            with open('./ver.dat', 'r') as f:
+                self.write(json.load(f))
+                return
+        except Exception as e:
+            logger.error(str(e))
+            self.set_status(500)
+            self.write({'message': 'ver.dat not available'})
+
+            
 def make_app():
     return tornado.web.Application([
         (r"/login", login),
+        (r"/getVersionData", getVersionData),
         (r"/getDatabase", application.GetDatabase),
         (r"/", application.home),
         (r"/mols/(.*)", tornado.web.StaticFileHandler, {"path": "mols/"}),
