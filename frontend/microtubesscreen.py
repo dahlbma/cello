@@ -56,6 +56,7 @@ class MicrotubesScreen(QMainWindow):
             self.rack_moldisplay()
         elif page_index == 2:
             self.choose_file_btn.setFocus()
+            self.upload_result_lab.setText('')
 
     def search_microtubes(self):
         batches = self.tubes_batch_eb.text()
@@ -207,6 +208,7 @@ class MicrotubesScreen(QMainWindow):
 
 
     def getRackFile(self):
+        self.upload_result_lab.setText('')
         self.upload_fname = QFileDialog.getOpenFileName(self, 'Open file', 
                                                 '.', "")
         if self.upload_fname[0] == '':
