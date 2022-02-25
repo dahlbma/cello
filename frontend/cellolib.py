@@ -98,10 +98,10 @@ def export_table(table):
         clipboard.setText(csv)
         send_msg("Export data", "Data copied to clipboard!")
 
-def getNextFreeRow(table, row):
+def getNextFreeRow(table, row, col):
     for r in range(row + 1, table.rowCount()):
-        item = table.item(r, 0)
+        item = table.item(r, col)
         if (item is None) or (item.text() == ""):
-            return r
-    return -1
+            return r, col
+    return -1, -1
 

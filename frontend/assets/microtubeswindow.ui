@@ -783,12 +783,12 @@ Microtubes</string>
             </column>
             <column>
              <property name="text">
-              <string>Volume</string>
+              <string>Volume (µl)</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Conc</string>
+              <string>Conc (mM)</string>
              </property>
             </column>
            </widget>

@@ -255,22 +255,72 @@ Nr of failed tubes: {res['iError']}''')
         if noempty:
             self.addRow()
         item = self.create_microtubes_table.currentItem()
-        r = getNextFreeRow(self.create_microtubes_table, item.row())
-        self.create_microtubes_table.setCurrentCell(r, 0)
-        self.create_microtubes_table.editItem(self.create_microtubes_table.item(r, 0))
-        self.create_microtubes_table.scrollToItem(self.create_microtubes_table.item(r, 0), QAbstractItemView.PositionAtCenter)
+        r, c = getNextFreeRow(self.create_microtubes_table, item.row(), item.column())
+        if r == -1:
+            self.create_microtubes_table.setCurrentCell(0, 0)
+            self.create_microtubes_table.scrollToItem(self.box_table.item(0, 0), QAbstractItemView.PositionAtCenter)
+        else:
+            self.create_microtubes_table.setCurrentCell(r, c)
+            self.create_microtubes_table.editItem(self.create_microtubes_table.item(r, c))
+            self.create_microtubes_table.scrollToItem(self.create_microtubes_table.item(r, c), QAbstractItemView.PositionAtCenter)
 
     def sendMicrotubes(self):
+        errors = []
+        success = 0
+        fail = 0
         self.create_microtubes_table.cellChanged.disconnect()
         for i in range(self.create_microtubes_table.rowCount()):
-            for j in range(self.create_microtubes_table.columnCount()):
-                continue
+            tubeItem = self.create_microtubes_table.item(i, 0)
+            tubeId = ""
+            if tubeItem is not None:
+                tubeId = tubeItem.text()
+            compBatchItem = self.create_microtubes_table.item(i, 1)
+            compBatch = ""
+            if compBatchItem is not None:
+                compBatch = compBatchItem.text()
+            volumeItem = self.create_microtubes_table.item(i, 2)
+            volume = ""
+            if volumeItem is not None:
+                volume = volumeItem.text()
+            concItem = self.create_microtubes_table.item(i, 3)
+            conc = ""
+            if concItem is not None:
+                conc = concItem.text()
 
-        # send microtubes
+            if (tubeId == "") or (compBatch == "") or (volume == "") or (conc == ""):
+                if (tubeId == "") and (compBatch == "") and (volume == "") and (conc == ""):
+                    continue
+                else:
+                    errors.append([tubeId, compBatch, volume, conc, None])
+                    continue
+            # try sending it
+            res, status = dbInterface.addMicrotube(self.token, tubeId, compBatch, volume, conc)
+            if not status:
+                #fail
+                fail += 1
+                errors.append([tubeId, compBatch, volume, conc, res])
+            else:
+                #success
+                success += 1
 
         # flush table
         self.create_microtubes_table.setRowCount(0)
-        self.addRows()
+        
+        # add error rows back
+        self.create_microtubes_table.setRowCount(len(errors))
+        for row in range(len(errors)):
+            for i in range(0, 4):
+                newItem = QTableWidgetItem(f"{errors[row][i]}")
+                newItem.setBackground(QColor(250, 103, 92))
+                self.create_microtubes_table.setItem(row, i, newItem)
+            if errors[row][4] is None:
+                self.create_microtubes_table.item(row, 0).setToolTip("Not enough arguments.")
+            else:
+                self.create_microtubes_table.item(row, 0).setToolTip(f"{errors[row][4]}")
+
+        for i in range(0, 5):
+            self.addRow()
+        
         self.create_microtubes_table.setCurrentCell(0, 0)
-        self.create_microtubes_table.editItem(self.create_microtubes_table.item(0, 0))
+        #self.create_microtubes_table.editItem(self.create_microtubes_table.item(0, 0))
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
