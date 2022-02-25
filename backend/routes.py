@@ -148,6 +148,8 @@ def make_app():
         (r"/editVial", application.editVial),
         (r"/generateVialId", application.generateVialId),
         (r"/vialInfo/(?P<sVial>[^\/]+)", application.vialInfo),
+        (r"/addMicrotube/(?P<sTubeId>[^\/]+)/(?P<sBatchId>[^\/]+)/(?P<sVolume>[^\/]+)/(?P<sConc>[^\/]+)",
+         application.AddMicrotube),
         (r"/verifyVial/(?P<sVial>[^\/]+)", application.verifyVial),
         (r"/getVialTypes", application.getVialTypes),
         (r"/createBox", application.createBox),

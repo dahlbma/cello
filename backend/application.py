@@ -47,6 +47,12 @@ def getNewLocId():
 
 
 @jwtauth
+class AddMicrotube(tornado.web.RequestHandler):
+    def put(self, sTubeId, sBatchId, sVolume, sConc):
+        pass
+        
+
+@jwtauth
 class getMicroTubeByBatch(tornado.web.RequestHandler):
     def get(self, sBatches):
         if len(sBatches) < 1:
@@ -188,32 +194,21 @@ class getRack(tornado.web.RequestHandler):
             iRow = 0
             for row in tData:
                 try:
-                    sSql = """
-                    select notebook_ref from bcpvs.batch where
-                    notebook_ref = '%s' or notebook_ref = '%s'
-                    """ % ('UU_' + row[0], 'KI_' + row[0]) # matrixId
-                    sSlask = cur.execute(sSql)
-                    tSsl = cur.fetchall()
-                    sSll = None
-                    tSsl = ('test')
-                    if len(tSsl) != 0:
-                        sSll = tSsl
-                    else:
-                        sSll = ''
+                    sSll = ''
                     if iRow < 10:
                         sRow = '0' + str(iRow)
                     else:
                         sRow = str(iRow)
                     jRes.append({"batchId":row[0],
-                                    "tubeId":row[1],
-                                    "volume": row[2],
-                                    "matrixId": row[3],
-                                    "position": str(row[4]),
-                                    "location": str(row[5]),
-                                    "conc": row[6],
-                                    "compoundId": row[7],
-                                    "ssl": sSll,
-                                    "iRow" : sRow
+                                 "tubeId":row[1],
+                                 "volume": row[2],
+                                 "matrixId": row[3],
+                                 "position": str(row[4]),
+                                 "location": str(row[5]),
+                                 "conc": row[6],
+                                 "compoundId": row[7],
+                                 "ssl": sSll,
+                                 "iRow" : sRow
                     })
                     iRow += 1
                 except Exception as e:
@@ -225,7 +220,8 @@ class getRack(tornado.web.RequestHandler):
                   t.notebook_ref as batchId, t.tube_id as tubeId, t.volume*1000000 as volume,
                   m.matrix_id as matrixId, mt.position as position, m.location as location,
                   t.conc * 1000, compound_id, SUBSTR(mt.position, 2,3) as rackrow
-                  from microtube.tube t, microtube.v_matrix_tube mt, microtube.v_matrix m , bcpvs.batch b
+                  from microtube.tube t, microtube.v_matrix_tube mt, microtube.v_matrix m,
+                  bcpvs.batch b
                   where
                   t.notebook_ref  = b.notebook_ref and
                   t.tube_id = mt.tube_id and
