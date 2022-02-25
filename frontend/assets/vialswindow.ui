@@ -27,14 +27,14 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="goto_boxes_btn">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="goto_search_btn">
         <property name="text">
-         <string>Boxes</string>
+         <string>Search</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="5">
+      <item row="0" column="4">
        <spacer name="horizontalSpacer_5">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -47,28 +47,7 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="goto_locations_btn">
-        <property name="text">
-         <string>Locations</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="QPushButton" name="goto_microtubes_btn">
-        <property name="text">
-         <string>Microtubes</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="goto_search_btn">
-        <property name="text">
-         <string>Search</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="6">
+      <item row="1" column="0" colspan="5">
        <widget class="QTabWidget" name="vials_tab_wg">
         <property name="currentIndex">
          <number>0</number>
@@ -831,6 +810,20 @@
           </item>
          </layout>
         </widget>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QPushButton" name="goto_microtubes_btn">
+        <property name="text">
+         <string>Microtubes</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="goto_boxes_btn">
+        <property name="text">
+         <string>Boxes</string>
+        </property>
        </widget>
       </item>
      </layout>
