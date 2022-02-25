@@ -102,8 +102,6 @@ class getMicroTubeByBatch(tornado.web.RequestHandler):
 class ReadScannedRack(tornado.web.RequestHandler):
     def post(self):
         try:
-            # self.request.files['file'][0]:
-            # {'body': 'Label Automator ___', 'content_type': u'text/plain', 'filename': u'k.txt'}
             file1 = self.request.files['file'][0]
             sFile = tornado.escape.xhtml_unescape(file1.body)
         except:
