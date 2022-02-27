@@ -258,11 +258,13 @@ Nr of failed tubes: {res['iError']}''')
         r, c = getNextFreeRow(self.create_microtubes_table, item.row(), item.column())
         if r == -1:
             self.create_microtubes_table.setCurrentCell(0, 0)
-            self.create_microtubes_table.scrollToItem(self.box_table.item(0, 0), QAbstractItemView.PositionAtCenter)
+            self.create_microtubes_table.scrollToItem(self.box_table.item(0, 0),
+                                                      QAbstractItemView.PositionAtCenter)
         else:
             self.create_microtubes_table.setCurrentCell(r, c)
             self.create_microtubes_table.editItem(self.create_microtubes_table.item(r, c))
-            self.create_microtubes_table.scrollToItem(self.create_microtubes_table.item(r, c), QAbstractItemView.PositionAtCenter)
+            self.create_microtubes_table.scrollToItem(self.create_microtubes_table.item(r, c),
+                                                      QAbstractItemView.PositionAtCenter)
 
     def sendMicrotubes(self):
         errors = []
@@ -287,14 +289,18 @@ Nr of failed tubes: {res['iError']}''')
             if concItem is not None:
                 conc = concItem.text()
 
-            if (tubeId == "") or (compBatch == "") or (volume == "") or (conc == ""):
-                if (tubeId == "") and (compBatch == "") and (volume == "") and (conc == ""):
+            if (tubeId == "") or (compBatch == "") or (conc == ""):
+                if (tubeId == "") and (compBatch == "") and (conc == ""):
                     continue
                 else:
                     errors.append([tubeId, compBatch, volume, conc, None])
                     continue
             # try sending it
-            res, status = dbInterface.addMicrotube(self.token, tubeId, compBatch, volume, conc)
+            res, status = dbInterface.addMicrotube(self.token,
+                                                   tubeId,
+                                                   compBatch,
+                                                   volume,
+                                                   conc)
             if not status:
                 #fail
                 fail += 1
