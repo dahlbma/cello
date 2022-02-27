@@ -49,14 +49,45 @@ def getNewLocId():
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
     def put(self, sTubeId, sBatchId, sVolume, sConc):
-        #0019953454    10 digits
         try:
-            ss = re.search(r'^(\d){10}$', sTubeId).group(0)
-            print(ss)
+            conc = float(sConc)/1000
         except:
-            pass
-        pass
-        
+            sError = f"conc is not a number {sConc}"
+            print(sError)
+            self.set_status(400)
+            self.finish(sError)
+            return
+        try:
+            if sVolume == '' or float(sVolume):
+                if sVolume == '':
+                    volume = -1
+                else:
+                    volume = float(sVolume)/1000000
+        except:
+            sError = f"volume is not a number {sVolume}"
+            print(sError)
+            self.set_status(400)
+            self.finish(sError)
+            return
+        try:
+            #0019953454 microtube_id is 10 digits
+            ss = re.search(r'^(\d){10}$', sTubeId).group(0)
+        except:
+            sError = f"error not valid microtube id {sTubeId}"
+            self.set_status(400)
+            self.finish(sError)
+            return
+        sSql = f"""insert into microtube.tube
+        (tube_id, notebook_ref, volume, conc, tdate, created_date)
+        values
+        ('{sTubeId}', '{sBatchId}', {volume}, {conc}, now(), now())
+        """
+        try:
+            cur.execute(sSql)
+        except Exception as e:
+            self.set_status(400)
+            self.finish(str(e))
+
 
 @jwtauth
 class getMicroTubeByBatch(tornado.web.RequestHandler):
@@ -91,9 +122,12 @@ class getMicroTubeByBatch(tornado.web.RequestHandler):
         for sId in saBatches:
             sId = sId.replace('KI_', '')
             sSql = """select
-                      t.notebook_ref as batchId, t.tube_id as tubeId, t.volume*1000000 as volume,
-                      m.matrix_id as matrixId, mt.position as position, m.location as location
-                      from microtube.tube t, microtube.v_matrix_tube mt, microtube.v_matrix m
+                      t.notebook_ref as batchId, t.tube_id as tubeId,
+                      t.volume*1000000 as volume, m.matrix_id as matrixId,
+                      mt.position as position, m.location as location
+                      from microtube.tube t,
+                           microtube.v_matrix_tube mt,
+                           microtube.v_matrix m
                       where
                       t.tube_id = mt.tube_id and
                       m.matrix_id = mt.matrix_id and
