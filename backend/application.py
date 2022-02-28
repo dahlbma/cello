@@ -49,11 +49,12 @@ def getNewLocId():
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
     def put(self, sTubeId, sBatchId, sVolume, sConc):
+        volume = -1
         try:
             conc = float(sConc)/1000
         except:
             sError = f"conc is not a number {sConc}"
-            print(sError)
+            logging.error(sError)
             self.set_status(400)
             self.finish(sError)
             return
@@ -65,7 +66,7 @@ class AddMicrotube(tornado.web.RequestHandler):
                     volume = float(sVolume)/1000000
         except:
             sError = f"volume is not a number {sVolume}"
-            print(sError)
+            logging.error(sError)
             self.set_status(400)
             self.finish(sError)
             return
@@ -74,6 +75,7 @@ class AddMicrotube(tornado.web.RequestHandler):
             ss = re.search(r'^(\d){10}$', sTubeId).group(0)
         except:
             sError = f"error not valid microtube id {sTubeId}"
+            logging.error(sError)
             self.set_status(400)
             self.finish(sError)
             return
@@ -85,6 +87,8 @@ class AddMicrotube(tornado.web.RequestHandler):
         try:
             cur.execute(sSql)
         except Exception as e:
+            sError = str(e)
+            logging.error(sError)
             self.set_status(400)
             self.finish(str(e))
 
@@ -93,7 +97,7 @@ class AddMicrotube(tornado.web.RequestHandler):
 class getMicroTubeByBatch(tornado.web.RequestHandler):
     def get(self, sBatches):
         if len(sBatches) < 1:
-            print("no batch")
+            logging.error("no batch")
             self.write(json.dumps({}))
             return
         saBatches = sBatches.split()
@@ -211,8 +215,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
                     iOk -= 1
                     saError.append(sTube)
                     err = str(e)
-                    logging.error(f'Failed updating tube {err}')
-                    print(f'Failed updating tube {sTube} {err}')
+                    logging.error(f'Failed updating tube {sTube} {err}')
             iOk += 1
         self.finish(json.dumps({'FailedTubes': saError,
                                 'iOk': iOk,

@@ -1,5 +1,6 @@
 import MySQLdb 
 import config
+import logging
 
 class DisconnectSafeCursor(object):
     db = None
@@ -16,8 +17,9 @@ class DisconnectSafeCursor(object):
         try:
             return self.cursor.execute(*args, **kwargs)
         except (MySQLdb.Error, MySQLdb.Warning) as e:
-            print(*args)
-            print(e)
+            logging.error(*args)
+            e = str(e)
+            logging.error(e)
             if '4031' in e:
                 self.db.reconnect()
                 self.cursor = self.db.cursor()
