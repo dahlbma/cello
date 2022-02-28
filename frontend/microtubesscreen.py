@@ -289,8 +289,8 @@ Nr of failed tubes: {res['iError']}''')
             if concItem is not None:
                 conc = concItem.text()
 
-            if (tubeId == "") or (compBatch == "") or (conc == ""):
-                if (tubeId == "") and (compBatch == "") and (conc == ""):
+            if (tubeId == "") or (compBatch == "") or (volume == "") or (conc == ""):
+                if (tubeId == "") and (compBatch == "") and (volume == "") and (conc == ""):
                     continue
                 else:
                     errors.append([tubeId, compBatch, volume, conc, None])
