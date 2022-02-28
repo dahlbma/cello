@@ -18,7 +18,7 @@ class LauncherScreen(QDialog):
     def __init__(self):
         super(LauncherScreen, self).__init__()
         self.mod_name = "launcher"
-        #logger = logging.getLogger(self.mod_name)
+        logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/launcher.ui"), self)
         self.update_cello_btn.clicked.connect(self.updatefunction)
         self.update_cello_btn.setDefault(False)
@@ -41,7 +41,7 @@ class LauncherScreen(QDialog):
 
     def ver_check(self):
         # return true if cello is outdated
-        try: 
+        try:
             r = dbInterface.getVersion()
             # turn it into a dict
             info = json.loads(r.content)
@@ -71,7 +71,7 @@ class LauncherScreen(QDialog):
         exec_path = f"{os.getcwd()}/{ex_paths[os_name]}"
         # check if versions match
         match, info = self.ver_check()
-        if self.frc_update_chb.isChecked() or not os.path.exists(exec_path):
+        if self.frc_update_chb.isChecked() or not os.path.isfile(exec_path):
             logger.info("Force update")
             match = 1
         if match == 2:
@@ -108,7 +108,7 @@ class LauncherScreen(QDialog):
 
 
     def runfunction(self):
-        check = self.updatefunction()
+        check = 1#self.updatefunction()
         if check != -1:
             os_name = platform.system()
             exec_path = ex_paths[os_name]
