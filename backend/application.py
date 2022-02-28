@@ -281,6 +281,36 @@ class getRack(tornado.web.RequestHandler):
         self.write(json.dumps(jRes, indent=4))
 
         
+class UploadBinary(tornado.web.RequestHandler):
+    def post(self, *args, **kwargs):
+        os_name = self.get_argument("os_name")
+
+        try:
+            # self.request.files['file'][0]:
+            # {'body': 'Label Automator ___', 'content_type': u'text/plain', 'filename': u'k.txt'}
+            file1 = self.request.files['file'][0]
+        except:
+            logging.error("Error cant find file1 in the argument list")
+            return
+
+        bin_file = ""
+        if os_name == 'Windows':
+            bin_file = f'dist/{os_name}/cello.exe'
+        elif os_name == 'Linux':
+            bin_file = f'dist/{os_name}/cello'
+        elif os_name == 'Darwin':
+            bin_file = f'dist/{os_name}/cello'
+        else:
+            # unsupported OS
+            self.set_status(500)
+            self.write({'message': 'OS not supported'})
+            return
+        
+        output_file = open(bin_file, 'wb')
+        output_file.write(file1['body'])
+        output_file.close()
+
+
 @jwtauth
 class uploadEmptyVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
@@ -528,16 +558,13 @@ class verifyVial(tornado.web.RequestHandler):
             logging.error(tRes)
             return
 
-        sSlask = cur.execute("""
-                  SELECT v.vial_id sVial, v.batch_id, v.vial_type,
-                  b.compound_id,
-                  v.tare, batch_formula_weight,
-                  net iNetWeight, gross iGross,
-                  dilution iDilutionFactor
-                  from vialdb.vial v
-                  left outer join ddd.batch b on v.batch_id = b.batch_id
-                  where  v.vial_id = '%s'
-        """ % (sVial))
+        sSql = f"""
+        select v.vial_id, v.notebook_ref batch_id, b.compound_id,
+        v.tare, b.BIOLOGICAL_MW batch_formula_weight, v.net, v.gross, v.conc
+        from glass.vial v, bcpvs.batch b
+        where v.notebook_ref = b.notebook_ref and v.vial_id = '{sVial}';
+        """
+        sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
@@ -562,7 +589,7 @@ class batchInfo(tornado.web.RequestHandler):
 
 
 @jwtauth
-class editVial(tornado.web.RequestHandler):
+class EditVial(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         sCompoundId = self.get_argument("compound_id")
         sVial = self.get_argument("sVial")
@@ -573,7 +600,7 @@ class editVial(tornado.web.RequestHandler):
         sNetWeight = self.get_argument("iNetWeight")
         iDilutionFactor = self.get_argument("iDilutionFactor")
 
-        #logging.info(self.request.arguments.values())
+        logging.info(self.request.arguments.values())
 
         sSql = """
         update vialdb.vial set
