@@ -11,6 +11,7 @@ from tornado.log import enable_pretty_logging
 import MySQLdb
 from datetime import datetime, timedelta
 import jwt
+import json
 
 # Secret stuff in config file
 import config
@@ -95,7 +96,7 @@ class getVersionData(tornado.web.RequestHandler):
                 self.write(json.load(f))
                 return
         except Exception as e:
-            logger.error(str(e))
+            logging.error(str(e))
             self.set_status(500)
             self.write({'message': 'ver.dat not available'})
 
@@ -104,9 +105,9 @@ class getCelloBinary(tornado.web.RequestHandler):
     def post(self):
         pass
 
-    def get(self):
+    def get(self, os_name):
         # send cello
-        os_name = self.get_argument('os_name')
+        #os_name = self.get_argument('os_name')
         # tentative
         
         #
@@ -130,11 +131,11 @@ class getCelloBinary(tornado.web.RequestHandler):
 
         bin_file = ""
         if os_name == 'Windows':
-            bin_file = f'dist/{os_name}/cello.exe'
+            bin_file = f'dist/{os_name}/ce.exe'
         elif os_name == 'Linux':
-            bin_file = f'dist/{os_name}/cello'
+            bin_file = f'dist/{os_name}/ce'
         elif os_name == 'Darwin':
-            bin_file = f'dist/{os_name}/cello'
+            bin_file = f'dist/{os_name}/ce'
         else:
             # unsupported OS
             self.set_status(500)
@@ -142,18 +143,18 @@ class getCelloBinary(tornado.web.RequestHandler):
             return
         try:
             with open(bin_file, 'rb') as f:
-                logger.info("sending bin file")
+                logging.info("sending bin file")
                 self.set_status(200)
                 self.write(f.read())
         except Exception as e:
-            logger.error(f"Did not send bin file, error: {str(e)}")
+            logging.error(f"Did not send bin file, error: {str(e)}")
 
            
 def make_app():
     return tornado.web.Application([
         (r"/login", login),
         (r"/getVersionData", getVersionData),
-        (r"/getCelloBinary/(?P<sId>[^\/]+)", getCelloBinary),
+        (r"/getCelloBinary/(?P<os_name>[^\/]+)", getCelloBinary),
         (r"/getDatabase", application.GetDatabase),
         (r"/", application.home),
         (r"/mols/(.*)", tornado.web.StaticFileHandler, {"path": "mols/"}),

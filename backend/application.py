@@ -280,7 +280,8 @@ class getRack(tornado.web.RequestHandler):
         jRes = makeJson(tRes, jRes, sRack)
         self.write(json.dumps(jRes, indent=4))
 
-        
+
+@jwtauth
 class UploadBinary(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         os_name = self.get_argument("os_name")
@@ -295,11 +296,11 @@ class UploadBinary(tornado.web.RequestHandler):
 
         bin_file = ""
         if os_name == 'Windows':
-            bin_file = f'dist/{os_name}/cello.exe'
+            bin_file = f'dist/{os_name}/ce.exe'
         elif os_name == 'Linux':
-            bin_file = f'dist/{os_name}/cello'
+            bin_file = f'dist/{os_name}/ce'
         elif os_name == 'Darwin':
-            bin_file = f'dist/{os_name}/cello'
+            bin_file = f'dist/{os_name}/ce'
         else:
             # unsupported OS
             self.set_status(500)
