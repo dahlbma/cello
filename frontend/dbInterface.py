@@ -25,9 +25,10 @@ def getDatabase():
     res = listify(r, False)
     return res
 
-def uploadBinary(os_name, file):
+def uploadBinary(token, os_name, file):
     r = requests.post(f'{baseUrl}uploadBinary',
                       data = {'os_name':os_name},
+                      headers = {'token':token},
                       files = {'file':file})
     if r.status_code != 200:
         return r.content.decode(), False
@@ -35,9 +36,12 @@ def uploadBinary(os_name, file):
         return r.content.decode(), True
 
 def getCelloBinary(os_name):
-    r = requests.get(f'{baseUrl}getCelloBinary',
-                     data={'os_name':os_name},
+    r = requests.get(f'{baseUrl}getCelloBinary/{os_name}',
                      stream=True) # fetch cello dist
+    return r
+
+def getVersion():
+    r = requests.get(f'{baseUrl}getVersionData') # get file version
     return r
 
 def getVialInfo(token, vialId):

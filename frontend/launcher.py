@@ -48,7 +48,7 @@ class LauncherScreen(QDialog):
             logger.info(f"recieved {info}")
         except Exception as e:
             self.status_lab.setText("ERROR no connection")
-            logger(self.mod_name).error(str(e))
+            logging.getLogger(self.mod_name).error(str(e))
             return 2, None
         if r.status_code == 500:
             return 2, info
@@ -72,7 +72,7 @@ class LauncherScreen(QDialog):
         # check if versions match
         match, info = self.ver_check()
         if self.frc_update_chb.isChecked() or not os.path.isfile(exec_path):
-            logger.info("Force update")
+            logging.getLogger(self.mod_name).info("Force update")
             match = 1
         if match == 2:
             # no connection to server
@@ -91,24 +91,24 @@ class LauncherScreen(QDialog):
   
             except Exception as e:
                 self.status_lab.setText("ERROR ")
-                logger.info(str(e))
+                logging.getLogger(self.mod_name).info(str(e))
                 return -1
         # all is well
         try:
             r = dbInterface.getVersion()
             # turn it into a dict
             info = json.loads(r.content)
-            logger.info(f"recieved {info}")
+            logging.getLogger(self.mod_name).info(f"recieved {info}")
         except Exception as e:
             self.status_lab.setText("ERROR no connection")
-            logger(self.mod_name).error(str(e))
+            logging.getLogger(self.mod_name).error(str(e))
         with open('./ver.dat', 'w', encoding='utf-8') as ver_file:
             json.dump(info, ver_file, ensure_ascii=False, indent=4)
         return 0
 
 
     def runfunction(self):
-        check = 1#self.updatefunction()
+        check = self.updatefunction()
         if check != -1:
             os_name = platform.system()
             exec_path = ex_paths[os_name]
