@@ -60,7 +60,9 @@ class VialsScreen(QMainWindow):
     def searchVial(self, vialId):
         vialId = re.sub("[^0-9a-zA-Z]+", " ", vialId)
         logging.getLogger(self.mod_name).info(f"vial search {vialId}")
-        res = [{'':5}]#dbInterface.<>(self.token, vialId)
+        #res = [{'':5}]#dbInterface.<>(self.token, vialId)
+        res = dbInterface.verifyVial(self.token, vialId)
+        print(res)
         try:
             self.vial_data = json.loads(str(res))
         except:
@@ -81,13 +83,18 @@ class VialsScreen(QMainWindow):
         logging.getLogger(self.mod_name).info(f"receieved {self.vial_data}")
         self.v_search = True
         self.edit_update_btn.setEnabled(True)
+        self.edit_update_btn.clicked.connect(self.updateVial)
         self.errorlabel.setText('')
-        self.edit_batch_id_eb.setText(f"{self.vial_data[0]['']}")
-        self.edit_compound_id_eb.setText(f"{self.vial_data[0]['']}")
-        self.edit_form_weight_eb.setText(f"{self.vial_data[0]['']}")
-        self.edit_tare_eb.setText(f"{self.vial_data[0]['']}")
+        self.edit_batch_id_eb.setText(f"{self.vial_data[0]['batch_id']}")
+        self.edit_compound_id_eb.setText(f"{self.vial_data[0]['compound_id']}")
+        self.edit_form_weight_eb.setText(f"{self.vial_data[0]['batch_formula_weight']}")
+        self.edit_tare_eb.setText(f"{self.vial_data[0]['tare']}")
         self.edit_vconc_cb.setCurrentText(None)
-        self.edit_gross_weight_eb.setText(f"{self.vial_data[0]['']}")
-        self.edit_net_weight_eb.setText(f"{self.vial_data[0]['']}")
-        self.edit_dilution_eb.setText(f"{self.vial_data[0]['']}")
+        self.edit_gross_weight_eb.setText(f"{self.vial_data[0]['gross']}")
+        self.edit_net_weight_eb.setText(f"{self.vial_data[0]['net']}")
+        #self.edit_dilution_eb.setText(f"{self.vial_data[0]['iDilutionFactor']}")
         displayMolfile(self, vialId)
+
+    def updateVial(self):
+        print('here')
+    
