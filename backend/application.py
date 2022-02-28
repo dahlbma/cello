@@ -33,7 +33,7 @@ def createPngFromMolfile(regno, molfile):
         logging.error(f"regno {regno} is nostruct")
 
 
-class home(util.UnsafeHandler):
+class home(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         return
 

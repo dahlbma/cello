@@ -108,7 +108,6 @@ def make_app():
         (r"/", application.home),
         (r"/mols/(.*)", tornado.web.StaticFileHandler, {"path": "mols/"}),
         (r"/dist/(.*)", tornado.web.StaticFileHandler, {"path": "dist/"}),
-        ("/unauthorized", util.UnAuthorizedHandler),
         (r"/createMolImage/(?P<sId>[^\/]+)", application.CreateMolImage),
         (r"/uploadEmptyVials", application.uploadEmptyVials),
         (r"/getLocations", application.getLocations),
