@@ -33,6 +33,14 @@ def getVialInfo(token, vialId):
     except:
         return r.content
 
+def verifyVial(token, vialId):
+    r = requests.get(f'{baseUrl}verifyVial/{vialId}',
+            headers={'token':token})
+    try:
+        return r.content.decode()
+    except:
+        return r.content
+    
 def getLocationsByStorage(token, storage):
     r = requests.get(f'{baseUrl}getLocationByStorage/{storage}',
                      headers={'token':token})
