@@ -25,7 +25,7 @@ class VialsScreen(QMainWindow):
 
         self.edit_vial_id_eb.textChanged.connect(self.check_vial_search_input)
 
-        types = [None, "10mM", "50mM", "Solid", "2mM", "20mM"]
+        types = [None, "2", "10", "20", "50", "Solid"]
         self.edit_vconc_cb.addItems(types)
 
 
@@ -89,7 +89,7 @@ class VialsScreen(QMainWindow):
         self.edit_compound_id_eb.setText(f"{self.vial_data[0]['compound_id']}")
         self.edit_form_weight_eb.setText(f"{self.vial_data[0]['batch_formula_weight']}")
         self.edit_tare_eb.setText(f"{self.vial_data[0]['tare']}")
-        self.edit_vconc_cb.setCurrentText(None)
+        self.edit_vconc_cb.setCurrentText(f"{self.vial_data[0]['conc']}")
         self.edit_gross_weight_eb.setText(f"{self.vial_data[0]['gross']}")
         self.edit_net_weight_eb.setText(f"{self.vial_data[0]['net']}")
         #self.edit_dilution_eb.setText(f"{self.vial_data[0]['iDilutionFactor']}")
