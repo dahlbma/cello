@@ -50,7 +50,6 @@ class VialsScreen(QMainWindow):
             self.create_n_vial_eb.setFocus()
             self.structure_lab.clear()
 
-
     def check_vial_search_input(self):
         pattern = '^[vV][0-9]{6}$'
         t = self.edit_vial_id_eb.text()
@@ -62,7 +61,6 @@ class VialsScreen(QMainWindow):
         logging.getLogger(self.mod_name).info(f"vial search {vialId}")
         #res = [{'':5}]#dbInterface.<>(self.token, vialId)
         res = dbInterface.verifyVial(self.token, vialId)
-        print(res)
         try:
             self.vial_data = json.loads(str(res))
         except:
@@ -96,5 +94,11 @@ class VialsScreen(QMainWindow):
         displayMolfile(self, vialId)
 
     def updateVial(self):
-        print('here')
-    
+        dbInterface.editVial(self.token,
+                             self.edit_vial_id_eb.text(),
+                             self.edit_batch_id_eb.text(),
+                             self.edit_tare_eb.text(),
+                             self.edit_gross_weight_eb.text(),
+                             self.edit_net_weight_eb.text(),
+                             self.edit_vconc_cb.currentText())
+        self.check_vial_search_input()

@@ -60,6 +60,26 @@ def verifyVial(token, vialId):
     except:
         return r.content
     
+def editVial(token,
+             sVial,
+             batch_id,
+             tare,
+             iGross,
+             iNetWeight,
+             conc):
+    r = requests.post(f'{baseUrl}editVial',
+                      data = {'sVial': sVial,
+                              'batch_id': batch_id,
+                              'tare': tare,
+                              'iGross': iGross,
+                              'iNetWeight': iNetWeight,
+                              'conc': conc},
+                      headers = {'token':token})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
+
 def getLocationsByStorage(token, storage):
     r = requests.get(f'{baseUrl}getLocationByStorage/{storage}',
                      headers={'token':token})
