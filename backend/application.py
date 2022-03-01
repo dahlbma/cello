@@ -594,30 +594,42 @@ class batchInfo(tornado.web.RequestHandler):
 @jwtauth
 class EditVial(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
-        sCompoundId = self.get_argument("compound_id")
+        #sCompoundId = self.get_argument("compound_id")
         sVial = self.get_argument("sVial")
         sBatch = self.get_argument("batch_id")
-        sBoxType = self.get_argument("sBoxType[vial_type]")
+        conc = self.get_argument("conc")
+        #sBoxType = self.get_argument("sBoxType[vial_type]")
         sTare = self.get_argument("tare")
         sGross = self.get_argument("iGross")
         sNetWeight = self.get_argument("iNetWeight")
-        iDilutionFactor = self.get_argument("iDilutionFactor")
+        #iDilutionFactor = self.get_argument("iDilutionFactor")
 
         logging.info(self.request.arguments.values())
 
-        sSql = """
-        update vialdb.vial set
-        batch_id = %s,
-        compound_id = %s,
-        vial_type = %s,
-        update_date = now(),
-        tare = %s,
-        net = %s,
-        gross = %s,
-        dilution = %s
-        where vial_id = %s
-        """ % (sBatch, sCompoundId, sBoxType, sTare,
-               sNetWeight, sGross, iDilutionFactor, sVial)
+        if conc in ('', 'Solid'):
+            sSql = f"""
+            update glass.vial set
+            notebook_ref = '{sBatch}',
+            conc = NULL,
+            form = 'solid',
+            updated_date = now(),
+            tare = {sTare},
+            net = {sNetWeight},
+            gross = {sGross}
+            where vial_id = '{sVial}'
+            """
+        else:
+            sSql = f"""
+            update glass.vial set
+            notebook_ref = '{sBatch}',
+            conc = '{conc}',
+            form = NULL,
+            updated_date = now(),
+            tare = {sTare},
+            net = {sNetWeight},
+            gross = {sGross}
+            where vial_id = '{sVial}'
+            """
 
         try:
             cur.execute(sSql)
