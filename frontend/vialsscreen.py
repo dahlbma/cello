@@ -92,7 +92,7 @@ class VialsScreen(QMainWindow):
         self.edit_vconc_cb.setCurrentText(f"{self.vial_data[0]['conc']}")
         self.edit_gross_weight_eb.setText(f"{self.vial_data[0]['gross']}")
         self.edit_net_weight_eb.setText(f"{self.vial_data[0]['net']}")
-        #self.edit_dilution_eb.setText(f"{self.vial_data[0]['iDilutionFactor']}")
+        self.edit_dilution_eb.setText(f"{self.vial_data[0]['dilution_factor']}")
         displayMolfile(self, vialId)
 
     def updateVial(self):
