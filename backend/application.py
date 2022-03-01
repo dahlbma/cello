@@ -561,9 +561,11 @@ class verifyVial(tornado.web.RequestHandler):
 
         sSql = f"""
         select v.vial_id, v.notebook_ref batch_id, b.compound_id,
-        v.tare, b.BIOLOGICAL_MW batch_formula_weight, v.net, v.gross, v.conc
+        v.tare, b.BIOLOGICAL_MW batch_formula_weight, v.net, v.gross,
+        FORMAT(FLOOR(v.conc), 0) conc,
+        ROUND((((v.net*1000)/b.BIOLOGICAL_MW)/conc)*1000000) dilution_factor
         from glass.vial v, bcpvs.batch b
-        where v.notebook_ref = b.notebook_ref and v.vial_id = '{sVial}';
+        where v.notebook_ref = b.notebook_ref and v.vial_id = '{sVial}'
         """
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
@@ -1227,21 +1229,6 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         and t.subpos is not null and t.subpos < 300) ll
         on v.location = ll.loc_id  order by path, free_positions
         """
-
-
-
-        '''
-        select location, FORMAT(FLOOR(subpos-count(vial_id)), 0) free_positions,
-        min(path) path, min(loctree.location_type.name) loc_type, loctree.locations.name
-        from glass.vial, loctree.locations, loctree.location_type, loctree.v_all_locations
-        where 
-        glass.vial.location = loctree.locations.loc_id
-        and loctree.locations.type_id = loctree.location_type.type_id
-        and glass.vial.location = loctree.v_all_locations.loc_id
-        and loctree.location_type.label_format = 'VIAL_TRAY.pj'
-        and subpos is not null and subpos < 300
-        group by glass.vial.location order by path"""
-        '''
 
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
