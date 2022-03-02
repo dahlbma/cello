@@ -201,22 +201,19 @@ class MicrotubesScreen(QMainWindow):
                     newItem = QTableWidgetItem(f"{data[n]['compoundId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.rack_table.setItem(n, 2, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['ssl']}")
-                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    self.rack_table.setItem(n, 3, newItem)
                     newItem = QTableWidgetItem(f"{data[n]['volume']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    self.rack_table.setItem(n, 4, newItem)
+                    self.rack_table.setItem(n, 3, newItem)
                     newItem = QTableWidgetItem(f"{data[n]['matrixId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    self.rack_table.setItem(n, 5, newItem)
+                    self.rack_table.setItem(n, 4, newItem)
                     newItem = QTableWidgetItem(f"{data[n]['position']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    self.rack_table.setItem(n, 6, newItem)
+                    self.rack_table.setItem(n, 5, newItem)
                     newItem = QTableWidgetItem(f"{data[n]['location']}")
                     newItem.setToolTip(f"{data[n]['location']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    self.rack_table.setItem(n, 7, newItem)
+                    self.rack_table.setItem(n, 6, newItem)
             except:
                 logging.error(f"search for {data[n]['batchId']} returned bad response: {data[n]}")
         self.rack_table.setSortingEnabled(True)
@@ -279,11 +276,13 @@ Nr of failed tubes: {res['iError']}''')
         r, c = getNextFreeRow(self.create_microtubes_table, item.row(), item.column())
         if r == -1:
             self.create_microtubes_table.setCurrentCell(0, 0)
-            self.create_microtubes_table.scrollToItem(self.box_table.item(0, 0), QAbstractItemView.PositionAtCenter)
+            self.create_microtubes_table.scrollToItem(self.box_table.item(0, 0),
+                                                      QAbstractItemView.PositionAtCenter)
         else:
             self.create_microtubes_table.setCurrentCell(r, c)
             self.create_microtubes_table.editItem(self.create_microtubes_table.item(r, c))
-            self.create_microtubes_table.scrollToItem(self.create_microtubes_table.item(r, c), QAbstractItemView.PositionAtCenter)
+            self.create_microtubes_table.scrollToItem(self.create_microtubes_table.item(r, c),
+                                                      QAbstractItemView.PositionAtCenter)
 
     def sendMicrotubes(self):
         errors = []
@@ -315,7 +314,11 @@ Nr of failed tubes: {res['iError']}''')
                     errors.append([tubeId, compBatch, volume, conc, None])
                     continue
             # try sending it
-            res, status = dbInterface.addMicrotube(self.token, tubeId, compBatch, volume, conc)
+            res, status = dbInterface.addMicrotube(self.token,
+                                                   tubeId,
+                                                   compBatch,
+                                                   volume,
+                                                   conc)
             if not status:
                 #fail
                 fail += 1

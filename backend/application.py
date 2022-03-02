@@ -33,7 +33,7 @@ def createPngFromMolfile(regno, molfile):
         logging.error(f"regno {regno} is nostruct")
 
 
-class home(util.UnsafeHandler):
+class home(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         return
 
@@ -49,20 +49,55 @@ def getNewLocId():
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
     def put(self, sTubeId, sBatchId, sVolume, sConc):
-        #0019953454    10 digits
+        volume = -1
         try:
-            ss = re.search(r'^(\d){10}$', sTubeId).group(0)
-            print(ss)
+            conc = float(sConc)/1000
         except:
-            pass
-        pass
-        
+            sError = f"conc is not a number {sConc}"
+            logging.error(sError)
+            self.set_status(400)
+            self.finish(sError)
+            return
+        try:
+            if sVolume == '' or float(sVolume):
+                if sVolume == '':
+                    volume = -1
+                else:
+                    volume = float(sVolume)/1000000
+        except:
+            sError = f"volume is not a number {sVolume}"
+            logging.error(sError)
+            self.set_status(400)
+            self.finish(sError)
+            return
+        try:
+            #0019953454 microtube_id is 10 digits
+            ss = re.search(r'^(\d){10}$', sTubeId).group(0)
+        except:
+            sError = f"error not valid microtube id {sTubeId}"
+            logging.error(sError)
+            self.set_status(400)
+            self.finish(sError)
+            return
+        sSql = f"""insert into microtube.tube
+        (tube_id, notebook_ref, volume, conc, tdate, created_date)
+        values
+        ('{sTubeId}', '{sBatchId}', {volume}, {conc}, now(), now())
+        """
+        try:
+            cur.execute(sSql)
+        except Exception as e:
+            sError = str(e)
+            #logging.error(sError)
+            self.set_status(400)
+            self.finish(sError)
+            return
 
 @jwtauth
 class getMicroTubeByBatch(tornado.web.RequestHandler):
     def get(self, sBatches):
         if len(sBatches) < 1:
-            print("no batch")
+            logging.error("no batch")
             self.write(json.dumps({}))
             return
         saBatches = sBatches.split()
@@ -89,11 +124,13 @@ class getMicroTubeByBatch(tornado.web.RequestHandler):
 
         jRes = list()
         for sId in saBatches:
-            sId = sId.replace('KI_', '')
             sSql = """select
-                      t.notebook_ref as batchId, t.tube_id as tubeId, t.volume*1000000 as volume,
-                      m.matrix_id as matrixId, mt.position as position, m.location as location
-                      from microtube.tube t, microtube.v_matrix_tube mt, microtube.v_matrix m
+                      t.notebook_ref as batchId, t.tube_id as tubeId,
+                      t.volume*1000000 as volume, m.matrix_id as matrixId,
+                      mt.position as position, m.location as location
+                      from microtube.tube t,
+                           microtube.v_matrix_tube mt,
+                           microtube.v_matrix m
                       where
                       t.tube_id = mt.tube_id and
                       m.matrix_id = mt.matrix_id and
@@ -102,6 +139,7 @@ class getMicroTubeByBatch(tornado.web.RequestHandler):
             try:
                 sSlask = cur.execute(sSql)
                 tRes = cur.fetchall()
+                print(tRes)
             except Exception as e:
                 logging.error("Error: " + str(e) + ' problem with batch:' + sId)
                 return
@@ -177,8 +215,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
                     iOk -= 1
                     saError.append(sTube)
                     err = str(e)
-                    logging.error(f'Failed updating tube {err}')
-                    print(f'Failed updating tube {sTube} {err}')
+                    logging.error(f'Failed updating tube {sTube} {err}')
             iOk += 1
         self.finish(json.dumps({'FailedTubes': saError,
                                 'iOk': iOk,
@@ -200,7 +237,6 @@ class getRack(tornado.web.RequestHandler):
             iRow = 0
             for row in tData:
                 try:
-                    sSll = ''
                     if iRow < 10:
                         sRow = '0' + str(iRow)
                     else:
@@ -213,7 +249,6 @@ class getRack(tornado.web.RequestHandler):
                                  "location": str(row[5]),
                                  "conc": row[6],
                                  "compoundId": row[7],
-                                 "ssl": sSll,
                                  "iRow" : sRow
                     })
                     iRow += 1
@@ -243,7 +278,38 @@ class getRack(tornado.web.RequestHandler):
         jRes = makeJson(tRes, jRes, sRack)
         self.write(json.dumps(jRes, indent=4))
 
+
+@jwtauth
+class UploadBinary(tornado.web.RequestHandler):
+    def post(self, *args, **kwargs):
+        os_name = self.get_argument("os_name")
+
+        try:
+            # self.request.files['file'][0]:
+            # {'body': 'Label Automator ___', 'content_type': u'text/plain', 'filename': u'k.txt'}
+            file1 = self.request.files['file'][0]
+        except:
+            logging.error("Error cant find file1 in the argument list")
+            return
+
+        bin_file = ""
+        if os_name == 'Windows':
+            bin_file = f'dist/{os_name}/ce.exe'
+        elif os_name == 'Linux':
+            bin_file = f'dist/{os_name}/ce'
+        elif os_name == 'Darwin':
+            bin_file = f'dist/{os_name}/ce'
+        else:
+            # unsupported OS
+            self.set_status(500)
+            self.write({'message': 'OS not supported'})
+            return
         
+        output_file = open(bin_file, 'wb')
+        output_file.write(file1['body'])
+        output_file.close()
+
+
 @jwtauth
 class uploadEmptyVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
@@ -491,16 +557,15 @@ class verifyVial(tornado.web.RequestHandler):
             logging.error(tRes)
             return
 
-        sSlask = cur.execute("""
-                  SELECT v.vial_id sVial, v.batch_id, v.vial_type,
-                  b.compound_id,
-                  v.tare, batch_formula_weight,
-                  net iNetWeight, gross iGross,
-                  dilution iDilutionFactor
-                  from vialdb.vial v
-                  left outer join ddd.batch b on v.batch_id = b.batch_id
-                  where  v.vial_id = '%s'
-        """ % (sVial))
+        sSql = f"""
+        select v.vial_id, v.notebook_ref batch_id, b.compound_id,
+        v.tare, b.BIOLOGICAL_MW batch_formula_weight, v.net, v.gross,
+        FORMAT(FLOOR(v.conc), 0) conc,
+        ROUND((((v.net*1000)/b.BIOLOGICAL_MW)/conc)*1000000) dilution_factor
+        from glass.vial v, bcpvs.batch b
+        where v.notebook_ref = b.notebook_ref and v.vial_id = '{sVial}'
+        """
+        sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
@@ -525,32 +590,44 @@ class batchInfo(tornado.web.RequestHandler):
 
 
 @jwtauth
-class editVial(tornado.web.RequestHandler):
+class EditVial(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
-        sCompoundId = self.get_argument("compound_id")
+        #sCompoundId = self.get_argument("compound_id")
         sVial = self.get_argument("sVial")
         sBatch = self.get_argument("batch_id")
-        sBoxType = self.get_argument("sBoxType[vial_type]")
+        conc = self.get_argument("conc")
+        #sBoxType = self.get_argument("sBoxType[vial_type]")
         sTare = self.get_argument("tare")
         sGross = self.get_argument("iGross")
         sNetWeight = self.get_argument("iNetWeight")
-        iDilutionFactor = self.get_argument("iDilutionFactor")
+        #iDilutionFactor = self.get_argument("iDilutionFactor")
 
-        #logging.info(self.request.arguments.values())
+        logging.info(self.request.arguments.values())
 
-        sSql = """
-        update vialdb.vial set
-        batch_id = %s,
-        compound_id = %s,
-        vial_type = %s,
-        update_date = now(),
-        tare = %s,
-        net = %s,
-        gross = %s,
-        dilution = %s
-        where vial_id = %s
-        """ % (sBatch, sCompoundId, sBoxType, sTare,
-               sNetWeight, sGross, iDilutionFactor, sVial)
+        if conc in ('', 'Solid'):
+            sSql = f"""
+            update glass.vial set
+            notebook_ref = '{sBatch}',
+            conc = NULL,
+            form = 'solid',
+            updated_date = now(),
+            tare = {sTare},
+            net = {sNetWeight},
+            gross = {sGross}
+            where vial_id = '{sVial}'
+            """
+        else:
+            sSql = f"""
+            update glass.vial set
+            notebook_ref = '{sBatch}',
+            conc = '{conc}',
+            form = NULL,
+            updated_date = now(),
+            tare = {sTare},
+            net = {sNetWeight},
+            gross = {sGross}
+            where vial_id = '{sVial}'
+            """
 
         try:
             cur.execute(sSql)
@@ -1162,21 +1239,6 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         and t.subpos is not null and t.subpos < 300) ll
         on v.location = ll.loc_id  order by path, free_positions
         """
-
-
-
-        '''
-        select location, FORMAT(FLOOR(subpos-count(vial_id)), 0) free_positions,
-        min(path) path, min(loctree.location_type.name) loc_type, loctree.locations.name
-        from glass.vial, loctree.locations, loctree.location_type, loctree.v_all_locations
-        where 
-        glass.vial.location = loctree.locations.loc_id
-        and loctree.locations.type_id = loctree.location_type.type_id
-        and glass.vial.location = loctree.v_all_locations.loc_id
-        and loctree.location_type.label_format = 'VIAL_TRAY.pj'
-        and subpos is not null and subpos < 300
-        group by glass.vial.location order by path"""
-        '''
 
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()

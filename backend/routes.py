@@ -11,6 +11,7 @@ from tornado.log import enable_pretty_logging
 import MySQLdb
 from datetime import datetime, timedelta
 import jwt
+import json
 
 # Secret stuff in config file
 import config
@@ -95,23 +96,71 @@ class getVersionData(tornado.web.RequestHandler):
                 self.write(json.load(f))
                 return
         except Exception as e:
-            logger.error(str(e))
+            logging.error(str(e))
             self.set_status(500)
             self.write({'message': 'ver.dat not available'})
 
-            
+
+class getCelloBinary(tornado.web.RequestHandler):
+    def post(self):
+        pass
+
+    def get(self, os_name):
+        # send cello
+        #os_name = self.get_argument('os_name')
+        # tentative
+        
+        #
+        #if not (os_name == 'Windows' or os_name == 'Linux' or os_name == 'Darwin'):
+        #    # unsupported OS
+        #    self.set_status(500)
+        #    self.write({'message': 'OS not supported'})
+        #    return
+        #try:
+        #    sSql = f'''select program
+        #           from chem_reg.chemreg_dist
+        #           where os = {os_name};
+        #        '''
+        #    cur.execute(sSql)
+        #    res = cur.fetchall()
+        #    logger.info("sending bin file")
+        #    self.set_status(200)
+        #    self.write(res[0][0])
+        #except Exception as e:
+        #    logger.error(f"Did not send bin file, error: {str(e)}")
+
+        bin_file = ""
+        if os_name == 'Windows':
+            bin_file = f'dist/{os_name}/ce.exe'
+        elif os_name == 'Linux':
+            bin_file = f'dist/{os_name}/ce'
+        elif os_name == 'Darwin':
+            bin_file = f'dist/{os_name}/ce'
+        else:
+            # unsupported OS
+            self.set_status(500)
+            self.write({'message': 'OS not supported'})
+            return
+        try:
+            with open(bin_file, 'rb') as f:
+                logging.info("sending bin file")
+                self.set_status(200)
+                self.write(f.read())
+        except Exception as e:
+            logging.error(f"Did not send bin file, error: {str(e)}")
+
+           
 def make_app():
     return tornado.web.Application([
         (r"/login", login),
         (r"/getVersionData", getVersionData),
+        (r"/getCelloBinary/(?P<os_name>[^\/]+)", getCelloBinary),
         (r"/getDatabase", application.GetDatabase),
         (r"/", application.home),
         (r"/mols/(.*)", tornado.web.StaticFileHandler, {"path": "mols/"}),
         (r"/dist/(.*)", tornado.web.StaticFileHandler, {"path": "dist/"}),
-        ("/login",util.LoginHandler),
-        ("/logout", util.LogoutHandler),
-        ("/unauthorized", util.UnAuthorizedHandler),
         (r"/createMolImage/(?P<sId>[^\/]+)", application.CreateMolImage),
+        (r"/uploadBinary", application.UploadBinary),
         (r"/uploadEmptyVials", application.uploadEmptyVials),
         (r"/getLocations", application.getLocations),
         (r"/getLocationChildren/(?P<sLocation>[^\/]+)", application.GetLocationChildren),
@@ -145,10 +194,10 @@ def make_app():
          application.MoveVialToLocation),
         (r"/updateVialPosition/(?P<sVialId>[^\/]+)/(?P<sBoxId>[^\/]+)/(?P<sPos>[^\/]+)",
          application.UpdateVialPosition),
-        (r"/editVial", application.editVial),
+        (r"/editVial", application.EditVial),
         (r"/generateVialId", application.generateVialId),
         (r"/vialInfo/(?P<sVial>[^\/]+)", application.vialInfo),
-        (r"/addMicrotube/(?P<sTubeId>[^\/]+)/(?P<sBatchId>[^\/]+)/(?P<sVolume>[^\/]+)/(?P<sConc>[^\/]+)",
+        (r"/addMicrotube/(?P<sTubeId>[^\/]+)/(?P<sBatchId>[^\/]+)/(?P<sVolume>[^\/]+)/(?P<sConc>[^\/]*)",
          application.AddMicrotube),
         (r"/verifyVial/(?P<sVial>[^\/]+)", application.verifyVial),
         (r"/getVialTypes", application.getVialTypes),
