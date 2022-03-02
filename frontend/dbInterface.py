@@ -78,7 +78,9 @@ def editVial(token,
     if r.status_code != 200:
         return r.content.decode(), False
     else:
-        return r.content.decode(), True
+        res = r.content.decode()
+        res = json.loads(res)
+        return res, True
 
 def getLocationsByStorage(token, storage):
     r = requests.get(f'{baseUrl}getLocationByStorage/{storage}',
