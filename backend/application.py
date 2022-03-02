@@ -88,10 +88,10 @@ class AddMicrotube(tornado.web.RequestHandler):
             cur.execute(sSql)
         except Exception as e:
             sError = str(e)
-            logging.error(sError)
+            #logging.error(sError)
             self.set_status(400)
-            self.finish(str(e))
-
+            self.finish(sError)
+            return
 
 @jwtauth
 class getMicroTubeByBatch(tornado.web.RequestHandler):
@@ -140,6 +140,7 @@ class getMicroTubeByBatch(tornado.web.RequestHandler):
             try:
                 sSlask = cur.execute(sSql)
                 tRes = cur.fetchall()
+                print(tRes)
             except Exception as e:
                 logging.error("Error: " + str(e) + ' problem with batch:' + sId)
                 return
