@@ -76,7 +76,7 @@ class MicrotubesScreen(QMainWindow):
         if len(batches) < 1:
             return
         logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}]")
-        res = dbInterface.getMicroTubeByBatch(self.token, batches)
+        res = dbInterface.getMicroTubes(self.token, batches)
         self.batches_data = None
         try:
             self.batches_data = json.loads(res)
@@ -156,8 +156,7 @@ class MicrotubesScreen(QMainWindow):
 
 
     def search_rack(self):
-        rack = self.rack_search_eb.text().split(" ")[0]
-        rack = re.sub("[^0-9a-zA-Z]+", "", rack)
+        rack = self.rack_search_eb.text()
         if len(rack) < 1:
             return
         logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}]")
@@ -365,7 +364,6 @@ Nr of failed tubes: {res['iError']}''')
                 for count, rowdata in enumerate(imp_reader):
                     current_row = self.create_microtubes_table.currentRow()
                     next_row, _ = getNextFreeRow(self.create_microtubes_table, current_row, 0, entireRowFree=True, fromSame=True)
-                    p_save = next_row
                     if next_row == -1 or next_row == self.create_microtubes_table.rowCount():
                         next_row = self.create_microtubes_table.rowCount()
                         self.create_microtubes_table.insertRow(self.create_microtubes_table.rowCount())

@@ -202,8 +202,8 @@ def deleteLocation(token, location):
     else:
         return r, True
 
-def getMicroTubeByBatch(token, batches):
-    r = requests.get(f'{baseUrl}getMicroTubeByBatch/{batches}',
+def getMicroTubes(token, batches):
+    r = requests.get(f'{baseUrl}getMicroTubes/{batches}',
                       headers={'token': token})
     try:
         res = r.content.decode()
