@@ -67,7 +67,7 @@
       <item row="1" column="0" colspan="5">
        <widget class="QTabWidget" name="microtubes_tab_wg">
         <property name="currentIndex">
-         <number>3</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tubes_tab">
          <attribute name="title">
@@ -477,11 +477,6 @@
               <column>
                <property name="text">
                 <string>Compound Id</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>SSL Id</string>
                </property>
               </column>
               <column>
