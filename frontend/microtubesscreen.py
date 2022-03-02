@@ -74,7 +74,7 @@ class MicrotubesScreen(QMainWindow):
         if len(batches) < 1:
             return
         logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}]")
-        res = dbInterface.getMicroTubeByBatch(self.token, batches)
+        res = dbInterface.getMicroTubes(self.token, batches)
         self.batches_data = None
         try:
             self.batches_data = json.loads(res)
