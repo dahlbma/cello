@@ -154,8 +154,7 @@ class MicrotubesScreen(QMainWindow):
 
 
     def search_rack(self):
-        rack = self.rack_search_eb.text().split(" ")[0]
-        rack = re.sub("[^0-9a-zA-Z]+", "", rack)
+        rack = self.rack_search_eb.text()
         if len(rack) < 1:
             return
         logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}]")
