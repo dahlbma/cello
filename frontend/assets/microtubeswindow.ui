@@ -67,7 +67,7 @@
       <item row="1" column="0" colspan="5">
        <widget class="QTabWidget" name="microtubes_tab_wg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tubes_tab">
          <attribute name="title">
@@ -140,7 +140,7 @@
                  </size>
                 </property>
                 <property name="placeholderText">
-                 <string>Batches</string>
+                 <string>Batches or Tubes</string>
                 </property>
                </widget>
               </item>
