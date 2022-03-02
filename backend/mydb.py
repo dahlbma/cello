@@ -24,6 +24,7 @@ class DisconnectSafeCursor(object):
                 self.db.reconnect()
                 self.cursor = self.db.cursor()
                 return self.cursor.execute(*args, **kwargs)
+            raise Exception(e)
 
     def fetchone(self):
         return self.cursor.fetchone()
