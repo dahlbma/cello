@@ -124,7 +124,6 @@ class getMicroTubeByBatch(tornado.web.RequestHandler):
 
         jRes = list()
         for sId in saBatches:
-            sId = sId.replace('KI_', '')
             sSql = """select
                       t.notebook_ref as batchId, t.tube_id as tubeId,
                       t.volume*1000000 as volume, m.matrix_id as matrixId,
@@ -238,7 +237,6 @@ class getRack(tornado.web.RequestHandler):
             iRow = 0
             for row in tData:
                 try:
-                    sSll = ''
                     if iRow < 10:
                         sRow = '0' + str(iRow)
                     else:
@@ -251,7 +249,6 @@ class getRack(tornado.web.RequestHandler):
                                  "location": str(row[5]),
                                  "conc": row[6],
                                  "compoundId": row[7],
-                                 "ssl": sSll,
                                  "iRow" : sRow
                     })
                     iRow += 1
