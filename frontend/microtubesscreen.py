@@ -1,3 +1,4 @@
+import select
 import sys, os, logging, re
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QFileDialog
@@ -26,7 +27,9 @@ class MicrotubesScreen(QMainWindow):
 
         self.tubes_search_btn.clicked.connect(self.search_microtubes)
         self.tubes_export_btn.clicked.connect(self.export_tubes_batches_data)
-        
+        self.tubes_ids_export_btn.clicked.connect(self.export_tube_ids)
+
+
         self.rack_search_btn.clicked.connect(self.search_rack)
         self.rack_export_btn.clicked.connect(self.export_rack_data)
 
@@ -131,7 +134,25 @@ class MicrotubesScreen(QMainWindow):
     def export_tubes_batches_data(self):
         export_table(self.tubes_batches_table)
 
-    
+    def export_tube_ids(self):
+        selectedItems = self.tubes_batches_table.selectedItems()
+        selectedRows = []
+        exportIds = []
+        for item in selectedItems:
+            if item.row() not in selectedRows:
+                selectedRows.append(item.row())
+                exportIds.append(self.tubes_batches_table.item(item.row(), 1).text())
+        exportString = "\n".join(exportIds)
+        
+
+        fname = QFileDialog.getSaveFileName(self, 'Save to File', '.', "")
+        if fname[0] == '':
+            return
+        with open(fname[0], "w") as f:
+            f.write(exportString)
+        print(f"wrote to file: {fname[0]}")
+
+
     def search_rack(self):
         rack = self.rack_search_eb.text().split(" ")[0]
         rack = re.sub("[^0-9a-zA-Z]+", "", rack)
@@ -227,10 +248,10 @@ class MicrotubesScreen(QMainWindow):
 
     def uploadRackFile(self):
         try:
-            f = open(self.upload_fname[0], "rb")
-            r, b = dbInterface.readScannedRack(self.token, f)
-            res = json.loads(r)
-            self.upload_result_lab.setText(f'''Rack updated: {res['sRack']}
+            with open(self.upload_fname[0], "rb") as f:
+                r, b = dbInterface.readScannedRack(self.token, f)
+                res = json.loads(r)
+                self.upload_result_lab.setText(f'''Rack updated: {res['sRack']}
 Failed tubes: {res['FailedTubes']}
 Nr of ok tubes: {res['iOk']}
 Nr of failed tubes: {res['iError']}''')
@@ -324,3 +345,5 @@ Nr of failed tubes: {res['iError']}''')
         self.create_microtubes_table.setCurrentCell(0, 0)
         #self.create_microtubes_table.editItem(self.create_microtubes_table.item(0, 0))
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
+
+    
