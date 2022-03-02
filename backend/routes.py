@@ -175,7 +175,7 @@ def make_app():
         (r"/getBoxLocation/(?P<sBox>[^\/]+)", application.GetBoxLocation),
         (r"/getFirstEmptyCoordForBox/(?P<sBox>[^\/]+)", application.getFirstEmptyCoordForBox),
         (r"/printBox/(?P<sBox>[^\/]+)", application.printBox),
-        (r"/getMicroTubeByBatch/(?P<sBatches>[^\/]+)", application.getMicroTubeByBatch),
+        (r"/getMicroTubes/(?P<sBatches>[^\/]+)", application.getMicroTubes),
         (r"/getRack/(?P<sRacks>[^\/]+)", application.getRack),
         (r"/readScannedRack", application.ReadScannedRack),
         (r"/updateBox/(?P<sBox>[^\/]+)", application.updateBox),

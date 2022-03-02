@@ -94,7 +94,7 @@ class AddMicrotube(tornado.web.RequestHandler):
             return
 
 @jwtauth
-class getMicroTubeByBatch(tornado.web.RequestHandler):
+class getMicroTubes(tornado.web.RequestHandler):
     def get(self, sBatches):
         if len(sBatches) < 1:
             logging.error("no batch")
@@ -104,7 +104,6 @@ class getMicroTubeByBatch(tornado.web.RequestHandler):
         saBatches = list(set(saBatches))
         logging.info(saBatches)
         jResTot = list()
-        sTmp = '","'
 
         def makeJson(tData, jRes, sId):
             if len(tData) == 0:
@@ -139,11 +138,29 @@ class getMicroTubeByBatch(tornado.web.RequestHandler):
             try:
                 sSlask = cur.execute(sSql)
                 tRes = cur.fetchall()
-                print(tRes)
             except Exception as e:
                 logging.error("Error: " + str(e) + ' problem with batch:' + sId)
                 return
-            
+            if len(tRes) == 0:
+                sSql = f"""select
+                t.notebook_ref as batchId, t.tube_id as tubeId,
+                t.volume*1000000 as volume, m.matrix_id as matrixId,
+                mt.position as position, m.location as location
+                from microtube.tube t,
+                microtube.v_matrix_tube mt,
+                microtube.v_matrix m
+                where
+                t.tube_id = mt.tube_id and
+                m.matrix_id = mt.matrix_id and
+                t.tube_id = '{sId}'
+                """
+                try:
+                    sSlask = cur.execute(sSql)
+                    tRes = cur.fetchall()
+                except Exception as e:
+                    logging.error("Error: " + str(e) + ' problem with batch:' + sId)
+                    return
+
             jRes = makeJson(tRes, jRes, sId)
         self.write(json.dumps(jRes, indent=4))
 
@@ -229,7 +246,6 @@ class getRack(tornado.web.RequestHandler):
     def get(self, sRacks):
         logging.info(sRacks)
         jResTot = list()
-        sTmp = '","'
 
         def makeJson(tData, jRes, sId):
             if len(tData) == 0:
