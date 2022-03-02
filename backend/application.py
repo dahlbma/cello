@@ -652,7 +652,16 @@ class EditVial(tornado.web.RequestHandler):
             logging.error("Error updating vial " + str(sVial))
             logging.error("Error: " + str(e))
         logging.info("Done editing vial: " + str(sVial))
-        return
+
+        sSql = f"""
+        select
+        ROUND((((v.net*1000)/b.BIOLOGICAL_MW)/conc)*1000000) dilution_factor
+        from glass.vial v, bcpvs.batch b
+        where v.notebook_ref = b.notebook_ref and v.vial_id = '{sVial}'
+        """
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        self.finish(json.dumps(res_to_json(tRes, cur)))
 
 
 @jwtauth
