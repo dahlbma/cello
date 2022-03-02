@@ -25,7 +25,7 @@ class VialsScreen(QMainWindow):
 
         self.edit_vial_id_eb.textChanged.connect(self.check_vial_search_input)
 
-        types = [None, "2", "10", "20", "50", "Solid"]
+        types = [None, "10", "20", "50", "Solid"]
         self.edit_vconc_cb.addItems(types)
 
 
@@ -94,11 +94,15 @@ class VialsScreen(QMainWindow):
         displayMolfile(self, vialId)
 
     def updateVial(self):
-        dbInterface.editVial(self.token,
-                             self.edit_vial_id_eb.text(),
-                             self.edit_batch_id_eb.text(),
-                             self.edit_tare_eb.text(),
-                             self.edit_gross_weight_eb.text(),
-                             self.edit_net_weight_eb.text(),
-                             self.edit_vconc_cb.currentText())
-        self.check_vial_search_input()
+        res, l = dbInterface.editVial(self.token,
+                                   self.edit_vial_id_eb.text(),
+                                   self.edit_batch_id_eb.text(),
+                                   self.edit_tare_eb.text(),
+                                   self.edit_gross_weight_eb.text(),
+                                   self.edit_net_weight_eb.text(),
+                                   self.edit_vconc_cb.currentText())
+        try:
+            self.edit_dilution_eb.setText(str(res[0]['dilution_factor']))
+        except Exception as e:
+            print(str(e))
+            print(res[0]['dilution_factor'])
