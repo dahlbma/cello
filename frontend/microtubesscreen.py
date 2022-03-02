@@ -1,5 +1,4 @@
-import select
-import sys, os, logging, re
+import sys, os, logging, re, csv
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QFileDialog
 from PyQt5.QtWidgets import QTreeWidgetItem, QAbstractItemView
@@ -42,6 +41,7 @@ class MicrotubesScreen(QMainWindow):
         self.create_add_rows_btn.clicked.connect(self.addRows)
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
         self.create_microtubes_btn.clicked.connect(self.sendMicrotubes)
+        self.create_import_btn.clicked.connect(self.create_import_file)
 
 
     def keyPressEvent(self, event):
@@ -66,7 +66,9 @@ class MicrotubesScreen(QMainWindow):
             self.choose_file_btn.setFocus()
             self.upload_result_lab.setText('')
         elif page_index == 3:
-            self.create_add_rows_btn.setFocus()
+            r, c = getNextFreeRow(self.create_microtubes_table, 0, 0, entireRowFree=True, fromSame=True)
+            self.create_microtubes_table.setCurrentCell(r, c)
+            self.create_microtubes_table.setFocus()
 
     def search_microtubes(self):
         batches = self.tubes_batch_eb.text()
@@ -348,4 +350,33 @@ Nr of failed tubes: {res['iError']}''')
         #self.create_microtubes_table.editItem(self.create_microtubes_table.item(0, 0))
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
 
-    
+    def create_import_file(self):
+        fname = QFileDialog.getOpenFileName(self, 'Import from File', 
+                                                '.', "")
+        if fname[0] == '':
+            return
+        self.create_microtubes_table.cellChanged.disconnect()
+        try:
+            with open(fname[0], newline='') as f:
+                dialect = csv.Sniffer().sniff(f.read())
+                f.seek(0)
+                imp_reader = csv.reader(f, dialect)
+                for count, rowdata in enumerate(imp_reader):
+                    current_row = self.create_microtubes_table.currentRow()
+                    next_row, _ = getNextFreeRow(self.create_microtubes_table, current_row, 0, entireRowFree=True, fromSame=True)
+                    if next_row == -1 or next_row == self.create_microtubes_table.rowCount():
+                        next_row = self.create_microtubes_table.rowCount()
+                        self.create_microtubes_table.insertRow(self.create_microtubes_table.rowCount())
+                    for index, text in enumerate(rowdata):
+                        if index < 4:
+                            newItem = QTableWidgetItem(f"{text}")
+                            self.create_microtubes_table.setItem(next_row, index, newItem)
+                    rowLen = len(rowdata)
+                    for index in range(rowLen, 4):
+                        newItem = QTableWidgetItem("None")
+                        self.create_microtubes_table.setItem(next_row, index, newItem)
+                for i in range(0, 5):
+                    self.addRow()
+        except:
+            logging.getLogger(self.mod_name).error("microtube file import failed")  
+        self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
