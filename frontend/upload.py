@@ -13,7 +13,7 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
             raise Exception
     except:
         print("Incorrect credentials. Exitting.")
-        quit()
+        sys.exit()
     token = login_response.content
     os_name = platform.system()
     exec_path = f"{sys.argv[1]}"
@@ -25,7 +25,7 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
                     raise Exception
             except:
                 print("Upload failed.")
-                quit()
+                sys.exit()
             print("Upload successful.")
     if len(sys.argv) == 3:
         ver_no = f"{sys.argv[2]}"
@@ -36,9 +36,9 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
                     raise Exception
             except:
                 print("Version number update failed.")
-                quit()
+                sys.exit()
             print("Version number update successful.")
-    quit()
+    sys.exit()
 
 print("Incorrect number of arguments.")
 print("Please specify path(s) to executable and/or ver.dat")
