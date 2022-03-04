@@ -21,6 +21,7 @@ class DisconnectSafeCursor(object):
             e = str(e)
             logging.error(e)
             if '4031' in e:
+                logging.info('Reconnecting to database')
                 self.db.reconnect()
                 self.cursor = self.db.cursor()
                 return self.cursor.execute(*args, **kwargs)

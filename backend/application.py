@@ -1321,6 +1321,21 @@ class GetLocationByStorage(tornado.web.RequestHandler):
 
 
 @jwtauth
+class GetLocationPath(tornado.web.RequestHandler):
+    def get(self, sLocation):
+        sSql = f'''
+        select l.loc_id, l.path
+        from loctree.v_all_locations l
+        where
+        l.loc_id = '{sLocation}'
+        or l.name = '{sLocation}'
+        '''
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        self.write(json.dumps(res_to_json(tRes, cur)))
+
+        
+@jwtauth
 class GetLocationChildren(tornado.web.RequestHandler):
     def get(self, sLocation):
         if sLocation == 'root':
