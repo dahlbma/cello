@@ -44,6 +44,8 @@ class BoxesScreen(QMainWindow):
         self.boxes_tree.currentItemChanged.connect(self.check_addlocation_input)
         self.boxes_tree.currentItemChanged.connect(self.check_deletion_params)
 
+        self.box_search_btn.clicked.connect(self.find_in_box_tree)
+
         self.add_box_type_cb.currentTextChanged.connect(self.check_addbox_input)
         self.add_description_eb.textChanged.connect(self.check_addbox_input)
 
@@ -71,7 +73,8 @@ class BoxesScreen(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.boxes_tab_wg.currentIndex() == 0:
-                # press button
+                if self.box_search_eb.text() != "":
+                    self.find_in_box_tree()
                 return
             else: # index = 1
                 # maybe not?
@@ -135,6 +138,26 @@ class BoxesScreen(QMainWindow):
         l = [f'({child.text(0)}:{child.text(2)})' for child in children]
         #if len(l) > 0:
             #print("took " + ', '.join(l))
+
+    def find_in_box_tree(self):
+        path = None
+        s = self.box_search_eb.text()
+        if s != "":
+            try:
+                res = dbInterface.getLocationPath(self.token, s)
+                path = json.loads(res)
+            except:
+                logging.getLogger(self.mod_name).error(f"getLocationPath returned {res}")
+                return
+            if len(path) > 0:
+                self.seek_path(path[0]['path'])
+
+    def seek_path(self, path_s):
+        path_l = path_s.split('/')
+        for p in path_l:
+            items = self.boxes_tree.findItems(p, Qt.MatchRecursive)
+            self.boxes_tree.setCurrentItem(items[0])
+            self.boxes_tree.expandItem(items[0])   
 
     def setAddParams(self, item):
         if (item is not None):
