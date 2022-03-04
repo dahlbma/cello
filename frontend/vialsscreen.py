@@ -106,7 +106,6 @@ class VialsScreen(QMainWindow):
         try:
             if l == False:
                 self.edit_vial_error_lab.setText(res)
-                print(res)
             self.edit_dilution_eb.setText(str(res[0]['dilution_factor']))
             self.edit_vial_error_lab.setText('')
         except Exception as e:
