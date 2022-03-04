@@ -71,5 +71,4 @@ try:
     widget.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
     sys.exit(app.exec_())
 except:# Exception as e:
-    quit()
-    #logger.info(str(e))
+    logger.info("exit cello")
