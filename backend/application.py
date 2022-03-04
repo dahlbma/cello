@@ -649,8 +649,12 @@ class EditVial(tornado.web.RequestHandler):
         try:
             cur.execute(sSql)
         except Exception as e:
+            sError = str(e)
             logging.error("Error updating vial " + str(sVial))
-            logging.error("Error: " + str(e))
+            logging.error("Error: " + sError)
+            self.set_status(400)
+            self.finish(sError)
+            return
         logging.info("Done editing vial: " + str(sVial))
 
         sSql = f"""
@@ -1334,7 +1338,7 @@ class GetLocationPath(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
-        
+
 @jwtauth
 class GetLocationChildren(tornado.web.RequestHandler):
     def get(self, sLocation):
