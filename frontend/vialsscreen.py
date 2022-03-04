@@ -19,6 +19,7 @@ class VialsScreen(QMainWindow):
         self.goto_search_btn.clicked.connect(self.gotoSearch)
         self.goto_boxes_btn.clicked.connect(self.gotoBoxes)
         self.goto_microtubes_btn.clicked.connect(self.gotoMicrotubes)
+        self.edit_vial_error_lab.setText('')
 
         self.vials_tab_wg.setCurrentIndex(0)
         self.vials_tab_wg.currentChanged.connect(self.tabChanged)
@@ -57,6 +58,7 @@ class VialsScreen(QMainWindow):
             self.searchVial(t)
 
     def searchVial(self, vialId):
+        self.edit_vial_error_lab.setText('')
         vialId = re.sub("[^0-9a-zA-Z]+", " ", vialId)
         logging.getLogger(self.mod_name).info(f"vial search {vialId}")
         #res = [{'':5}]#dbInterface.<>(self.token, vialId)
@@ -95,14 +97,17 @@ class VialsScreen(QMainWindow):
 
     def updateVial(self):
         res, l = dbInterface.editVial(self.token,
-                                   self.edit_vial_id_eb.text(),
-                                   self.edit_batch_id_eb.text(),
-                                   self.edit_tare_eb.text(),
-                                   self.edit_gross_weight_eb.text(),
-                                   self.edit_net_weight_eb.text(),
-                                   self.edit_vconc_cb.currentText())
+                                      self.edit_vial_id_eb.text(),
+                                      self.edit_batch_id_eb.text(),
+                                      self.edit_tare_eb.text(),
+                                      self.edit_gross_weight_eb.text(),
+                                      self.edit_net_weight_eb.text(),
+                                      self.edit_vconc_cb.currentText())
         try:
+            if l == False:
+                self.edit_vial_error_lab.setText(res)
+                print(res)
             self.edit_dilution_eb.setText(str(res[0]['dilution_factor']))
+            self.edit_vial_error_lab.setText('')
         except Exception as e:
             print(str(e))
-            print(res[0]['dilution_factor'])
