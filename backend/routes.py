@@ -163,6 +163,7 @@ def make_app():
         (r"/uploadBinary", application.UploadBinary),
         (r"/uploadEmptyVials", application.uploadEmptyVials),
         (r"/getLocations", application.getLocations),
+        (r"/getLocationPath/(?P<sLocation>[^\/]+)", application.GetLocationPath),
         (r"/getLocationChildren/(?P<sLocation>[^\/]+)", application.GetLocationChildren),
         (r"/getLocationByStorage/(?P<sStorage>[^\/]+)", application.GetLocationByStorage),
         (r"/createManyVialsNLabels", application.createManyVialsNLabels),
