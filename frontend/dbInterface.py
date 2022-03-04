@@ -155,6 +155,15 @@ def getBoxLocation(token, box):
         res = r.content
     return res
 
+def getLocationPath(token, location):
+    r = requests.get(f'{baseUrl}getLocationPath/{location}',
+                     headers={'token': token})
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    return res
+
 def updateVialPosition(token, vial, box, pos):
     r = requests.put(f'{baseUrl}updateVialPosition/{vial}/{box}/{pos}',
                      headers={'token': token})
