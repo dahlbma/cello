@@ -16,7 +16,9 @@ if os_name == 'Windows':
 
 def error_handler(etype, value, tb):
     err_msg = "".join(traceback.format_exception(etype, value, tb))
-    logger.exception(err_msg)
+    logging.getLogger().error(f"\n{err_msg}")
+
+sys.excepthook = error_handler
 
 #base settings for logging
 level=logging.INFO
@@ -68,5 +70,6 @@ try:
     app.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
     widget.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
     sys.exit(app.exec_())
-except Exception as e:
-    logger.info(str(e))
+except:# Exception as e:
+    exit()
+    #logger.info(str(e))

@@ -105,7 +105,6 @@ class BoxesScreen(QMainWindow):
         try:
             root_items = json.loads(r)
         except:
-            print(r)
             logging.getLogger(self.mod_name).error("bad response for getLocationChildren/root")
             return
 
@@ -238,7 +237,7 @@ class BoxesScreen(QMainWindow):
     def deleteLocation(self):
         target = f"{self.delete_location_lab.text()}/{self.add_location_barcode}"
         #target_barcode = self.add_location_barcode 
-        print(f"delete {target}!")
+        logging.getLogger(self.mod_name).info(f"delete {target}!")
         
         #delete request
         r, ret = dbInterface.deleteLocation(self.token, self.add_location_barcode)
@@ -261,7 +260,6 @@ class BoxesScreen(QMainWindow):
             nr_o_children = self.get_children(self.boxes_tree.currentItem())
             if (nr_o_children == 0) or \
                (self.boxes_tree.currentItem().childIndicatorPolicy() == QTreeWidgetItem.DontShowIndicator):
-                print(f"deletable: {self.boxes_tree.currentItem().text(0)}/{self.boxes_tree.currentItem().text(2)}")
                 self.delete_checkbox.setEnabled(True)
                 self.delete_checkbox.setChecked(False)
                 self.delete_location_btn.setEnabled(False)

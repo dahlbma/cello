@@ -152,7 +152,7 @@ class MicrotubesScreen(QMainWindow):
             return
         with open(fname[0], "w") as f:
             f.write(exportString)
-        print(f"wrote to file: {fname[0]}")
+        logging.getLogger(self.mod_name).info(f"wrote to file: {fname[0]}")
 
 
     def search_rack(self):
