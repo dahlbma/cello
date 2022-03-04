@@ -44,31 +44,31 @@ fh.setFormatter(formatter)
 logger.addHandler(ch)
 logger.addHandler(fh)
 
-try:
-    # base app settings
-    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
-    app = QApplication(['Cello'])
-    clipboard = app.clipboard()
-    app.setApplicationName("Cello")
-    welcome = LoginScreen()
-    widget = QtWidgets.QStackedWidget()
-    widget.addWidget(welcome)
+#try:
+# base app settings
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
+app = QApplication(['Cello'])
+clipboard = app.clipboard()
+app.setApplicationName("Cello")
+welcome = LoginScreen()
+widget = QtWidgets.QStackedWidget()
+widget.addWidget(welcome)
 
-    desktop = QApplication.desktop()
+desktop = QApplication.desktop()
+windowHeight = 800
+windowWidth = 1200
+
+windowHeight = int(round(0.9 * desktop.screenGeometry().height(), -1))
+if windowHeight > 800:
     windowHeight = 800
-    windowWidth = 1200
 
-    windowHeight = int(round(0.9 * desktop.screenGeometry().height(), -1))
-    if windowHeight > 800:
-        windowHeight = 800
+windowWidth = int(round((1200/800) * windowHeight, -1))
 
-    windowWidth = int(round((1200/800) * windowHeight, -1))
+#widget.resize(windowWidth, windowHeight)
 
-    #widget.resize(windowWidth, windowHeight)
-
-    widget.show()
-    app.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
-    widget.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
-    sys.exit(app.exec_())
-except:# Exception as e:
-    logger.info("exit cello")
+widget.show()
+app.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
+widget.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
+sys.exit(app.exec_())
+#except:# Exception as e:
+#    logger.info("exit cello")
