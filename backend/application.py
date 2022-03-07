@@ -167,6 +167,33 @@ class getMicroTubes(tornado.web.RequestHandler):
 
 
 @jwtauth
+class Nine6to384(tornado.web.RequestHandler):
+    def post(self):
+        pass
+
+
+@jwtauth
+class CreatePlates(tornado.web.RequestHandler):
+    def put(self, sPlateType, sPlateName, sNumberOfPlates):
+        pass
+
+
+@jwtauth
+class GetPlate(tornado.web.RequestHandler):
+    def get(self, sPlate):
+        sSql = f"""
+        SELECT p.plate_id,c.well, compound_id, notebook_ref, c.form, c.conc
+        FROM cool.config c, cool.plate p, cool.plating_sequence ps
+        WHERE p.CONFIG_ID = c.CONFIG_ID
+        and p.TYPE_ID = ps.TYPE_ID
+        and c.WELL = ps.WELL and p.plate_id = '{sPlate}'
+	order by ps.seq"""
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        self.write(json.dumps(res_to_json(tRes, cur), indent=4))
+
+
+@jwtauth
 class ReadScannedRack(tornado.web.RequestHandler):
     def post(self):
         try:
