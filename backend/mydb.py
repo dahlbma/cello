@@ -62,3 +62,4 @@ class DisconnectSafeConnection(object):
         #cur.execute(sSql)
         return DisconnectSafeCursor(self, cur)
 
+disconnectSafeConnect = DisconnectSafeConnection

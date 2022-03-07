@@ -14,7 +14,8 @@ from rdkit.Chem import Draw
 import mydb
 import config
 
-db = mydb.DisconnectSafeConnection()
+
+db = mydb.disconnectSafeConnect()
 cur = db.cursor()
 
 NR_OF_VIALS_IN_BOX = 200
