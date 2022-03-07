@@ -77,7 +77,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -718,7 +718,7 @@ Plates</string>
              <bool>true</bool>
             </property>
             <attribute name="horizontalHeaderDefaultSectionSize">
-             <number>140</number>
+             <number>120</number>
             </attribute>
             <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
              <bool>true</bool>
@@ -754,6 +754,11 @@ Plates</string>
             <column>
              <property name="text">
               <string>Conc (mM)</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Volume</string>
              </property>
             </column>
            </widget>
