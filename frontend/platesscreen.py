@@ -27,7 +27,6 @@ class PlatesScreen(QMainWindow):
         self.new_plates_type_cb.addItems(types)
         self.new_plates_type_cb.currentTextChanged.connect(self.check_plates_input)
 
-
         self.plate_discard_chk.stateChanged.connect(self.readyDiscard)
 
     def keyPressEvent(self, event):
@@ -49,7 +48,8 @@ class PlatesScreen(QMainWindow):
             return
 
     def check_plates_input(self):
-        if self.new_plates_type_cb.currentText() != "":
+        if (self.new_plates_type_cb.currentText() != "") and \
+            (self.new_plate_comment_eb.text() != ""):
             self.new_plates_save_btn.setEnabled(True)
         else:
             self.new_plates_save_btn.setEnabled(False)
