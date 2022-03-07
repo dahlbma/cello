@@ -256,3 +256,23 @@ def addMicrotube(token, tubeId, compBatch, volume, conc):
         return r.content.decode(), False
     else:
         return r.content.decode(), True
+
+def nine6to384(token, name, q1, q2, q3, q4):
+    r = requests.post(f'{baseUrl}nine6to384',
+                      data={'q1':q1,
+                            'q2':q2,
+                            'q3':q3,
+                            'q4':q4},
+                      headers={'token':token})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
+
+def createPlates(token, type, name, nr_o_ps):
+    r = requests.put(f'{baseUrl}createPlates/{type}/{name}/{nr_o_ps}',
+                      headers={'token':token})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
