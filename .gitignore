@@ -62,3 +62,4 @@ docs/_build/
 
 # Excluded Files
 nohup.out
+frontend/export_tubeids.txt
