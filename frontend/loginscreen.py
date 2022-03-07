@@ -9,6 +9,7 @@ from searchscreen import SearchScreen
 from vialsscreen import VialsScreen
 from boxesscreen import BoxesScreen
 from microtubesscreen import MicrotubesScreen
+from platesscreen import PlatesScreen
 
 class LoginScreen(QMainWindow):
     def __init__(self):
@@ -54,11 +55,13 @@ class LoginScreen(QMainWindow):
         vials = VialsScreen(self.jwt_token)
         boxes = BoxesScreen(self.jwt_token)
         microtubes = MicrotubesScreen(self.jwt_token)
+        plates = PlatesScreen(self.jwt_token)
 
         # add screens to stackedwidget
         self.window().addWidget(search)
         self.window().addWidget(vials)
         self.window().addWidget(boxes)
         self.window().addWidget(microtubes)
+        self.window().addWidget(plates)
         #gotoSearch(self)
         gotoBoxes(self)

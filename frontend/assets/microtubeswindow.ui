@@ -24,6 +24,13 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="goto_search_btn">
+        <property name="text">
+         <string>Search</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="3">
        <widget class="QPushButton" name="goto_microtubes_btn">
         <property name="enabled">
@@ -33,19 +40,6 @@
          <string>Microtubes</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="4">
-       <spacer name="horizontalSpacer_5">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>438</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
       </item>
       <item row="0" column="2">
        <widget class="QPushButton" name="goto_boxes_btn">
@@ -57,14 +51,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="goto_search_btn">
-        <property name="text">
-         <string>Search</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="5">
+      <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="microtubes_tab_wg">
         <property name="currentIndex">
          <number>0</number>
@@ -881,6 +868,26 @@ Microtubes</string>
           </item>
          </layout>
         </widget>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>438</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="4">
+       <widget class="QPushButton" name="goto_plates_btn">
+        <property name="text">
+         <string>Plates</string>
+        </property>
        </widget>
       </item>
      </layout>

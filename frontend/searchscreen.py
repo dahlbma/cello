@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 from cellolib import *
 
 class SearchScreen(QMainWindow):
-    from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoMicrotubes#, gotoLocations
+    from cellolib import gotoVials, gotoBoxes, gotoMicrotubes, gotoPlates
     def __init__(self, token):
         super(SearchScreen, self).__init__()
         self.token = token
@@ -16,7 +16,8 @@ class SearchScreen(QMainWindow):
 
         self.goto_vials_btn.clicked.connect(self.gotoVials)
         self.goto_boxes_btn.clicked.connect(self.gotoBoxes)  
-        self.goto_microtubes_btn.clicked.connect(self.gotoMicrotubes)      
+        self.goto_microtubes_btn.clicked.connect(self.gotoMicrotubes)
+        self.goto_plates_btn.clicked.connect(self.gotoPlates)      
 
         self.search_tab_wg.setCurrentIndex(0)
         self.search_tab_wg.currentChanged.connect(self.tabChanged)

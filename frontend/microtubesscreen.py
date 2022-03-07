@@ -8,7 +8,7 @@ from PyQt5.QtGui import QColor
 from cellolib import *
 
 class MicrotubesScreen(QMainWindow):
-    from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoMicrotubes#, gotoLocations
+    from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoPlates
     def __init__(self, token):
         super(MicrotubesScreen, self).__init__()
         self.token = token
@@ -20,6 +20,7 @@ class MicrotubesScreen(QMainWindow):
         self.goto_search_btn.clicked.connect(self.gotoSearch)
         self.goto_vials_btn.clicked.connect(self.gotoVials)
         self.goto_boxes_btn.clicked.connect(self.gotoBoxes)
+        self.goto_plates_btn.clicked.connect(self.gotoPlates)
         
         self.microtubes_tab_wg.setCurrentIndex(0)
         self.microtubes_tab_wg.currentChanged.connect(self.tabChanged)

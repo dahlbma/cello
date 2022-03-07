@@ -7,7 +7,7 @@ from PyQt5.QtGui import QColor
 from cellolib import *
 
 class VialsScreen(QMainWindow):
-    from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoMicrotubes#, gotoLocations
+    from cellolib import gotoSearch, gotoBoxes, gotoMicrotubes, gotoPlates
     def __init__(self, token):
         super(VialsScreen, self).__init__()
         self.token = token
@@ -19,6 +19,8 @@ class VialsScreen(QMainWindow):
         self.goto_search_btn.clicked.connect(self.gotoSearch)
         self.goto_boxes_btn.clicked.connect(self.gotoBoxes)
         self.goto_microtubes_btn.clicked.connect(self.gotoMicrotubes)
+        self.goto_plates_btn.clicked.connect(self.gotoPlates)
+
         self.edit_vial_error_lab.setText('')
 
         self.vials_tab_wg.setCurrentIndex(0)
