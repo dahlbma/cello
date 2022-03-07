@@ -205,7 +205,7 @@ class BoxesScreen(QMainWindow):
             logging.getLogger(self.mod_name).error(f"addBox failed with [{sBoxName}, {sBoxSize}, {sParent}]")
 
     def check_addbox_input(self):
-        if (self.add_location_lab.text()) != "" and \
+        if (self.add_location_lab.text() != "") and \
             (self.add_box_type_cb.currentText() != "") and \
             (self.add_description_eb.text() != "") and \
             (self.boxes_tree.currentItem().childIndicatorPolicy() != QTreeWidgetItem.DontShowIndicator):
