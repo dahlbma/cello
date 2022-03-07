@@ -48,8 +48,8 @@ def gotoMicrotubes(self):
 def gotoPlates(self):
     resize_window(self)
     self.window().setCurrentIndex(5)
-    self.window.widget(5).plates_tab_wg.setCurrentIndex(0)
-    self.window.widget(5).new_n_plates_sb.setFocus()
+    self.window().widget(5).plates_tab_wg.setCurrentIndex(0)
+    self.window().widget(5).new_n_plates_sb.setFocus()
     return
 
 
