@@ -27,6 +27,10 @@ class PlatesScreen(QMainWindow):
         self.new_plates_type_cb.addItems(types)
         self.new_plates_type_cb.currentTextChanged.connect(self.check_plates_input)
 
+        self.plate_data = None
+        self.plate_search_btn.clicked.connect(self.check_plate_search_input)
+        self.plate_comment_btn.clicked.connect(self.editComment)
+        self.setDiscard(False)
         self.plate_discard_chk.stateChanged.connect(self.readyDiscard)
 
     def keyPressEvent(self, event):
@@ -67,25 +71,68 @@ class PlatesScreen(QMainWindow):
             logging.getLogger(self.mod_name).info(f"create plates [{type}:{name}:{nr_o_ps}] failed:\n{res}")
 
     def check_plate_search_input(self):
-        pattern = '^test$'
-        t = self.plate_search_eb.text()
+        pattern = '^[pP][0-9]{6}$'
+        t = re.sub("[^0-9a-zA-Z]+", " ", self.plate_search_eb.text())
         if re.match(pattern, t):
-            self.plateSearch()
+            self.plateSearch(t)
         else:
             self.plate_search = None
             self.plate_table.setRowCount(0)
             self.plate_comment_btn.setEnabled(False)
             self.setDiscard(False)
 
-    def plateSearch(self):
-        plates = re.sub("[^0-9a-zA-Z]+", " ", self.plate_search_eb.text())
+    def plateSearch(self, plate):
+        if len(plate) < 1:
+            return
+        logging.getLogger(self.mod_name).info(f"plate search {plate}")
+        res = dbInterface.getPlate(self.token, plate)
+        try:
+            self.plate_data = json.loads(res)
+            logging.getLogger(self.mod_name).info(f"received data {self.plate_data}")
+            if len(self.plate_data) < 1:
+                raise Exception
+            self.plate_comment_eb.setEnabled(True)
+            self.plate_comment_btn.setEnabled(True)
+            self.plate_comment_eb.setText(self.plate_data[0]['description'])
+            self.setPlateTableData(self.plate_data)
+            self.setDiscard(True)
+        except:
+            self.plate_data = None
+            self.setDiscard(False)
+            self.plate_comment_eb.setText("")
+            self.plate_comment_eb.setEnabled(False)
+            self.plate_comment_btn.setEnabled(False)
+    
+    def setPlateTableData(self, data):
+        self.plate_table.setRowCount(0)
+        self.plate_table.setRowCount(len(data))
+        for n in range(len(data)):
+            newItem = QTableWidgetItem(f"{data[n]['well']}")
+            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+            self.plate_table.setItem(n, 0, newItem)
+            newItem = QTableWidgetItem(f"{data[n]['compound_id']}")
+            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+            self.plate_table.setItem(n, 1, newItem)
+            newItem = QTableWidgetItem(f"{data[n]['notebook_ref']}")
+            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+            self.plate_table.setItem(n, 2, newItem)
+            newItem = QTableWidgetItem(f"{data[n]['form']}")
+            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+            self.plate_table.setItem(n, 3, newItem)
+            newItem = QTableWidgetItem(f"{data[n]['conc']}")
+            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+            self.plate_table.setItem(n, 4, newItem)
+
+    def editComment(self):
+        print(f"comment updated to: {self.plate_comment_eb.text()}")
 
     def setDiscard(self, state):
         if state:
             self.plate_discard_chk.setEnabled(True)
         else: 
             self.plate_discard_chk.setChecked(False)
-            self.plate_discard_chḱ.setEnabled(False)
+            self.plate_discard_chk.setEnabled(False)
+            self.readyDiscard()
     
     def readyDiscard(self):
         if self.plate_discard_chk.isChecked():

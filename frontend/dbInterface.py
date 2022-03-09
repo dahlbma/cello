@@ -276,3 +276,12 @@ def createPlates(token, type, name, nr_o_ps):
         return r.content.decode(), False
     else:
         return r.content.decode(), True
+
+def getPlate(token, plate):
+    r = requests.get(f'{baseUrl}getPlate/{plate}',
+                      headers={'token': token})
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    return res
