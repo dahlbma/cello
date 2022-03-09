@@ -14,7 +14,6 @@ from rdkit.Chem import Draw
 import mydb
 import config
 
-
 db = mydb.disconnectSafeConnect()
 cur = db.cursor()
 
@@ -175,14 +174,36 @@ class Nine6to384(tornado.web.RequestHandler):
 @jwtauth
 class CreatePlates(tornado.web.RequestHandler):
     def put(self, sPlateType, sPlateName, sNumberOfPlates):
+        iNumberOfPlates = int(sNumberOfPlates)
+        for i in range(iNumberOfPlates):
+            ii = str(i + 1)
+            iii = ii.zfill(3)
+            sNewplateName = f"{iii} {sPlateName}"
+
+
+@jwtauth
+class UpdatePlateName(tornado.web.RequestHandler):
+    def put(self, sPlate, sPlateName):
         pass
+
+
+@jwtauth
+class UploadWellInformation(tornado.web.RequestHandler):
+    def post(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
+        sPlate = self.get_argument("plate_id")
+        sWell = self.get_argument("well")
+        sCompound = self.get_argument("compound_id")
+        sBatch = self.get_argument("batch")
+        sForm = self.get_argument("form")
+        sConc = self.get_argument("conc")
+        sVolume = self.get_argument("volume")
 
 
 @jwtauth
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
         sSql = f"""
-        SELECT p.plate_id,c.well, compound_id, notebook_ref, c.form, c.conc
+        SELECT p.comments description, p.plate_id,c.well, compound_id, notebook_ref, c.form, c.conc
         FROM cool.config c, cool.plate p, cool.plating_sequence ps
         WHERE p.CONFIG_ID = c.CONFIG_ID
         and p.TYPE_ID = ps.TYPE_ID
