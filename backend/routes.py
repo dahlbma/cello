@@ -185,6 +185,8 @@ def make_app():
         (r"/nine6to384", application.Nine6to384),
         (r"/createPlates/(?P<sPlateType>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sNumberOfPlates>[^\/]+)",
          application.CreatePlates),
+        (r"/uploadWellInformation/(?P<sPlate>[^\/]+)/(?P<sWell>[^\/]+)/(?P<sCompound>[^\/]+)/(?P<sBatch>[^\/]+)/(?P<sForm>[^\/]+)/(?P<sConc>[^\/]+)/(?P<sVolume>[^\/]+)",
+         application.UploadWellInformation),
         (r"/getPlate/(?P<sPlate>[^\/]+)", application.GetPlate),
         (r"/updatePlateName/(?P<sPlate>[^\/]+)/(?P<sPlateName>[^\/]+)",
          application.UpdatePlateName),

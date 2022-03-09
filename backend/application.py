@@ -188,6 +188,18 @@ class UpdatePlateName(tornado.web.RequestHandler):
 
 
 @jwtauth
+class UploadWellInformation(tornado.web.RequestHandler):
+    def post(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
+        sPlate = self.get_argument("plate_id")
+        sWell = self.get_argument("well")
+        sCompound = self.get_argument("compound_id")
+        sBatch = self.get_argument("batch")
+        sForm = self.get_argument("form")
+        sConc = self.get_argument("conc")
+        sVolume = self.get_argument("volume")
+
+
+@jwtauth
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
         sSql = f"""
