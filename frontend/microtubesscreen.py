@@ -374,7 +374,7 @@ Nr of failed tubes: {res['iError']}''')
                             self.create_microtubes_table.setItem(next_row, index, newItem)
                     rowLen = len(rowdata)
                     for index in range(rowLen, 4):
-                        newItem = QTableWidgetItem("None")
+                        newItem = QTableWidgetItem("")
                         self.create_microtubes_table.setItem(next_row, index, newItem)
                 for i in range(0, 5):
                     self.addRow()
