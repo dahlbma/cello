@@ -186,6 +186,8 @@ def make_app():
         (r"/createPlates/(?P<sPlateType>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sNumberOfPlates>[^\/]+)",
          application.CreatePlates),
         (r"/getPlate/(?P<sPlate>[^\/]+)", application.GetPlate),
+        (r"/updatePlateName/(?P<sPlate>[^\/]+)/(?P<sPlateName>[^\/]+)",
+         application.UpdatePlateName),
         (r"/searchLocation/(?P<sLocation>[^\/]+)", application.searchLocation),
         (r"/batchInfo/(?P<sBatch>[^\/]+)", application.batchInfo),
         (r"/searchBatches/(?P<sBatches>[^\/]+)", application.searchBatches),
