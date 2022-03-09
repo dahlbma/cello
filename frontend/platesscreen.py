@@ -1,6 +1,6 @@
-import sys, os, logging, re
+import sys, os, logging, re, csv
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
@@ -33,11 +33,18 @@ class PlatesScreen(QMainWindow):
         self.setDiscard(False)
         self.plate_discard_chk.stateChanged.connect(self.readyDiscard)
 
+        self.choose_file_btn.clicked.connect(self.import_plates_file)
+
+        self.nine6to384_btn.clicked.connect(self.nine6to384_merge)
+
+
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.plates_tab_wg.currentIndex() == 0:
                 # press button
                 return
+            elif self.plates_tab_wg.currentIndex() == 1:
+                self.check_plate_search_input()
             else: # index = 1
                 # maybe not?
                 return
@@ -71,14 +78,17 @@ class PlatesScreen(QMainWindow):
             logging.getLogger(self.mod_name).info(f"create plates [{type}:{name}:{nr_o_ps}] failed:\n{res}")
 
     def check_plate_search_input(self):
-        pattern = '^[pP][0-9]{6}$'
+        pattern = '^[pP]{1}[0-9]{6}$'
         t = re.sub("[^0-9a-zA-Z]+", " ", self.plate_search_eb.text())
         if re.match(pattern, t):
             self.plateSearch(t)
         else:
             self.plate_search = None
-            self.plate_table.setRowCount(0)
+            self.plate_data = None
+            self.plate_comment_eb.setText("")
+            self.plate_comment_eb.setEnabled(False)
             self.plate_comment_btn.setEnabled(False)
+            self.plate_table.setRowCount(0)
             self.setDiscard(False)
 
     def plateSearch(self, plate):
@@ -95,13 +105,15 @@ class PlatesScreen(QMainWindow):
             self.plate_comment_btn.setEnabled(True)
             self.plate_comment_eb.setText(self.plate_data[0]['description'])
             self.setPlateTableData(self.plate_data)
+            self.setDiscard(False)
             self.setDiscard(True)
         except:
             self.plate_data = None
-            self.setDiscard(False)
             self.plate_comment_eb.setText("")
             self.plate_comment_eb.setEnabled(False)
             self.plate_comment_btn.setEnabled(False)
+            self.plate_table.setRowCount(0)
+            
     
     def setPlateTableData(self, data):
         self.plate_table.setRowCount(0)
@@ -139,3 +151,65 @@ class PlatesScreen(QMainWindow):
             self.plate_discard_btn.setEnabled(True)
         else:
             self.plate_discard_btn.setEnabled(False)
+
+
+    def import_plates_file(self):
+        fname = QFileDialog.getOpenFileName(self, 'Import from File', 
+                                                '.', "")
+        if fname[0] == '':
+            return
+        try:
+            with open(fname[0]) as f:
+                dialect = csv.Sniffer().sniff(f.read())
+                f.seek(0)
+                reader = csv.reader(f, dialect)
+                self.path_lab.setText(fname[0])
+                self.upload_file_btn.setEnabled(True)
+                self.populate_upload_table(list(reader))
+        except:
+            self.upload_plates_data = None
+            self.upload_file_btn.setEnabled(False)
+            logging.getLogger(self.mod_name).error("plates file import failed")
+
+    def populate_upload_table(self, data, error=False):
+        self.upload_plates_table.setRowCount(0)
+        self.upload_plates_table.setRowCount(len(data))
+        # assume data like [{col1, col2, col3, ...}, {...}]
+        try:
+            for n in range(len(data)):
+                print(data[n])
+                for m in range(len(data[n])):
+                    newItem = QTableWidgetItem(f"{data[n][m]}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    if error is True:
+                        newItem.setBackground(QColor(63, 186, 120))
+                    self.upload_plates_table.setItem(n, m, newItem)
+        except:
+            logging.getLogger(self.mod_name).error("plate file import failed")
+
+    def upload_plate_table(self):
+        repopulate_data = []
+        for row in range(self.upload_plates_table.rowCount()):
+            plate_id = self.upload_plates_table.item(row, 0).text()
+            well = self.upload_plates_table.item(row, 1).text()
+            compound_id = self.upload_plates_table.item(row, 2).text()
+            batch = self.upload_plates_table.item(row, 3).text()
+            form = self.upload_plates_table.item(row, 4).text()
+            conc = self.upload_plates_table.item(row, 5).text()
+            volume = self.upload_plates_table.item(row, 6).text()
+
+            data = {'plate_id':plate_id,
+                    'well':well,
+                    'compound_id':compound_id,
+                    'batch':batch,
+                    'form':form,
+                    'conc':conc,
+                    'volume':volume}
+            _, status = dbInterface.uploadPlate(self.token, plate_id, well, compound_id, batch, form, conc, volume)
+            if status is False:
+                repopulate_data.append(data)
+        
+        self.populate_upload_table(repopulate_data)
+
+    def nine6to384_merge(self):
+        print("MERGING")
