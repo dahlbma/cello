@@ -34,6 +34,7 @@ class PlatesScreen(QMainWindow):
         self.plate_discard_chk.stateChanged.connect(self.readyDiscard)
 
         self.choose_file_btn.clicked.connect(self.import_plates_file)
+        self.upload_file_btn.clicked.connect(self.upload_plate_table)
 
         self.nine6to384_btn.clicked.connect(self.nine6to384_merge)
 
@@ -98,7 +99,7 @@ class PlatesScreen(QMainWindow):
         res = dbInterface.getPlate(self.token, plate)
         try:
             self.plate_data = json.loads(res)
-            logging.getLogger(self.mod_name).info(f"received data {self.plate_data}")
+            logging.getLogger(self.mod_name).info(f"received data")
             if len(self.plate_data) < 1:
                 raise Exception
             self.plate_comment_eb.setEnabled(True)
@@ -136,7 +137,16 @@ class PlatesScreen(QMainWindow):
             self.plate_table.setItem(n, 4, newItem)
 
     def editComment(self):
-        print(f"comment updated to: {self.plate_comment_eb.text()}")
+        new_comment = self.plate_comment_eb.text()
+        plate = self.plate_search_eb.text()
+        #try:
+        _, status = dbInterface.updatePlateName(self.token, plate, new_comment)
+            #if status is False:
+            #    raise Exception
+        #except:
+        #    logging.getLogger(self.mod_name).info(f"updating comment failed")
+        self.check_plate_search_input()
+
 
     def setDiscard(self, state):
         if state:
@@ -182,7 +192,7 @@ class PlatesScreen(QMainWindow):
                     newItem = QTableWidgetItem(f"{data[n][m]}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     if error is True:
-                        newItem.setBackground(QColor(63, 186, 120))
+                        newItem.setBackground(QColor(250, 103, 92))
                     self.upload_plates_table.setItem(n, m, newItem)
         except:
             logging.getLogger(self.mod_name).error("plate file import failed")
@@ -198,18 +208,18 @@ class PlatesScreen(QMainWindow):
             conc = self.upload_plates_table.item(row, 5).text()
             volume = self.upload_plates_table.item(row, 6).text()
 
-            data = {'plate_id':plate_id,
-                    'well':well,
-                    'compound_id':compound_id,
-                    'batch':batch,
-                    'form':form,
-                    'conc':conc,
-                    'volume':volume}
+            data = [plate_id,
+                    well,
+                    compound_id,
+                    batch,
+                    form,
+                    conc,
+                    volume]
             _, status = dbInterface.uploadPlate(self.token, plate_id, well, compound_id, batch, form, conc, volume)
             if status is False:
                 repopulate_data.append(data)
         
-        self.populate_upload_table(repopulate_data)
+        self.populate_upload_table(repopulate_data, error=True)
 
     def nine6to384_merge(self):
         print("MERGING")

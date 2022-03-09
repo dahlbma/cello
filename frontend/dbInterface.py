@@ -288,7 +288,7 @@ def getPlate(token, plate):
 
 def updatePlateName(token, plate, comment):
     r = requests.put(f'{baseUrl}updatePlateName/{plate}/{comment}',
-                      header={'token':token})
+                      headers={'token':token})
     if r.status_code != 200:
         return r.content.decode(), False
     else:
@@ -303,7 +303,7 @@ def uploadPlate(token, plate_id, well, compound_id, batch, form, conc, volume):
                        'form':form,
                        'conc':conc,
                        'volume':volume},
-                       header={'token':token})
+                       headers={'token':token})
     if r.status_code != 200:
         return r.content.decode(), False
     else:
