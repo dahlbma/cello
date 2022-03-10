@@ -45,6 +45,30 @@ def getNewLocId():
     cur.execute(sSql)
     return 'SL' + str(pkey)
 
+def getNewPlateId():
+    def nextPossiblePlate():
+        sSql = f"select pkey from cool.plate_sequence"
+        cur.execute(sSql)
+        pkey = cur.fetchall()[0][0] +1
+        sSql = f"update cool.plate_sequence set pkey={pkey}"
+        cur.execute(sSql)
+        return pkey
+
+    sPlate = ''
+    pkey = 0
+    while(True):
+        pkey = nextPossiblePlate()
+        sPlate = 'P' + str(pkey)
+        sSql = f"select plate_id from cool.plate where plate_id = '{sPlate}'"
+        cur.execute(sSql)
+        res = cur.fetchall()
+        if len(res) > 0:
+            pass
+        else:
+            break
+
+    return sPlate
+
 
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
@@ -175,12 +199,31 @@ class Nine6to384(tornado.web.RequestHandler):
 class CreatePlates(tornado.web.RequestHandler):
     def put(self, sPlateType, sPlateName, sNumberOfPlates):
         iNumberOfPlates = int(sNumberOfPlates)
+        if sPlateType == "96":
+            # This is the type_id in the db for 96 well plates
+            iPlateType = 1
+        elif sPlateType == "384":
+            # This is the type_id in the db for 384 well plates
+            iPlateType = 16
+        elif sPlateType == "1536":
+            # This is the type_id in the db for 1536 well plates
+            iPlateType = 47
         for i in range(iNumberOfPlates):
             ii = str(i + 1)
             iii = ii.zfill(3)
-            sNewplateName = f"{iii} {sPlateName}"
+            sNewplateName = f"{iii}: {sPlateName}"
+            sPlateId = getNewPlateId()
+            sSql = f"""
+            insert into cool.plate (plate_id, type_id, comments, created_date, updated_date)
+            values (
+            '{sPlateId}',
+            {iPlateType},
+            '{sNewplateName}',
+            now(),
+            now())"""
+            cur.execute(sSql)
 
-
+            
 @jwtauth
 class UpdatePlateName(tornado.web.RequestHandler):
     def put(self, sPlate, sPlateName):
@@ -189,7 +232,8 @@ class UpdatePlateName(tornado.web.RequestHandler):
 
 @jwtauth
 class UploadWellInformation(tornado.web.RequestHandler):
-    def post(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
+    #def post(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
+    def post(self):
         sPlate = self.get_argument("plate_id")
         sWell = self.get_argument("well")
         sCompound = self.get_argument("compound_id")
