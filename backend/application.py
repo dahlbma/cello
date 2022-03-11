@@ -198,6 +198,9 @@ class Nine6to384(tornado.web.RequestHandler):
 @jwtauth
 class CreatePlates(tornado.web.RequestHandler):
     def put(self, sPlateType, sPlateName, sNumberOfPlates):
+        saNewPlates = dict()
+        plateKeys = []
+        plateValues = []
         iNumberOfPlates = int(sNumberOfPlates)
         if sPlateType == "96":
             # This is the type_id in the db for 96 well plates
@@ -214,20 +217,36 @@ class CreatePlates(tornado.web.RequestHandler):
             sNewplateName = f"{iii}: {sPlateName}"
             sPlateId = getNewPlateId()
             sSql = f"""
-            insert into cool.plate (plate_id, type_id, comments, created_date, updated_date)
+            insert into cool.plate (plate_id,
+            config_id,
+            type_id,
+            comments,
+            created_date,
+            updated_date)
             values (
+            '{sPlateId}',
             '{sPlateId}',
             {iPlateType},
             '{sNewplateName}',
             now(),
             now())"""
             cur.execute(sSql)
+            plateKeys.append(sPlateId)
+            plateValues.append(sNewplateName)
+        for i in range(len(plateKeys)):
+            saNewPlates[plateKeys[i]] = plateValues[i]
+        res = json.dumps(saNewPlates, indent = 4)
+        self.write(res)
 
-            
+
 @jwtauth
 class UpdatePlateName(tornado.web.RequestHandler):
     def put(self, sPlate, sPlateName):
-        pass
+        sSql = f"""
+        update cool.plate set comments = '{sPlateName}'
+        where plate_id = '{sPlate}'
+        """
+        cur.execute(sSql)
 
 
 @jwtauth
@@ -247,7 +266,14 @@ class UploadWellInformation(tornado.web.RequestHandler):
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
         sSql = f"""
-        SELECT p.comments description, p.plate_id,c.well, compound_id, notebook_ref, c.form, c.conc
+        SELECT p.comments description,
+        p.plate_id,
+        c.well,
+        compound_id,
+        notebook_ref,
+        c.form,
+        c.conc,
+        c.volume
         FROM cool.config c, cool.plate p, cool.plating_sequence ps
         WHERE p.CONFIG_ID = c.CONFIG_ID
         and p.TYPE_ID = ps.TYPE_ID
