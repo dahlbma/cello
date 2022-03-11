@@ -285,6 +285,21 @@ class GetPlate(tornado.web.RequestHandler):
 
 
 @jwtauth
+class UpdateRackLocation(tornado.web.RequestHandler):
+    def put(self, sRack, sLocation):
+        sSql = f"""
+        update microtube.matrix set location = '{sLocation}'
+        where matrix_id = '{sRack}'
+        """
+        try:
+            sSlask = cur.execute(sSql)
+            self.finish()
+        except Exception as e:
+            self.set_status(400)
+            self.finish(str(e))
+            
+
+@jwtauth
 class ReadScannedRack(tornado.web.RequestHandler):
     def post(self):
         try:
@@ -401,7 +416,7 @@ class getRack(tornado.web.RequestHandler):
             from microtube.tube t, microtube.v_matrix_tube mt, microtube.v_matrix m,
             bcpvs.batch b
             where
-            t.notebook_ref  = b.notebook_ref and
+            t.notebook_ref = b.notebook_ref and
             t.tube_id = mt.tube_id and
             m.matrix_id = mt.matrix_id and
             mt.matrix_id = '{sRack}' order by rackrow, position"""

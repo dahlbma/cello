@@ -178,6 +178,8 @@ def make_app():
         (r"/printBox/(?P<sBox>[^\/]+)", application.printBox),
         (r"/getMicroTubes/(?P<sBatches>[^\/]+)", application.getMicroTubes),
         (r"/getRack/(?P<sRacks>[^\/]+)", application.getRack),
+        (r"/updateRackLocation/(?P<sRack>[^\/]+)/(?P<sLocation>[^\/]+)",
+         application.UpdateRackLocation),
         (r"/readScannedRack", application.ReadScannedRack),
         (r"/updateBox/(?P<sBox>[^\/]+)", application.updateBox),
         (r"/createLocation", application.createLocation),
