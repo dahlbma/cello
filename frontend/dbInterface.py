@@ -249,6 +249,14 @@ def readScannedRack(token, file):
     else:
         return r.content.decode(), True
 
+def updateRackLocation(token, rack_id, box_id):
+    r = requests.put(f'{baseUrl}updateRackLocation/{rack_id}/{box_id}',
+                      headers={'token':token})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
+
 def addMicrotube(token, tubeId, compBatch, volume, conc):
     r = requests.put(f'{baseUrl}addMicrotube/{tubeId}/{compBatch}/{volume}/{conc}',
                       headers={'token': token})
