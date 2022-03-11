@@ -374,7 +374,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
         update microtube.matrix set location = '{sLocation}'
         where matrix_id = '{sRackId}'
         """
-        sSlask = cur.execute(sSql)
+        cur.execute(sSql)
         self.finish(json.dumps({'FailedTubes': saError,
                                 'iOk': iOk,
                                 'iError': iError,
