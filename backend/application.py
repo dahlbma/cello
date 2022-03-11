@@ -303,6 +303,7 @@ class UpdateRackLocation(tornado.web.RequestHandler):
 class ReadScannedRack(tornado.web.RequestHandler):
     def post(self):
         try:
+            sLocation = self.get_argument("location")
             file1 = self.request.files['file'][0]
             sFile = tornado.escape.xhtml_unescape(file1.body)
         except:
@@ -368,6 +369,12 @@ class ReadScannedRack(tornado.web.RequestHandler):
                     err = str(e)
                     logging.error(f'Failed updating tube {sTube} {err}')
             iOk += 1
+
+        sSql = f"""
+        update microtube.matrix set location = '{sLocation}'
+        where matrix_id = '{sRackId}'
+        """
+        sSlask = cur.execute(sSql)
         self.finish(json.dumps({'FailedTubes': saError,
                                 'iOk': iOk,
                                 'iError': iError,
