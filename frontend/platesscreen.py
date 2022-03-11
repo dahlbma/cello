@@ -181,12 +181,20 @@ class PlatesScreen(QMainWindow):
             return
         try:
             with open(fname[0]) as f:
-                dialect = csv.Sniffer().sniff(f.read())
+                sniffer = csv.Sniffer()
+                dialect = sniffer.sniff(f.read())
+                f.seek(0)
+                has_header = sniffer.has_header(f.read())
                 f.seek(0)
                 reader = csv.reader(f, dialect)
                 self.path_lab.setText(fname[0])
                 self.upload_file_btn.setEnabled(True)
-                self.populate_upload_table(list(reader))
+                self.upload_pbar.setValue(0)
+                self.upload_pbar.hide()
+                data = list(reader)
+                if has_header:
+                    data.pop(0)
+                self.populate_upload_table(data)
         except:
             self.upload_plates_data = None
             self.upload_file_btn.setEnabled(False)
@@ -212,11 +220,11 @@ class PlatesScreen(QMainWindow):
         repopulate_data = []
         # set up progress bar
         iTickCount = 0
-        iTicks = int(self.upload_plates_table.rowCount() / 97)
+        iTicks = int(self.upload_plates_table.rowCount() / 100)
         progress = 0
         self.upload_pbar.setValue(progress)
         self.upload_pbar.show()
-
+        QApplication.setOverrideCursor(Qt.WaitCursor)
         for row in range(self.upload_plates_table.rowCount()):
             plate_id = self.upload_plates_table.item(row, 0).text()
             well = self.upload_plates_table.item(row, 1).text()
@@ -249,7 +257,9 @@ class PlatesScreen(QMainWindow):
                     progress += 1
                     iTickCount = 0
                     self.upload_pbar.setValue(progress)
+        self.upload_pbar.setValue(100)
         
+        QApplication.restoreOverrideCursor()
         self.populate_upload_table(repopulate_data, error=True)
 
     def export_upload_data(self):
