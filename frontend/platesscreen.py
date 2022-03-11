@@ -32,9 +32,13 @@ class PlatesScreen(QMainWindow):
         self.plate_comment_btn.clicked.connect(self.editComment)
         self.setDiscard(False)
         self.plate_discard_chk.stateChanged.connect(self.readyDiscard)
+        self.plate_export_btn.clicked.connect(self.plate_export_data)
 
         self.choose_file_btn.clicked.connect(self.import_plates_file)
         self.upload_file_btn.clicked.connect(self.upload_plate_table)
+        self.upload_export_btn.clicked.connect(self.export_upload_data)
+        self.upload_pbar.setValue(0)
+        self.upload_pbar.hide()
 
         self.nine6to384_btn.clicked.connect(self.nine6to384_merge)
 
@@ -100,6 +104,7 @@ class PlatesScreen(QMainWindow):
         try:
             self.plate_data = json.loads(res)
             logging.getLogger(self.mod_name).info(f"received data")
+            print(self.plate_data)
             if len(self.plate_data) < 1:
                 raise Exception
             self.plate_comment_eb.setEnabled(True)
@@ -135,6 +140,9 @@ class PlatesScreen(QMainWindow):
             newItem = QTableWidgetItem(f"{data[n]['conc']}")
             newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
             self.plate_table.setItem(n, 4, newItem)
+            newItem = QTableWidgetItem(f"{data[n]['volume']}")
+            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+            self.plate_table.setItem(n, 4, newItem)
 
     def editComment(self):
         new_comment = self.plate_comment_eb.text()
@@ -162,6 +170,9 @@ class PlatesScreen(QMainWindow):
         else:
             self.plate_discard_btn.setEnabled(False)
 
+    def plate_export_data(self):
+        export_table(self.plate_table)
+
 
     def import_plates_file(self):
         fname = QFileDialog.getOpenFileName(self, 'Import from File', 
@@ -187,7 +198,7 @@ class PlatesScreen(QMainWindow):
         # assume data like [{col1, col2, col3, ...}, {...}]
         try:
             for n in range(len(data)):
-                print(data[n])
+                #print(data[n])
                 for m in range(len(data[n])):
                     newItem = QTableWidgetItem(f"{data[n][m]}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
@@ -199,6 +210,13 @@ class PlatesScreen(QMainWindow):
 
     def upload_plate_table(self):
         repopulate_data = []
+        # set up progress bar
+        iTickCount = 0
+        iTicks = int(self.upload_plates_table.rowCount() / 97)
+        progress = 0
+        self.upload_pbar.setValue(progress)
+        self.upload_pbar.show()
+
         for row in range(self.upload_plates_table.rowCount()):
             plate_id = self.upload_plates_table.item(row, 0).text()
             well = self.upload_plates_table.item(row, 1).text()
@@ -218,8 +236,17 @@ class PlatesScreen(QMainWindow):
             _, status = dbInterface.uploadPlate(self.token, plate_id, well, compound_id, batch, form, conc, volume)
             if status is False:
                 repopulate_data.append(data)
+            else:
+                iTickCount += 1
+                if iTickCount == iTicks:
+                    progress += 1
+                    iTickCount = 0
+                    self.upload_pbar.setValue(progress)
         
         self.populate_upload_table(repopulate_data, error=True)
+
+    def export_upload_data(self):
+        export_table(self.upload_plates_table)
 
     def nine6to384_merge(self):
         print("MERGING")
