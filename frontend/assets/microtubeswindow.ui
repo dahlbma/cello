@@ -54,7 +54,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="microtubes_tab_wg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="tubes_tab">
          <attribute name="title">
@@ -371,8 +371,8 @@
              </spacer>
             </item>
             <item row="1" column="0">
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
+             <layout class="QGridLayout" name="gridLayout_12">
+              <item row="0" column="1">
                <widget class="QLineEdit" name="rack_search_eb">
                 <property name="maximumSize">
                  <size>
@@ -385,7 +385,7 @@
                 </property>
                </widget>
               </item>
-              <item>
+              <item row="0" column="2">
                <widget class="QPushButton" name="rack_search_btn">
                 <property name="maximumSize">
                  <size>
@@ -398,6 +398,13 @@
                 </property>
                 <property name="text">
                  <string>Search</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="rack_moveto_eb">
+                <property name="placeholderText">
+                 <string>Move to:</string>
                 </property>
                </widget>
               </item>
@@ -540,22 +547,6 @@
           <string>Update rack contents</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_10">
-          <item row="1" column="0">
-           <spacer name="horizontalSpacer_11">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>42</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="0" column="1">
            <spacer name="verticalSpacer_8">
             <property name="orientation">
@@ -588,19 +579,6 @@
             </property>
            </spacer>
           </item>
-          <item row="3" column="1">
-           <spacer name="verticalSpacer_9">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>609</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="1" column="1">
            <layout class="QGridLayout" name="gridLayout_9">
             <item row="0" column="1">
@@ -626,6 +604,23 @@
               </property>
              </widget>
             </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="update_box_eb">
+              <property name="placeholderText">
+               <string>Box Destination</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Box:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
             <item row="1" column="1">
              <widget class="QLabel" name="path_lab">
               <property name="text">
@@ -640,20 +635,52 @@
               </property>
              </widget>
             </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="upload_result_lab">
+              <property name="focusPolicy">
+               <enum>Qt::ClickFocus</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+              <property name="textInteractionFlags">
+               <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
-          <item row="2" column="1">
-           <widget class="QLabel" name="upload_result_lab">
-            <property name="focusPolicy">
-             <enum>Qt::ClickFocus</enum>
+          <item row="4" column="1">
+           <spacer name="verticalSpacer_9">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
-            <property name="text">
-             <string/>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>609</height>
+             </size>
             </property>
-            <property name="textInteractionFlags">
-             <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+           </spacer>
+          </item>
+          <item row="1" column="0">
+           <spacer name="horizontalSpacer_11">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-           </widget>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>42</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>
@@ -867,6 +894,77 @@ Microtubes</string>
            </widget>
           </item>
          </layout>
+        </widget>
+        <widget class="QWidget" name="manage_rack_tab">
+         <attribute name="title">
+          <string>Update Rack Location</string>
+         </attribute>
+         <widget class="QLineEdit" name="move_rack_id_eb">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>90</y>
+            <width>113</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="placeholderText">
+           <string>Rack Id</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="move_box_id_eb">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>130</y>
+            <width>113</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <property name="placeholderText">
+           <string>Move to: </string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="move_status_lab">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>180</y>
+            <width>221</width>
+            <height>211</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLabel{
+	border: 1px solid black;
+	border-radius: 3px
+}</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_3">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>40</y>
+            <width>191</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Move Rack to Box</string>
+          </property>
+         </widget>
         </widget>
        </widget>
       </item>
