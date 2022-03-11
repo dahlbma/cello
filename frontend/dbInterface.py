@@ -302,16 +302,16 @@ def updatePlateName(token, plate, comment):
     else:
         return r.content.decode(), True
 
-def uploadPlate(token, plate_id, well, compound_id, batch, form, conc, volume):
-    r = requests.post(f'{baseUrl}uploadPlate',
-                       data = {'plate_id':plate_id,
-                       'well':well,
-                       'compound_id':compound_id,
-                       'batch':batch,
-                       'form':form,
-                       'conc':conc,
-                       'volume':volume},
-                       headers={'token':token})
+def uploadWellInformation(token, plate_id, well, compound_id, batch, form, conc, volume):
+    r = requests.post(f'{baseUrl}uploadWellInformation',
+                      data = {'plate_id':plate_id,
+                              'well':well,
+                              'compound_id':compound_id,
+                              'batch':batch,
+                              'form':form,
+                              'conc':conc,
+                              'volume':volume},
+                      headers={'token':token})
     if r.status_code != 200:
         return r.content.decode(), False
     else:

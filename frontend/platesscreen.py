@@ -233,7 +233,14 @@ class PlatesScreen(QMainWindow):
                     form,
                     conc,
                     volume]
-            _, status = dbInterface.uploadPlate(self.token, plate_id, well, compound_id, batch, form, conc, volume)
+            _, status = dbInterface.uploadWellInformation(self.token,
+                                                          plate_id,
+                                                          well,
+                                                          compound_id,
+                                                          batch,
+                                                          form,
+                                                          conc,
+                                                          volume)
             if status is False:
                 repopulate_data.append(data)
             else:
