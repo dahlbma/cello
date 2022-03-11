@@ -37,12 +37,17 @@ class MicrotubesScreen(QMainWindow):
 
         self.choose_file_btn.clicked.connect(self.getRackFile)
         self.upload_file_btn.clicked.connect(self.uploadRackFile)
+        self.update_box_eb.textChanged.connect(self.unlockRackUpload)
 
         self.addRows()
         self.create_add_rows_btn.clicked.connect(self.addRows)
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
         self.create_microtubes_btn.clicked.connect(self.sendMicrotubes)
         self.create_import_btn.clicked.connect(self.create_import_file)
+
+        self.move_rack_id_eb.returnPressed.connect(self.moveRackStep1)
+        self.move_box_id_eb.returnPressed.connect(self.moveRackStep2)
+        self.move_box_id_eb.setEnabled(False)
 
 
     def keyPressEvent(self, event):
@@ -168,11 +173,14 @@ class MicrotubesScreen(QMainWindow):
         except:
             self.rack_data = None
             self.rack_export_btn.setEnabled(False)
+            self.rack_moveto_eb.setEnabled(False)
             self.rack_table.setRowCount(0)
             self.structure_lab.clear()
             return
         logging.getLogger(self.mod_name).info(f"receieved {len(self.rack_data)} responses")
         self.setRackTableData(self.rack_data)
+        self.rack_moveto_eb.setEnabled(True)
+        self.rack_moveto_eb.setFocus()
         self.rack_table.setCurrentCell(0,0)
         self.rack_export_btn.setEnabled(True)
 
@@ -244,16 +252,28 @@ class MicrotubesScreen(QMainWindow):
         filename = os.path.basename(self.upload_fname[0])
         self.path_lab.setText(filename)
         self.path_lab.setToolTip(self.upload_fname[0])
+        self.upload_result_lab.setText("Set box destination for racks.")
+        self.update_box_eb.setEnabled(True)
+        self.update_box_eb.clear()
+        self.update_box_eb.setFocus()
+
+    def unlockRackUpload(self, newText):
+        pattern = '^[a-zA-Z]{2}[0-9]{5}$'
+        if re.match(pattern, newText):
+            self.upload_file_btn.setEnabled(True)
+        else:
+            self.upload_file_btn.setEnabled(False)
 
     def uploadRackFile(self):
         try:
             with open(self.upload_fname[0], "rb") as f:
-                r, b = dbInterface.readScannedRack(self.token, f)
+                r, b = dbInterface.readScannedRack(self.token, self.update_box_eb.text(), f)
                 res = json.loads(r)
                 self.upload_result_lab.setText(f'''Rack updated: {res['sRack']}
 Failed tubes: {res['FailedTubes']}
 Nr of ok tubes: {res['iOk']}
 Nr of failed tubes: {res['iError']}''')
+            self.update_box_eb.setEnabled(False)
         except:
             return
     
@@ -381,3 +401,41 @@ Nr of failed tubes: {res['iError']}''')
         except:
             logging.getLogger(self.mod_name).error("microtube file import failed")  
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
+
+    def moveRackStep1(self):
+        pattern = '^MX[0-9]{4}$'
+        rack_id = self.move_rack_id_eb.text()
+        if re.match(pattern, rack_id):
+            self.move_status_lab.setText("Rack Id OK.\nInput box location to move to.")
+            self.move_box_id_eb.setEnabled(True)
+            self.move_box_id_eb.setFocus()
+            return
+        else:
+            self.move_status_lab.setText(f"Rack Id {rack_id} not OK.\nPlease check input.")
+            self.move_box_id_eb.clear()
+            self.move_rack_id_eb.clear()
+            self.move_box_id_eb.setEnabled(False)
+            self.move_rack_id_eb.setFocus()
+            return
+    
+    def moveRackStep2(self):
+        pattern = '^[a-zA-Z]{2}[0-9]{5}$'
+        rack_id = self.move_rack_id_eb.text() # should be OK
+        box_id = self.move_box_id_eb.text()
+        self.move_status_lab.clear()
+        if re.match(pattern, box_id):
+            try:
+                r, status = dbInterface.updateRackLocation(self.token, rack_id, box_id)
+                if status is False:
+                    raise Exception
+            except:
+                logging.getLogger(self.mod_name).error(f"Rack move failed: {rack_id}>{box_id}: {r}")
+                self.move_status_lab.setText(f"\nRack move failed: {rack_id}>{box_id}: {r}")
+                return
+            # all ok
+            logging.getLogger(self.mod_name).info(f"Move successful: {rack_id}>{box_id}")
+            self.move_status_lab.setText("Move Successful.")
+            self.move_rack_id_eb.clear()
+            self.move_rack_id_eb.setFocus()
+            self.move_box_id_eb.clear()
+            self.move_box_id_eb.setEnabled(False)
