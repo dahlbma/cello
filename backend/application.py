@@ -760,6 +760,19 @@ class EditVial(tornado.web.RequestHandler):
         sNetWeight = self.get_argument("iNetWeight")
         #iDilutionFactor = self.get_argument("iDilutionFactor")
 
+        sSql = f"""
+        select notebook_ref from glass.vial
+        where vial_id = '{sVial}'"""
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) > 0:
+            sError = f"{sVial} already assigned to batch {tRes[0][0]}"
+            logging.error("Error updating vial " + str(sVial))
+            logging.error(sError)
+            self.set_status(400)
+            self.finish(sError)
+            return
+
         logging.info(self.request.arguments.values())
 
         if conc in ('', 'Solid'):
