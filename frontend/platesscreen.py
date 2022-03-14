@@ -1,4 +1,5 @@
 import sys, os, logging, re, csv
+from unittest import skip
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
 from PyQt5.QtCore import Qt
@@ -26,6 +27,7 @@ class PlatesScreen(QMainWindow):
         types = [None, "96", "384", "1536"]
         self.new_plates_type_cb.addItems(types)
         self.new_plates_type_cb.currentTextChanged.connect(self.check_plates_input)
+        self.new_plate_comment_eb.textChanged.connect(self.check_plates_input)
 
         self.plate_data = None
         self.plate_search_btn.clicked.connect(self.check_plate_search_input)
@@ -40,7 +42,27 @@ class PlatesScreen(QMainWindow):
         self.upload_pbar.setValue(0)
         self.upload_pbar.hide()
 
+        #self.merge_status_palette = {'good':QColor(167, 221, 181), 'bad':QColor(234, 112, 112), 'mismatch':QColor(154, 231, 244)}
         self.nine6to384_btn.clicked.connect(self.nine6to384_merge)
+        self.nine6to384_btn.setEnabled(False)
+
+        self.dom_size = -1
+        self.mod_arr = [0]*5 # i=0: result, i=1:q1, ...
+        self.size_arr = [-1]*5 # i=0: result, i=1:q1, ...
+        self.ok_arr = [False]*5 # i=0: result, i=1:q1, ...
+
+        self.join_q1_eb.textChanged.connect(self.mod1)
+        self.join_q2_eb.textChanged.connect(self.mod2)
+        self.join_q3_eb.textChanged.connect(self.mod3)
+        self.join_q4_eb.textChanged.connect(self.mod4)
+        self.join_result_eb.textChanged.connect(self.mod0)
+
+        #self.join_q1_eb.textChanged.connect(self.merge_check)
+        #self.join_q2_eb.textChanged.connect(self.merge_check)
+        #self.join_q3_eb.textChanged.connect(self.merge_check)
+        #self.join_q4_eb.textChanged.connect(self.merge_check)
+        #self.join_result_eb.textChanged.connect(self.merge_check)
+        
 
 
     def keyPressEvent(self, event):
@@ -118,8 +140,7 @@ class PlatesScreen(QMainWindow):
             self.plate_comment_eb.setText("")
             self.plate_comment_eb.setEnabled(False)
             self.plate_comment_btn.setEnabled(False)
-            self.plate_table.setRowCount(0)
-            
+            self.plate_table.setRowCount(0)          
     
     def setPlateTableData(self, data):
         self.plate_table.setRowCount(0)
@@ -154,7 +175,6 @@ class PlatesScreen(QMainWindow):
         #except:
         #    logging.getLogger(self.mod_name).info(f"updating comment failed")
         self.check_plate_search_input()
-
 
     def setDiscard(self, state):
         if state:
@@ -264,6 +284,134 @@ class PlatesScreen(QMainWindow):
 
     def export_upload_data(self):
         export_table(self.upload_plates_table)
+
+
+    def verify_merge_plate(self, plate_id):
+        if plate_id == "":
+            return -1, True
+        try:
+            r, status = dbInterface.verifyPlate(self.token, plate_id)
+            res = json.loads(r)
+            if status == 0:
+                raise Exception
+            return res[0]['wells'], True
+        except:
+            print("except")
+            return -1, False
+
+    def check_merge_sizes(self):
+        self.sizes_dict = {}
+        for i, s in enumerate(self.size_arr[1:]):
+            if s != -1:
+                if f'{s}' in self.sizes_dict:
+                    self.sizes_dict[f'{s}'].append(i)
+                else:
+                    self.sizes_dict[f'{s}'] = [i]
+        if len(self.sizes_dict) < 1:
+            self.dom_size = -1
+            return
+        self.dom_size = int(max(self.sizes_dict, key = lambda x: len(self.sizes_dict[x])))
+        for i in range(len(self.size_arr[1:])):
+            if i in (self.sizes_dict[f'{self.dom_size}']):
+                self.mark_merge_box(i, "good")#self.merge_status_palette['good'])
+            else: 
+                if self.size_arr[i] != -1:
+                    self.mark_merge_box(i, "mismatch")#self.merge_status_palette['mismatch'])
+                else:
+                    self.mark_merge_box(i, "bad")#self.merge_status_palette['bad'])
+        if len(self.sizes_dict) == 1:
+            return True
+        else: 
+            return False
+
+    def mark_merge_box(self, i, color):
+        if i == 0:
+            self.merge_frame_result.setProperty("state", color)#setBackground(color)
+            self.merge_frame_result.update()
+        elif i == 1:
+            self.merge_frame_1.setProperty("state", color)#setBackground(color)
+            self.merge_frame_1.update()
+        elif i == 2:
+            self.merge_frame_2.setProperty("state", color)#setBackground(color)
+            self.merge_frame_2.update()
+        elif i == 3:
+            self.merge_frame_3.setProperty("state", color)#setBackground(color)
+            self.merge_frame_3.update()
+        elif i == 4:
+            self.merge_frame_4.setProperty("state", color)#setBackground(color)
+            self.merge_frame_4.update()
+
+    def mod0(self):
+        self.mod_arr[0] = 1
+        self.merge_check()
+
+    def mod1(self):
+        self.mod_arr[1] = 1
+        self.merge_check()
+    
+    def mod2(self):
+        self.mod_arr[2] = 1
+        self.merge_check()
+    
+    def mod3(self):
+        self.mod_arr[3] = 1
+        self.merge_check()
+    
+    def mod4(self):
+        self.mod_arr[4] = 1
+        self.merge_check()
+
+    def merge_check(self):
+        self.debugprint("before")
+        cond1 = (self.join_result_eb.text() != "") and \
+            ((self.join_q1_eb.text() != "") or \
+            (self.join_q2_eb.text() != "") or \
+            (self.join_q3_eb.text() != "") or \
+            (self.join_q4_eb.text() != "")) # at least one (1) q# and result is non-empty
+        
+        if self.mod_arr[1] != 0:
+            self.size_arr[1], self.ok_arr[1] = self.verify_merge_plate(self.join_q1_eb.text())
+            self.mod_arr[1] = 0
+        if self.mod_arr[2] != 0:
+            self.size_arr[2], self.ok_arr[2] = self.verify_merge_plate(self.join_q2_eb.text())
+            self.mod_arr[2] = 0
+        if self.mod_arr[3] != 0:
+            self.size_arr[3], self.ok_arr[3] = self.verify_merge_plate(self.join_q3_eb.text())
+            self.mod_arr[3] = 0
+        if self.mod_arr[4] != 0:
+            self.size_arr[4], self.ok_arr[4] = self.verify_merge_plate(self.join_q4_eb.text())
+            self.mod_arr[4] = 0
+        if self.mod_arr[0] != 0:
+            self.size_arr[0], self.ok_arr[0] = self.verify_merge_plate(self.join_result_eb.text())
+            if self.ok_arr[0]:
+                self.mark_merge_box(0, "good")#self.merge_status_palette['good'])
+            else:
+                self.mark_merge_box(0, "bad")#self.merge_status_palette['bad'])
+            self.mod_arr[0] = 0
+        
+        cond2 = self.ok_arr[1] and \
+                self.ok_arr[2] and \
+                self.ok_arr[3] and \
+                self.ok_arr[4] and \
+                self.ok_arr[0]# filled fields are valid
+
+        cond3 = self.check_merge_sizes()# sizes between parts match
+        cond4 = (self.size_arr[0] != -1) and (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
+
+        if cond1 and cond2 and cond3 and cond4:
+            self.nine6to384_btn.setEnabled(True)
+            self.nine6to384_btn.setProperty("state", "good")#self.merge_status_palette['good'])
+        else:
+            self.nine6to384_btn.setEnabled(False)
+            self.nine6to384_btn.setProperty("state", "mismatch")#self.merge_status_palette['mismatch'])
+        self.debugprint("after")
+
+    def debugprint(self, i):
+        print(i)
+        print(f"dom_size: {self.dom_size}")
+        print(f"mod_arr:  {self.mod_arr}" )
+        print(f"size_arr: {self.size_arr}")
+        print(f"ok_arr:   {self.ok_arr}")
 
     def nine6to384_merge(self):
         print("MERGING")
