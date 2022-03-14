@@ -63,5 +63,6 @@ class LoginScreen(QMainWindow):
         self.window().addWidget(boxes)
         self.window().addWidget(microtubes)
         self.window().addWidget(plates)
-        #gotoSearch(self)
-        gotoBoxes(self)
+
+        # first screen
+        gotoSearch(self)
