@@ -250,6 +250,16 @@ class UpdatePlateName(tornado.web.RequestHandler):
 
 
 @jwtauth
+class MergePlates(tornado.web.RequestHandler):
+    def post(self):
+        q1 = self.get_argument("q1")
+        q2 = self.get_argument("q2")
+        q3 = self.get_argument("q3")
+        q4 = self.get_argument("q4")
+        target = self.get_argument("target")
+
+
+@jwtauth
 class UploadWellInformation(tornado.web.RequestHandler):
     #def post(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
     def post(self):
