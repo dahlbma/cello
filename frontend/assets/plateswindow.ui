@@ -77,7 +77,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>2</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -824,10 +824,10 @@ Plates</string>
           <string>Join Plates</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_16">
-          <item row="2" column="1" rowspan="4">
+          <item row="2" column="1" rowspan="5">
            <layout class="QGridLayout" name="gridLayout_15">
             <item row="1" column="1">
-             <widget class="QFrame" name="frame_4">
+             <widget class="QFrame" name="merge_frame_4">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -835,9 +835,18 @@ Plates</string>
                </sizepolicy>
               </property>
               <property name="styleSheet">
-               <string notr="true">QFrame{
+               <string notr="true">QFrame#merge_frame_4{
 	border: 1px solid black;
 	border-radius: 2px
+}
+QFrame#merge_frame_4[state=&quot;good&quot;] {
+	background-color: rgb(167, 221, 181)
+}
+QFrame#merge_frame_4[state=&quot;bad&quot;] {
+	background-color: rgb(234, 112, 112)
+}
+QFrame#merge_frame_4[state=&quot;mismatch&quot;] {
+	background-color: rgb(154, 231, 244)
 }</string>
               </property>
               <property name="frameShape">
@@ -909,11 +918,26 @@ Plates</string>
                  </property>
                 </spacer>
                </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_12">
+                 <property name="font">
+                  <font>
+                   <pointsize>20</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Q4</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
             <item row="0" column="0">
-             <widget class="QFrame" name="frame">
+             <widget class="QFrame" name="merge_frame_1">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -921,9 +945,18 @@ Plates</string>
                </sizepolicy>
               </property>
               <property name="styleSheet">
-               <string notr="true">QFrame{
+               <string notr="true">QFrame#merge_frame_1{
 	border: 1px solid black;
 	border-radius: 2px
+}
+QFrame#merge_frame_1[state=&quot;good&quot;] {
+	background-color: rgb(167, 221, 181)
+}
+QFrame#merge_frame_1[state=&quot;bad&quot;] {
+	background-color: rgb(234, 112, 112)
+}
+QFrame#merge_frame_1[state=&quot;mismatch&quot;] {
+	background-color: rgb(154, 231, 244)
 }</string>
               </property>
               <property name="frameShape">
@@ -995,11 +1028,26 @@ Plates</string>
                  </property>
                 </spacer>
                </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_5">
+                 <property name="font">
+                  <font>
+                   <pointsize>20</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Q1</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QFrame" name="frame_3">
+             <widget class="QFrame" name="merge_frame_3">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -1007,9 +1055,18 @@ Plates</string>
                </sizepolicy>
               </property>
               <property name="styleSheet">
-               <string notr="true">QFrame{
+               <string notr="true">QFrame#merge_frame_3{
 	border: 1px solid black;
 	border-radius: 2px
+}
+QFrame#merge_frame_3[state=&quot;good&quot;] {
+	background-color: rgb(167, 221, 181)
+}
+QFrame#merge_frame_3[state=&quot;bad&quot;] {
+	background-color: rgb(234, 112, 112)
+}
+QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
+	background-color: rgb(154, 231, 244)
 }</string>
               </property>
               <property name="frameShape">
@@ -1081,11 +1138,26 @@ Plates</string>
                  </property>
                 </spacer>
                </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_11">
+                 <property name="font">
+                  <font>
+                   <pointsize>20</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Q3</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QFrame" name="frame_2">
+             <widget class="QFrame" name="merge_frame_2">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -1093,9 +1165,18 @@ Plates</string>
                </sizepolicy>
               </property>
               <property name="styleSheet">
-               <string notr="true">QFrame{
+               <string notr="true">QFrame#merge_frame_2{
 	border: 1px solid black;
 	border-radius: 2px
+}
+QFrame#merge_frame_2[state=&quot;good&quot;] {
+	background-color: rgb(167, 221, 181)
+}
+QFrame#merge_frame_2[state=&quot;bad&quot;] {
+	background-color: rgb(234, 112, 112)
+}
+QFrame#merge_frame_2[state=&quot;mismatch&quot;] {
+	background-color: rgb(154, 231, 244)
 }</string>
               </property>
               <property name="frameShape">
@@ -1167,6 +1248,21 @@ Plates</string>
                  </property>
                 </spacer>
                </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_10">
+                 <property name="font">
+                  <font>
+                   <pointsize>20</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Q2</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -1185,17 +1281,7 @@ Plates</string>
             </property>
            </spacer>
           </item>
-          <item row="6" column="1">
-           <widget class="QLabel" name="join_errorlab">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="4">
+          <item row="6" column="4">
            <spacer name="verticalSpacer_20">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -1208,23 +1294,17 @@ Plates</string>
             </property>
            </spacer>
           </item>
-          <item row="6" column="2">
-           <spacer name="verticalSpacer_17">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+          <item row="7" column="1">
+           <widget class="QLabel" name="join_errorlab">
+            <property name="text">
+             <string/>
             </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::MinimumExpanding</enum>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>150</height>
-             </size>
-            </property>
-           </spacer>
+           </widget>
           </item>
-          <item row="2" column="0" rowspan="2">
+          <item row="2" column="0" rowspan="3">
            <spacer name="horizontalSpacer_23">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -1240,7 +1320,7 @@ Plates</string>
             </property>
            </spacer>
           </item>
-          <item row="4" column="2">
+          <item row="5" column="2">
            <widget class="QPushButton" name="nine6to384_btn">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1261,8 +1341,19 @@ Plates</string>
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color: rgb(167, 221, 181);
-image: url(:/arrow/arrow.png);</string>
+             <string notr="true">QPushButton{
+	image: url(:/arrow/arrow.png);
+}
+
+QPushButton[state=&quot;good&quot;] {
+	background-color: rgb(167, 221, 181)
+}
+QPushButton[state=&quot;bad&quot;] {
+	background-color: rgb(234, 112, 112)
+}
+QPushButton[state=&quot;mismatch&quot;] {
+	background-color: rgb(154, 231, 244)
+}</string>
             </property>
             <property name="text">
              <string/>
@@ -1279,6 +1370,22 @@ image: url(:/arrow/arrow.png);</string>
             </property>
            </widget>
           </item>
+          <item row="7" column="2">
+           <spacer name="verticalSpacer_17">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::MinimumExpanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>150</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
           <item row="1" column="2">
            <spacer name="verticalSpacer_18">
             <property name="orientation">
@@ -1290,7 +1397,23 @@ image: url(:/arrow/arrow.png);</string>
             <property name="sizeHint" stdset="0">
              <size>
               <width>20</width>
-              <height>150</height>
+              <height>120</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="5" column="5">
+           <spacer name="horizontalSpacer_26">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>18</width>
+              <height>20</height>
              </size>
             </property>
            </spacer>
@@ -1307,57 +1430,77 @@ image: url(:/arrow/arrow.png);</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="5">
-           <spacer name="horizontalSpacer_26">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
+          <item row="5" column="4">
+           <widget class="QFrame" name="merge_frame_result">
+            <property name="minimumSize">
              <size>
-              <width>18</width>
-              <height>20</height>
+              <width>100</width>
+              <height>80</height>
              </size>
             </property>
-           </spacer>
-          </item>
-          <item row="3" column="4" rowspan="2">
-           <layout class="QVBoxLayout" name="verticalLayout_3">
-            <item>
-             <widget class="QLabel" name="label_4">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>140</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Result:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="label_5">
-              <property name="styleSheet">
-               <string notr="true">QLabel{
+            <property name="styleSheet">
+             <string notr="true">QFrame#merge_frame_result{
+	border: 1px solid black;
+	border-radius: 2px;
+}
+QFrame#merge_frame_result[state=&quot;good&quot;] {
+	background-color: rgb(167, 221, 181)
+}
+QFrame#merge_frame_result[state=&quot;bad&quot;] {
+	background-color: rgb(234, 112, 112)
+}
+QFrame#merge_frame_result[state=&quot;mismatch&quot;] {
+	background-color: rgb(154, 231, 244)
+}</string>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_17">
+             <item row="0" column="0">
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <item>
+                <widget class="QLabel" name="label_4">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>140</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Result:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="join_result_eb">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>35</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">QLineEdit{
 	border: 1px solid black;
 	border-radius: 3px
 }</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-           </layout>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
           </item>
          </layout>
         </widget>
