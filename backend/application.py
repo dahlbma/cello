@@ -263,6 +263,24 @@ class UploadWellInformation(tornado.web.RequestHandler):
 
 
 @jwtauth
+class VerifyPlate(tornado.web.RequestHandler):
+    def get(self, sPlate):
+        sSql = f"""
+        select wells from cool.plate, cool.plate_type
+        where plate.type_id = plate_type.type_id
+        and plate.plate_id ='{sPlate}'
+        """
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) == 0:
+            sError = 'Plate not found'
+            self.set_status(400)
+            self.finish(sError)
+            return
+        self.finish(json.dumps(res_to_json(tRes, cur), indent=4))
+        
+        
+@jwtauth
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
         sSql = f"""
@@ -1313,7 +1331,10 @@ class searchBatches(tornado.web.RequestHandler):
             #                 "cbkId":row.cbk_id,
             #                 "boxId":row.box_id,
             #                 "batchMolWeight":row.batch_formula_weight})
-            jRes.append(res_to_json(tRes, cur)[0])
+            #jRes.append(res_to_json(tRes, cur)[0])
+            tmp = res_to_json(tRes, cur)
+            for i in tmp:
+                jRes.append(i)
         self.finish(json.dumps(jRes))
 
 

@@ -189,6 +189,7 @@ def make_app():
          application.CreatePlates),
         (r"/uploadWellInformation", application.UploadWellInformation),
         (r"/getPlate/(?P<sPlate>[^\/]+)", application.GetPlate),
+        (r"/verifyPlate/(?P<sPlate>[^\/]+)", application.VerifyPlate),
         (r"/updatePlateName/(?P<sPlate>[^\/]+)/(?P<sPlateName>[^\/]+)",
          application.UpdatePlateName),
         (r"/searchLocation/(?P<sLocation>[^\/]+)", application.searchLocation),
