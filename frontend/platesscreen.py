@@ -163,7 +163,7 @@ class PlatesScreen(QMainWindow):
             self.plate_table.setItem(n, 4, newItem)
             newItem = QTableWidgetItem(f"{data[n]['volume']}")
             newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-            self.plate_table.setItem(n, 4, newItem)
+            self.plate_table.setItem(n, 5, newItem)
 
     def editComment(self):
         new_comment = self.plate_comment_eb.text()
