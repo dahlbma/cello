@@ -214,6 +214,7 @@ class SearchScreen(QMainWindow):
         self.batch_table.setRowCount(0)
         self.batch_table.setRowCount(len(data))
         self.batch_table.setSortingEnabled(False)
+        data = data[0]
         for n in range(len(data)): # row n
             try:
                 if f"{data[n]['boxId']}" == "Not found":
@@ -250,7 +251,8 @@ class SearchScreen(QMainWindow):
                     newItem = QTableWidgetItem(f"{data[n]['batchMolWeight']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 6, newItem)
-            except:
+            except Exception as e:
+                logging.error(str(e))
                 logging.error(f"search for {data[n]['vialId']} returned bad response: {data[n]}")
         self.batch_table.setSortingEnabled(True)
         return
