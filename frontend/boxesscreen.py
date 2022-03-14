@@ -47,6 +47,8 @@ class BoxesScreen(QMainWindow):
         self.boxes_tree.currentItemChanged.connect(self.check_deletion_params)
         self.boxes_tree.currentItemChanged.connect(self.selectSerialNo)
 
+        self.boxes_tree_reload_btn.clicked.connect(self.reload_tree)
+
         self.box_search_btn.clicked.connect(self.find_in_box_tree)
 
         self.add_box_type_cb.currentTextChanged.connect(self.check_addbox_input)
