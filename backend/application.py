@@ -261,7 +261,6 @@ class MergePlates(tornado.web.RequestHandler):
 
 @jwtauth
 class UploadWellInformation(tornado.web.RequestHandler):
-    #def post(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
     def post(self):
         sPlate = self.get_argument("plate_id")
         sWell = self.get_argument("well")
