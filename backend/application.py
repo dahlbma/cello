@@ -1463,6 +1463,7 @@ class CreateMolImage(tornado.web.RequestHandler):
     def get(self, sId):
         sId = sId.lower()
         m = re.search("v\d\d\d\d\d\d", sId)
+        sSql = ""
         if m:
             sSql = f"""select mol
             from bcpvs.JCMOL_MOLTABLE m, glass.vial v, bcpvs.batch c
@@ -1479,10 +1480,11 @@ class CreateMolImage(tornado.web.RequestHandler):
                 where
                 m.compound_id = '{sId}'
                 """
-        cur.execute(sSql)
-        molfile = cur.fetchall()
-        if len(molfile) > 0 and molfile[0][0] != None:
-            createPngFromMolfile(sId.upper(), molfile[0][0])
+        if sSql != "":
+            cur.execute(sSql)
+            molfile = cur.fetchall()
+            if len(molfile) > 0 and molfile[0][0] != None:
+                createPngFromMolfile(sId.upper(), molfile[0][0])
         self.finish()
 
 
