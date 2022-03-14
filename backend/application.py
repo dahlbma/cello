@@ -1458,6 +1458,7 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
         
+
 @jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
     def get(self, sId):
@@ -1479,6 +1480,14 @@ class CreateMolImage(tornado.web.RequestHandler):
                 from bcpvs.JCMOL_MOLTABLE m
                 where
                 m.compound_id = '{sId}'
+                """
+            else:
+                sSql = f"""
+                select mol
+                from bcpvs.JCMOL_MOLTABLE m, bcpvs.batch b
+                where
+                m.compound_id = b.compound_id and
+                b.notebook_ref = '{sId}'
                 """
         if sSql != "":
             cur.execute(sSql)
