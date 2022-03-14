@@ -425,8 +425,6 @@ class BoxesScreen(QMainWindow):
                 return
         self.structure_lab.clear()
 
-
-
     def printLabel(self):
         sBox = self.update_box_eb.text()
         dbInterface.printBoxLabel(self.token, sBox)
