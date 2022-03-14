@@ -205,7 +205,7 @@ class SearchScreen(QMainWindow):
             self.batch_export_btn.setEnabled(False)
             self.batch_table.setRowCount(0)
             self.structure_lab.clear()
-        logging.getLogger(self.mod_name).info(f"receieved {self.batches_data}")
+        logging.getLogger(self.mod_name).info(f"receieved data")#{self.batches_data}")
         self.setBatchTableData(self.batches_data)
         self.batch_table.setCurrentCell(0,0)
         self.batch_export_btn.setEnabled(True)
@@ -250,7 +250,8 @@ class SearchScreen(QMainWindow):
                     newItem = QTableWidgetItem(f"{data[n]['batchMolWeight']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 6, newItem)
-            except:
+            except Exception as e:
+                logging.error(str(e))
                 logging.error(f"search for {data[n]['vialId']} returned bad response: {data[n]}")
         self.batch_table.setSortingEnabled(True)
         return

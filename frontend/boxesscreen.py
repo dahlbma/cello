@@ -37,6 +37,7 @@ class BoxesScreen(QMainWindow):
         self.add_location_btn.clicked.connect(self.addLocation)
         self.add_location_btn.setEnabled(False)
 
+        self.boxes_tree.clear()
         self.init_boxes_tree()
         self.boxes_tree.itemExpanded.connect(self.get_children)
         self.boxes_tree.itemCollapsed.connect(self.take_children)
@@ -44,6 +45,9 @@ class BoxesScreen(QMainWindow):
         self.boxes_tree.currentItemChanged.connect(self.check_addbox_input)
         self.boxes_tree.currentItemChanged.connect(self.check_addlocation_input)
         self.boxes_tree.currentItemChanged.connect(self.check_deletion_params)
+        self.boxes_tree.currentItemChanged.connect(self.selectSerialNo)
+
+        self.boxes_tree_reload_btn.clicked.connect(self.reload_tree)
 
         self.box_search_btn.clicked.connect(self.find_in_box_tree)
 
@@ -84,8 +88,8 @@ class BoxesScreen(QMainWindow):
     def tabChanged(self):
         page_index = self.boxes_tab_wg.currentIndex()
         if page_index == 0:
-            self.boxes_tree.clear()
-            self.init_boxes_tree()
+            #self.boxes_tree.clear()
+            #self.init_boxes_tree()
             self.add_description_eb.setFocus()
             self.structure_lab.clear()
         elif page_index == 1:
@@ -158,6 +162,22 @@ class BoxesScreen(QMainWindow):
             items = self.boxes_tree.findItems(p, Qt.MatchRecursive)
             self.boxes_tree.setCurrentItem(items[0])
             self.boxes_tree.expandItem(items[0])   
+
+    def selectSerialNo(self, item):
+        try:
+            if self.boxes_tree.currentColumn() == 2:
+                return
+            else:
+                self.boxes_tree.setCurrentItem(item, 2)
+        except:
+            return
+
+    def reload_tree(self):
+        self.boxes_tree.clear()
+        self.init_boxes_tree()
+        if self.box_search_eb.text() != "":
+            self.find_in_box_tree()
+
 
     def setAddParams(self, item):
         if (item is not None):
