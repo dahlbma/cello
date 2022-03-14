@@ -44,6 +44,7 @@ class MicrotubesScreen(QMainWindow):
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
         self.create_microtubes_btn.clicked.connect(self.sendMicrotubes)
         self.create_import_btn.clicked.connect(self.create_import_file)
+        self.create_export_btn.clicked.connect(self.export_create_data)
 
         self.move_rack_id_eb.returnPressed.connect(self.moveRackStep1)
         self.move_box_id_eb.returnPressed.connect(self.moveRackStep2)
@@ -401,6 +402,9 @@ Nr of failed tubes: {res['iError']}''')
         except:
             logging.getLogger(self.mod_name).error("microtube file import failed")  
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
+
+    def export_create_data(self):
+        export_table(self.create_microtubes_table)
 
     def moveRackStep1(self):
         pattern = '^MX[0-9]{4}$'
