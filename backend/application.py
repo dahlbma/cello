@@ -1277,7 +1277,7 @@ class searchVials(tornado.web.RequestHandler):
 @jwtauth
 class searchBatches(tornado.web.RequestHandler):
     def get(self, sBatches):
-        sIds = sBatches.split()
+        sIds = list(set(sBatches.split()))
         jRes = []
 
         tmpIds = ""
