@@ -250,8 +250,17 @@ class UpdatePlateName(tornado.web.RequestHandler):
 
 
 @jwtauth
+class MergePlates(tornado.web.RequestHandler):
+    def post(self):
+        q1 = self.get_argument("q1")
+        q2 = self.get_argument("q2")
+        q3 = self.get_argument("q3")
+        q4 = self.get_argument("q4")
+        target = self.get_argument("target")
+
+
+@jwtauth
 class UploadWellInformation(tornado.web.RequestHandler):
-    #def post(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
     def post(self):
         sPlate = self.get_argument("plate_id")
         sWell = self.get_argument("well")
@@ -262,6 +271,24 @@ class UploadWellInformation(tornado.web.RequestHandler):
         sVolume = self.get_argument("volume")
 
 
+@jwtauth
+class VerifyPlate(tornado.web.RequestHandler):
+    def get(self, sPlate):
+        sSql = f"""
+        select wells from cool.plate, cool.plate_type
+        where plate.type_id = plate_type.type_id
+        and plate.plate_id ='{sPlate}'
+        """
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) == 0:
+            sError = 'Plate not found'
+            self.set_status(400)
+            self.finish(sError)
+            return
+        self.finish(json.dumps(res_to_json(tRes, cur), indent=4))
+        
+        
 @jwtauth
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
@@ -1250,7 +1277,7 @@ class searchVials(tornado.web.RequestHandler):
 @jwtauth
 class searchBatches(tornado.web.RequestHandler):
     def get(self, sBatches):
-        sIds = sBatches.split()
+        sIds = list(set(sBatches.split()))
         jRes = []
 
         tmpIds = ""
@@ -1313,7 +1340,10 @@ class searchBatches(tornado.web.RequestHandler):
             #                 "cbkId":row.cbk_id,
             #                 "boxId":row.box_id,
             #                 "batchMolWeight":row.batch_formula_weight})
-            jRes.append(res_to_json(tRes, cur)[0])
+            #jRes.append(res_to_json(tRes, cur)[0])
+            tmp = res_to_json(tRes, cur)
+            for i in tmp:
+                jRes.append(i)
         self.finish(json.dumps(jRes))
 
 
@@ -1428,11 +1458,13 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
         
+
 @jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
     def get(self, sId):
         sId = sId.lower()
         m = re.search("v\d\d\d\d\d\d", sId)
+        sSql = ""
         if m:
             sSql = f"""select mol
             from bcpvs.JCMOL_MOLTABLE m, glass.vial v, bcpvs.batch c
@@ -1449,10 +1481,19 @@ class CreateMolImage(tornado.web.RequestHandler):
                 where
                 m.compound_id = '{sId}'
                 """
-        cur.execute(sSql)
-        molfile = cur.fetchall()
-        if len(molfile) > 0 and molfile[0][0] != None:
-            createPngFromMolfile(sId.upper(), molfile[0][0])
+            else:
+                sSql = f"""
+                select mol
+                from bcpvs.JCMOL_MOLTABLE m, bcpvs.batch b
+                where
+                m.compound_id = b.compound_id and
+                b.notebook_ref = '{sId}'
+                """
+        if sSql != "":
+            cur.execute(sSql)
+            molfile = cur.fetchall()
+            if len(molfile) > 0 and molfile[0][0] != None:
+                createPngFromMolfile(sId.upper(), molfile[0][0])
         self.finish()
 
 
