@@ -266,6 +266,14 @@ def addMicrotube(token, tubeId, compBatch, volume, conc):
     else:
         return r.content.decode(), True
 
+def verifyPlate(token, plate):
+    r = requests.get(f'{baseUrl}verifyPlate/{plate}',
+                      headers={'token':token})
+    if r.status_code != 200:
+        return r.content.decode(), 0
+    else:
+        return r.content.decode(), 1
+
 def nine6to384(token, name, q1, q2, q3, q4):
     r = requests.post(f'{baseUrl}nine6to384',
                       data={'q1':q1,
