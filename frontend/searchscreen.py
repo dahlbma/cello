@@ -229,6 +229,7 @@ class SearchScreen(QMainWindow):
                         self.batch_table.setItem(n, i, newItem)
                         newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 else:
+                    print(data[n]['vialId'])
                     newItem = QTableWidgetItem(f"{data[n]['vialId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 0, newItem)
