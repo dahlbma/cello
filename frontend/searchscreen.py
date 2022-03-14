@@ -205,7 +205,7 @@ class SearchScreen(QMainWindow):
             self.batch_export_btn.setEnabled(False)
             self.batch_table.setRowCount(0)
             self.structure_lab.clear()
-        logging.getLogger(self.mod_name).info(f"receieved {self.batches_data}")
+        logging.getLogger(self.mod_name).info(f"receieved data")#{self.batches_data}")
         self.setBatchTableData(self.batches_data)
         self.batch_table.setCurrentCell(0,0)
         self.batch_export_btn.setEnabled(True)
@@ -214,7 +214,6 @@ class SearchScreen(QMainWindow):
         self.batch_table.setRowCount(0)
         self.batch_table.setRowCount(len(data))
         self.batch_table.setSortingEnabled(False)
-        data = data[0]
         for n in range(len(data)): # row n
             try:
                 if f"{data[n]['boxId']}" == "Not found":
@@ -229,7 +228,6 @@ class SearchScreen(QMainWindow):
                         self.batch_table.setItem(n, i, newItem)
                         newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 else:
-                    print(data[n]['vialId'])
                     newItem = QTableWidgetItem(f"{data[n]['vialId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 0, newItem)
