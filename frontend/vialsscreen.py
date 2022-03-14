@@ -112,3 +112,5 @@ class VialsScreen(QMainWindow):
             self.edit_vial_error_lab.setText('')
         except Exception as e:
             logging.getLogger(self.mod_name).error(str(e))
+
+    #TODO add print button to editvial
