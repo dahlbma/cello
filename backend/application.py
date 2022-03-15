@@ -258,11 +258,28 @@ class MergePlates(tornado.web.RequestHandler):
             tRes = cur.fetchall()
             return tRes
         
-        def getPlate(plate):
-            pass
+        def getPlate(sPlate):
+            sSql = f"""
+            SELECT
+            p.plate_id,
+            c.well,
+            compound_id,
+            notebook_ref,
+            c.form,
+            c.conc,
+            c.volume
+            FROM cool.config c, cool.plate p, cool.plating_sequence ps
+            WHERE p.CONFIG_ID = c.CONFIG_ID
+            and p.TYPE_ID = ps.TYPE_ID
+            and c.WELL = ps.WELL and p.plate_id = '{sPlate}'
+	    order by ps.seq"""
+            sSlask = cur.execute(sSql)
+            tRes = cur.fetchall()
+            return tRes
         
-        def transferWells(quadrant, plate):
-            pass
+        def transferWells(quadrant, sourcePlate, targetPlate):
+            for i in plate:
+                print(i)
         
         q1 = self.get_argument("q1")
         q2 = self.get_argument("q2")
@@ -272,19 +289,19 @@ class MergePlates(tornado.web.RequestHandler):
         if q1 != "":
             quadrant = getQuadrant(1)
             plate = getPlate(q1)
-            transferWells(quadrant, plate)
+            transferWells(quadrant, plate, targetPlate)
         if q2 != "":
             quadrant = getQuadrant(2)
             plate = getPlate(q2)
-            transferWells(quadrant, plate)
+            transferWells(quadrant, plate, targetPlate)
         if q3 != "":
             quadrant = getQuadrant(3)
             plate = getPlate(q3)
-            transferWells(quadrant, plate)
+            transferWells(quadrant, plate, targetPlate)
         if q4 != "":
             quadrant = getQuadrant(4)
             plate = getPlate(q4)
-            transferWells(quadrant, plate)
+            transferWells(quadrant, plate, targetPlate)
 
         
 @jwtauth
