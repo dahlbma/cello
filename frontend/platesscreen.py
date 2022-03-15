@@ -289,6 +289,11 @@ class PlatesScreen(QMainWindow):
     def verify_merge_plate(self, plate_id):
         if plate_id == "":
             return -1, True
+
+        pattern = '^[pP]{1}[0-9]{6}$'
+        if not re.match(pattern, plate_id):
+            return -1, False
+            
         try:
             r, status = dbInterface.verifyPlate(self.token, plate_id)
             res = json.loads(r)
@@ -396,7 +401,8 @@ class PlatesScreen(QMainWindow):
                 self.ok_arr[0]# filled fields are valid
 
         cond3 = self.check_merge_sizes()# sizes between parts match
-        cond4 = (self.size_arr[0] != -1) and (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
+        cond4 = (self.size_arr[0] != -1) and \
+            (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
 
         if cond1 and cond2 and cond3 and cond4:
             self.nine6to384_btn.setEnabled(True)
@@ -414,4 +420,11 @@ class PlatesScreen(QMainWindow):
         print(f"ok_arr:   {self.ok_arr}")
 
     def nine6to384_merge(self):
-        print("MERGING")
+        r, status = dbInterface.mergePlates(self.token,
+                                            self.join_q1_eb.text(),
+                                            self.join_q2_eb.text(),
+                                            self.join_q3_eb.text(),
+                                            self.join_q4_eb.text(),
+                                            self.join_result_eb.text()
+                                            )
+        
