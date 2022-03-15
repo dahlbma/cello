@@ -190,12 +190,6 @@ class getMicroTubes(tornado.web.RequestHandler):
 
 
 @jwtauth
-class Nine6to384(tornado.web.RequestHandler):
-    def post(self):
-        pass
-
-
-@jwtauth
 class CreatePlates(tornado.web.RequestHandler):
     def put(self, sPlateType, sPlateName, sNumberOfPlates):
         saNewPlates = dict()
@@ -252,13 +246,47 @@ class UpdatePlateName(tornado.web.RequestHandler):
 @jwtauth
 class MergePlates(tornado.web.RequestHandler):
     def post(self):
+
+        def getQuadrant(quadrant):
+            sSql = f"""
+            select quadrant, well96, well384
+            from cool.map96to384
+            where quadrant = {quadrant}
+            order by well96
+            """
+            cur.execute(sSql)
+            tRes = cur.fetchall()
+            return tRes
+        
+        def getPlate(plate):
+            pass
+        
+        def transferWells(quadrant, plate):
+            pass
+        
         q1 = self.get_argument("q1")
         q2 = self.get_argument("q2")
         q3 = self.get_argument("q3")
         q4 = self.get_argument("q4")
         target = self.get_argument("target")
+        if q1 != "":
+            quadrant = getQuadrant(1)
+            plate = getPlate(q1)
+            transferWells(quadrant, plate)
+        if q2 != "":
+            quadrant = getQuadrant(2)
+            plate = getPlate(q2)
+            transferWells(quadrant, plate)
+        if q3 != "":
+            quadrant = getQuadrant(3)
+            plate = getPlate(q3)
+            transferWells(quadrant, plate)
+        if q4 != "":
+            quadrant = getQuadrant(4)
+            plate = getPlate(q4)
+            transferWells(quadrant, plate)
 
-
+        
 @jwtauth
 class UploadWellInformation(tornado.web.RequestHandler):
     def post(self):
@@ -792,7 +820,7 @@ class EditVial(tornado.web.RequestHandler):
         where vial_id = '{sVial}'"""
         cur.execute(sSql)
         tRes = cur.fetchall()
-        if len(tRes) > 0:
+        if len(tRes) > 0 and tRes[0][0] != sBatch:
             sError = f"{sVial} already assigned to batch {tRes[0][0]}"
             logging.error("Error updating vial " + str(sVial))
             logging.error(sError)

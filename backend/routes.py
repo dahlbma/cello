@@ -184,7 +184,6 @@ def make_app():
         (r"/updateBox/(?P<sBox>[^\/]+)", application.updateBox),
         (r"/createLocation", application.createLocation),
         (r"/getFreeBoxes", application.GetFreeBoxes),
-        (r"/nine6to384", application.Nine6to384),
         (r"/createPlates/(?P<sPlateType>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sNumberOfPlates>[^\/]+)",
          application.CreatePlates),
         (r"/uploadWellInformation", application.UploadWellInformation),
