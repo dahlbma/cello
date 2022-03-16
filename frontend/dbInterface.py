@@ -300,14 +300,15 @@ def updatePlateName(token, plate, comment):
     else:
         return r.content.decode(), True
 
-def mergePlates(token, q1, q2, q3, q4, target):
+def mergePlates(token, q1, q2, q3, q4, target, volume):
     r = requests.post(f'{baseUrl}mergePlates',
                       data = {
                           'q1': q1,
                           'q2': q2,
                           'q3': q3,
                           'q4': q4,
-                          'target': target},
+                          'target': target,
+                          'volume':volume},
                       headers={'token':token})
     if r.status_code != 200:
         return r.content.decode(), False
