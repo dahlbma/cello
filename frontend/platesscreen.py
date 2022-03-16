@@ -320,12 +320,13 @@ class PlatesScreen(QMainWindow):
             return False
 
     def color_boxes(self):
+        #TODO color volume line edit
         if (not self.ok_arr[0]) and (self.size_arr[0] != -1):
             self.mark_merge_box(0, "bad")
-        elif (self.dom_size != -1) and (self.dom_size*4 != self.size_arr[0]):
-            self.mark_merge_box(0, "mismatch")
-        else:
+        elif (self.ok_arr[0] and all(c == False for c in self.ok_arr[1:])) or ((self.dom_size != -1) and (self.dom_size*4 == self.size_arr[0])):
             self.mark_merge_box(0, "good")
+        else:
+            self.mark_merge_box(0, "mismatch")
         for i in range(1, 5):
 
             if (not self.ok_arr[i]) and (self.size_arr[i] != -1):
@@ -364,6 +365,7 @@ class PlatesScreen(QMainWindow):
                     ids.append(self.plate_ids[i])
                 else: 
                     self.ok_arr[i] = False
+                    self.plate_ids[i] = -1
 
     def mod0(self):
         self.mod_arr[0] = 1
@@ -468,5 +470,7 @@ class PlatesScreen(QMainWindow):
         except:
             merged_plates = ",".join([id for id in self.plate_ids[1:] if id != -1])
             self.merge_status_lab.setText(f"Merging plates [{merged_plates}] into {self.plate_ids[0]} failed with error message:\"{r}\"")
+            self.ok_arr[0] = False
+            self.merge_check()
             QApplication.restoreOverrideCursor()
             return

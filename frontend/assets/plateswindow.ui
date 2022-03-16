@@ -1577,13 +1577,16 @@ QPushButton[state=&quot;mismatch&quot;] {
             </item>
            </layout>
           </item>
-          <item row="1" column="4">
+          <item row="1" column="4" rowspan="2">
            <widget class="QLabel" name="merge_status_lab">
             <property name="text">
              <string/>
             </property>
             <property name="wordWrap">
              <bool>true</bool>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
             </property>
            </widget>
           </item>
