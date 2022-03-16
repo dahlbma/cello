@@ -1,7 +1,7 @@
 import sys, os, logging, re, csv
 from unittest import skip
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QLineEdit
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
@@ -46,6 +46,7 @@ class PlatesScreen(QMainWindow):
         self.nine6to384_btn.clicked.connect(self.nine6to384_merge)
         self.nine6to384_btn.setEnabled(False)
 
+        self.plate_ids = [-1]*5
         self.dom_size = -1
         self.mod_arr = [0]*5 # i=0: result, i=1:q1, ...
         self.size_arr = [-1]*5 # i=0: result, i=1:q1, ...
@@ -56,13 +57,7 @@ class PlatesScreen(QMainWindow):
         self.join_q3_eb.textChanged.connect(self.mod3)
         self.join_q4_eb.textChanged.connect(self.mod4)
         self.join_result_eb.textChanged.connect(self.mod0)
-
-        #self.join_q1_eb.textChanged.connect(self.merge_check)
-        #self.join_q2_eb.textChanged.connect(self.merge_check)
-        #self.join_q3_eb.textChanged.connect(self.merge_check)
-        #self.join_q4_eb.textChanged.connect(self.merge_check)
-        #self.join_result_eb.textChanged.connect(self.merge_check)
-        
+        self.merge_volume_eb.textChanged.connect(self.merge_check)
 
 
     def keyPressEvent(self, event):
@@ -286,12 +281,13 @@ class PlatesScreen(QMainWindow):
         export_table(self.upload_plates_table)
 
 
-    def verify_merge_plate(self, plate_id):
+    def verify_merge_plate(self, plate_id, index):
         if plate_id == "":
-            return -1, True
+            return -1, False
 
-        pattern = '^[pP]{1}[0-9]{6}$'
-        if not re.match(pattern, plate_id):
+        pattern1 = '^[pP]{1}[0-9]{6}$'
+        pattern2 = '^[mM]{1}[xX]{1}[0-9]{4}$'
+        if not (re.match(pattern1, plate_id) or re.match(pattern2, plate_id)):
             return -1, False
             
         try:
@@ -299,14 +295,15 @@ class PlatesScreen(QMainWindow):
             res = json.loads(r)
             if status == 0:
                 raise Exception
+            self.plate_ids[index] = plate_id
             return res[0]['wells'], True
         except:
-            print("except")
             return -1, False
 
     def check_merge_sizes(self):
         self.sizes_dict = {}
-        for i, s in enumerate(self.size_arr[1:]):
+        for i in range(1, 5):
+            s = self.size_arr[i]
             if s != -1:
                 if f'{s}' in self.sizes_dict:
                     self.sizes_dict[f'{s}'].append(i)
@@ -314,37 +311,59 @@ class PlatesScreen(QMainWindow):
                     self.sizes_dict[f'{s}'] = [i]
         if len(self.sizes_dict) < 1:
             self.dom_size = -1
-            return
+            return False
         self.dom_size = int(max(self.sizes_dict, key = lambda x: len(self.sizes_dict[x])))
-        for i in range(len(self.size_arr[1:])):
-            if i in (self.sizes_dict[f'{self.dom_size}']):
-                self.mark_merge_box(i, "good")#self.merge_status_palette['good'])
-            else: 
-                if self.size_arr[i] != -1:
-                    self.mark_merge_box(i, "mismatch")#self.merge_status_palette['mismatch'])
-                else:
-                    self.mark_merge_box(i, "bad")#self.merge_status_palette['bad'])
+        
         if len(self.sizes_dict) == 1:
             return True
         else: 
             return False
 
+    def color_boxes(self):
+        if (not self.ok_arr[0]) and (self.size_arr[0] != -1):
+            self.mark_merge_box(0, "bad")
+        elif (self.dom_size != -1) and (self.dom_size*4 != self.size_arr[0]):
+            self.mark_merge_box(0, "mismatch")
+        else:
+            self.mark_merge_box(0, "good")
+        for i in range(1, 5):
+
+            if (not self.ok_arr[i]) and (self.size_arr[i] != -1):
+                    self.mark_merge_box(i, "bad")
+            elif (self.dom_size != -1) and (i in (self.sizes_dict[f'{self.dom_size}'])):
+                self.mark_merge_box(i, "good")
+            else:
+                self.mark_merge_box(i, "mismatch")
+            
+
     def mark_merge_box(self, i, color):
+        # sets dynamic property defined by QtDesigner in the .ui-file
+        # setting "state" to "good", "bad", or "mismatch" changes stylesheet to different colors
+        print(f"marking {i}:{color}")
         if i == 0:
-            self.merge_frame_result.setProperty("state", color)#setBackground(color)
-            self.merge_frame_result.update()
+            self.merge_frame_result.setProperty("state", color)
+            self.merge_frame_result.style().polish(self.merge_frame_result)
         elif i == 1:
-            self.merge_frame_1.setProperty("state", color)#setBackground(color)
-            self.merge_frame_1.update()
+            self.merge_frame_1.setProperty("state", color)
+            self.merge_frame_1.style().polish(self.merge_frame_1)
         elif i == 2:
-            self.merge_frame_2.setProperty("state", color)#setBackground(color)
-            self.merge_frame_2.update()
+            self.merge_frame_2.setProperty("state", color)
+            self.merge_frame_2.style().polish(self.merge_frame_2)
         elif i == 3:
-            self.merge_frame_3.setProperty("state", color)#setBackground(color)
-            self.merge_frame_3.update()
+            self.merge_frame_3.setProperty("state", color)
+            self.merge_frame_3.style().polish(self.merge_frame_3)
         elif i == 4:
-            self.merge_frame_4.setProperty("state", color)#setBackground(color)
-            self.merge_frame_4.update()
+            self.merge_frame_4.setProperty("state", color)
+            self.merge_frame_4.style().polish(self.merge_frame_4)
+
+    def check_fields_unique(self):
+        ids = []
+        for i in range(0, 5):
+            if self.ok_arr[i]:
+                if self.plate_ids[i] not in ids:
+                    ids.append(self.plate_ids[i])
+                else: 
+                    self.ok_arr[i] = False
 
     def mod0(self):
         self.mod_arr[0] = 1
@@ -368,48 +387,51 @@ class PlatesScreen(QMainWindow):
 
     def merge_check(self):
         self.debugprint("before")
-        cond1 = (self.join_result_eb.text() != "") and \
+        noEmptyEntriesOK = (self.join_result_eb.text() != "") and \
             ((self.join_q1_eb.text() != "") or \
             (self.join_q2_eb.text() != "") or \
             (self.join_q3_eb.text() != "") or \
             (self.join_q4_eb.text() != "")) # at least one (1) q# and result is non-empty
         
         if self.mod_arr[1] != 0:
-            self.size_arr[1], self.ok_arr[1] = self.verify_merge_plate(self.join_q1_eb.text())
+            self.size_arr[1], self.ok_arr[1] = self.verify_merge_plate(self.join_q1_eb.text(), 1)
             self.mod_arr[1] = 0
         if self.mod_arr[2] != 0:
-            self.size_arr[2], self.ok_arr[2] = self.verify_merge_plate(self.join_q2_eb.text())
+            self.size_arr[2], self.ok_arr[2] = self.verify_merge_plate(self.join_q2_eb.text(), 2)
             self.mod_arr[2] = 0
         if self.mod_arr[3] != 0:
-            self.size_arr[3], self.ok_arr[3] = self.verify_merge_plate(self.join_q3_eb.text())
+            self.size_arr[3], self.ok_arr[3] = self.verify_merge_plate(self.join_q3_eb.text(), 3)
             self.mod_arr[3] = 0
         if self.mod_arr[4] != 0:
-            self.size_arr[4], self.ok_arr[4] = self.verify_merge_plate(self.join_q4_eb.text())
+            self.size_arr[4], self.ok_arr[4] = self.verify_merge_plate(self.join_q4_eb.text(), 4)
             self.mod_arr[4] = 0
         if self.mod_arr[0] != 0:
-            self.size_arr[0], self.ok_arr[0] = self.verify_merge_plate(self.join_result_eb.text())
-            if self.ok_arr[0]:
-                self.mark_merge_box(0, "good")#self.merge_status_palette['good'])
-            else:
-                self.mark_merge_box(0, "bad")#self.merge_status_palette['bad'])
+            self.size_arr[0], self.ok_arr[0] = self.verify_merge_plate(self.join_result_eb.text(), 0)
             self.mod_arr[0] = 0
         
-        cond2 = self.ok_arr[1] and \
-                self.ok_arr[2] and \
-                self.ok_arr[3] and \
-                self.ok_arr[4] and \
-                self.ok_arr[0]# filled fields are valid
+        self.check_fields_unique()
 
-        cond3 = self.check_merge_sizes()# sizes between parts match
-        cond4 = (self.size_arr[0] != -1) and \
+        fieldsFilledOK = \
+            ((self.ok_arr[1] is True) or ((self.ok_arr[1] is False) and (self.size_arr[1] == -1))) and \
+            ((self.ok_arr[2] is True) or ((self.ok_arr[2] is False) and (self.size_arr[2] == -1))) and \
+            ((self.ok_arr[3] is True) or ((self.ok_arr[3] is False) and (self.size_arr[3] == -1))) and \
+            ((self.ok_arr[4] is True) or ((self.ok_arr[4] is False) and (self.size_arr[4] == -1))) and \
+            ((self.ok_arr[0] is True) or ((self.ok_arr[0] is False) and (self.size_arr[0] == -1)))
+            # filled fields are valid
+
+        sizesMatchingOK = self.check_merge_sizes()# sizes between parts match
+        self.color_boxes()
+        targetSizeOk = (self.size_arr[0] != -1) and \
             (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
 
-        if cond1 and cond2 and cond3 and cond4:
+        if noEmptyEntriesOK and fieldsFilledOK and sizesMatchingOK and targetSizeOk and (self.merge_volume_eb.text() != ""):
             self.nine6to384_btn.setEnabled(True)
-            self.nine6to384_btn.setProperty("state", "good")#self.merge_status_palette['good'])
+            self.nine6to384_btn.setProperty("state", "good")
+            self.nine6to384_btn.style().polish(self.nine6to384_btn)
         else:
             self.nine6to384_btn.setEnabled(False)
-            self.nine6to384_btn.setProperty("state", "mismatch")#self.merge_status_palette['mismatch'])
+            self.nine6to384_btn.setProperty("state", "mismatch")
+            self.nine6to384_btn.style().polish(self.nine6to384_btn)
         self.debugprint("after")
 
     def debugprint(self, i):
@@ -420,11 +442,31 @@ class PlatesScreen(QMainWindow):
         print(f"ok_arr:   {self.ok_arr}")
 
     def nine6to384_merge(self):
-        r, status = dbInterface.mergePlates(self.token,
+        r = None
+        try:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            r, status = dbInterface.mergePlates(self.token,
                                             self.join_q1_eb.text(),
                                             self.join_q2_eb.text(),
                                             self.join_q3_eb.text(),
                                             self.join_q4_eb.text(),
-                                            self.join_result_eb.text()
-                                            )
-        
+                                            self.join_result_eb.text(),
+                                            self.merge_volume_eb.text())
+            if not status:
+                raise Exception
+            merged_plates = ",".join([id for id in self.plate_ids[1:] if id != -1])
+            self.merge_status_lab.setText(f"Merged plates [{merged_plates}] into {self.plate_ids[0]}.\nReturned message:\"{r}\"")
+            
+            self.join_result_eb.setText("")
+            self.join_q1_eb.setText("")
+            self.join_q2_eb.setText("")
+            self.join_q3_eb.setText("")
+            self.join_q4_eb.setText("")
+
+            QApplication.restoreOverrideCursor()  
+            return                                  
+        except:
+            merged_plates = ",".join([id for id in self.plate_ids[1:] if id != -1])
+            self.merge_status_lab.setText(f"Merging plates [{merged_plates}] into {self.plate_ids[0]} failed with error message:\"{r}\"")
+            QApplication.restoreOverrideCursor()
+            return
