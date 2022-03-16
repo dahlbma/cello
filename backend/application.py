@@ -13,6 +13,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 import mydb
 import config
+import pandas as pd
 
 db = mydb.disconnectSafeConnect()
 cur = db.cursor()
@@ -255,9 +256,9 @@ class MergePlates(tornado.web.RequestHandler):
             order by well96
             """
             cur.execute(sSql)
-            tRes = cur.fetchall()
-            return tRes
-        
+            df = pd.DataFrame(cur.fetchall())
+            return df
+
         def getPlate(sPlate):
             sSql = f"""
             SELECT
@@ -278,14 +279,53 @@ class MergePlates(tornado.web.RequestHandler):
             return tRes
         
         def transferWells(quadrant, sourcePlate, targetPlate):
-            for i in plate:
-                print(i)
+            for i in sourcePlate:
+                sPlate = i[0]
+                sWell = i[1]
+                sCmpId = i[2]
+                sBatch = i[3]
+                sForm = i[4]
+                sConc = i[5]
+                dfTargetWell = quadrant.loc[quadrant[1] == sWell][2]
+                sTargetWell = list(dfTargetWell)[0]
+                sConfigId = 'config'
+                sSql = f"""
+                insert into cool.config
+                (config_id, well, compound_id, notebook_ref, form, conc, volume)
+                values
+                (
+                '{targetPlate}',
+                '{sTargetWell}',
+                '{sCmpId}',
+                '{sBatch}',
+                '{sForm}',
+                '{sConc}',
+                '{sVolume}'
+                )
+                """
+                cur.execute(sSql)
         
+        #sVolume = self.get_argument("volume")
+        sVolume = 200
         q1 = self.get_argument("q1")
         q2 = self.get_argument("q2")
         q3 = self.get_argument("q3")
         q4 = self.get_argument("q4")
-        target = self.get_argument("target")
+        targetPlate = self.get_argument("target").upper()
+
+        sSql = f"""
+        select count(c.config_id) from cool.plate p, cool.config c
+        where p.config_id = c.config_id
+        and p.plate_id = '{targetPlate}'
+        """
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        if tRes[0][0] > 0:
+            sError = 'Target plate not empty'
+            self.set_status(400)
+            self.finish(sError)
+            return
+        
         if q1 != "":
             quadrant = getQuadrant(1)
             plate = getPlate(q1)
@@ -319,11 +359,22 @@ class UploadWellInformation(tornado.web.RequestHandler):
 @jwtauth
 class VerifyPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
-        sSql = f"""
-        select wells from cool.plate, cool.plate_type
-        where plate.type_id = plate_type.type_id
-        and plate.plate_id ='{sPlate}'
-        """
+        if re.match("^[pP]{1}[0-9]{6}$", sPlate):
+            sSql = f"""
+            select wells from cool.plate, cool.plate_type
+            where plate.type_id = plate_type.type_id
+            and plate.plate_id ='{sPlate}'
+            """
+        elif re.match("^[mM][xX]{1}[0-9]{4}$", sPlate):
+            sSql = f"""select 96 wells from microtube.matrix
+            where matrix_id = '{sPlate}'
+            """
+        else:
+            sError = 'Plate not found'
+            self.set_status(400)
+            self.finish(sError)
+            return
+
         cur.execute(sSql)
         tRes = cur.fetchall()
         if len(tRes) == 0:
@@ -332,8 +383,8 @@ class VerifyPlate(tornado.web.RequestHandler):
             self.finish(sError)
             return
         self.finish(json.dumps(res_to_json(tRes, cur), indent=4))
-        
-        
+
+
 @jwtauth
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
