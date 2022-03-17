@@ -282,6 +282,7 @@ class PlatesScreen(QMainWindow):
 
 
     def verify_merge_plate(self, plate_id, index):
+        self.merge_status_lab.setText("")
         if plate_id == "":
             return -1, False
 
