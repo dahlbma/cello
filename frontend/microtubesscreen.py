@@ -261,7 +261,11 @@ class MicrotubesScreen(QMainWindow):
     def unlockRackUpload(self, newText):
         pattern = '^[a-zA-Z]{2}[0-9]{5}$'
         if re.match(pattern, newText):
-            self.upload_file_btn.setEnabled(True)
+            r, b = dbInterface.verifyLocation(self.token, newText)
+            if b:
+                self.upload_file_btn.setEnabled(True)
+            else:
+                self.upload_file_btn.setEnabled(False)
         else:
             self.upload_file_btn.setEnabled(False)
 
