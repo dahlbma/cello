@@ -1389,6 +1389,21 @@ class searchVials(tornado.web.RequestHandler):
 
 
 @jwtauth
+class VerifyLocation(tornado.web.RequestHandler):
+    def get(self, sLocation):
+        sSql = f"""
+        select * from loctree.locations where loc_id = '{sLocation}'
+        """
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) != 1:
+            self.set_status(400)
+            self.finish('Unknown location')
+        else:
+            self.finish()
+            
+
+@jwtauth
 class searchBatches(tornado.web.RequestHandler):
     def get(self, sBatches):
         sIds = list(set(sBatches.split()))
