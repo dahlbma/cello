@@ -1570,8 +1570,24 @@ QPushButton[state=&quot;mismatch&quot;] {
             </item>
             <item>
              <widget class="QLineEdit" name="merge_volume_eb">
+              <property name="styleSheet">
+               <string notr="true">QLineEdit[state=&quot;base&quot;] {
+}
+QLineEdit[state=&quot;good&quot;] {
+	background-color: rgb(167, 221, 181)
+}
+QLineEdit[state=&quot;bad&quot;] {
+	background-color: rgb(234, 112, 112)
+}
+QLineEdit[state=&quot;mismatch&quot;] {
+	background-color: rgb(154, 231, 244)
+}</string>
+              </property>
               <property name="placeholderText">
                <string>Volume (mL)</string>
+              </property>
+              <property name="state" stdset="0">
+               <string>base</string>
               </property>
              </widget>
             </item>

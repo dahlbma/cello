@@ -3,7 +3,7 @@ from unittest import skip
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QLineEdit
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QIntValidator
 
 from cellolib import *
 
@@ -52,12 +52,17 @@ class PlatesScreen(QMainWindow):
         self.size_arr = [-1]*5 # i=0: result, i=1:q1, ...
         self.ok_arr = [False]*5 # i=0: result, i=1:q1, ...
 
+        self.currentTexts = [""]*6
+
         self.join_q1_eb.textChanged.connect(self.mod1)
         self.join_q2_eb.textChanged.connect(self.mod2)
         self.join_q3_eb.textChanged.connect(self.mod3)
         self.join_q4_eb.textChanged.connect(self.mod4)
         self.join_result_eb.textChanged.connect(self.mod0)
-        self.merge_volume_eb.textChanged.connect(self.merge_check)
+        self.merge_volume_eb.textChanged.connect(self.mod_vol)
+
+        validator = QIntValidator(0, 1000, self)
+        self.merge_volume_eb.setValidator(validator)
 
 
     def keyPressEvent(self, event):
@@ -121,7 +126,6 @@ class PlatesScreen(QMainWindow):
         try:
             self.plate_data = json.loads(res)
             logging.getLogger(self.mod_name).info(f"received data")
-            print(self.plate_data)
             if len(self.plate_data) < 1:
                 raise Exception
             self.plate_comment_eb.setEnabled(True)
@@ -221,7 +225,6 @@ class PlatesScreen(QMainWindow):
         # assume data like [{col1, col2, col3, ...}, {...}]
         try:
             for n in range(len(data)):
-                #print(data[n])
                 for m in range(len(data[n])):
                     newItem = QTableWidgetItem(f"{data[n][m]}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
@@ -320,16 +323,23 @@ class PlatesScreen(QMainWindow):
             return False
 
     def color_boxes(self):
-        #TODO color volume line edit
-        if (not self.ok_arr[0]) and (self.size_arr[0] != -1):
+        if self.merge_volume_eb.text() == "":
+            self.mark_merge_box(5, "mismatch")
+        else:
+            self.mark_merge_box(5, "good")
+        pattern1 = '^[pP]{1}[0-9]{6}$'
+        pattern2 = '^[mM]{1}[xX]{1}[0-9]{4}$'
+
+        t0 = self.currentTexts[0]
+        if ((not self.ok_arr[0]) and (self.size_arr[0] != -1)) or ((t0 != "") and (not (re.match(pattern1, t0) or re.match(pattern2, t0)) )):
             self.mark_merge_box(0, "bad")
         elif (self.ok_arr[0] and all(c == False for c in self.ok_arr[1:])) or ((self.dom_size != -1) and (self.dom_size*4 == self.size_arr[0])):
             self.mark_merge_box(0, "good")
         else:
             self.mark_merge_box(0, "mismatch")
         for i in range(1, 5):
-
-            if (not self.ok_arr[i]) and (self.size_arr[i] != -1):
+            tx = self.currentTexts[i]
+            if ((not self.ok_arr[i]) and (self.size_arr[i] != -1)) or ((tx != "") and (not (re.match(pattern1, tx) or re.match(pattern2, tx)) )):
                     self.mark_merge_box(i, "bad")
             elif (self.dom_size != -1) and (i in (self.sizes_dict[f'{self.dom_size}'])):
                 self.mark_merge_box(i, "good")
@@ -340,7 +350,6 @@ class PlatesScreen(QMainWindow):
     def mark_merge_box(self, i, color):
         # sets dynamic property defined by QtDesigner in the .ui-file
         # setting "state" to "good", "bad", or "mismatch" changes stylesheet to different colors
-        print(f"marking {i}:{color}")
         if i == 0:
             self.merge_frame_result.setProperty("state", color)
             self.merge_frame_result.style().polish(self.merge_frame_result)
@@ -356,6 +365,9 @@ class PlatesScreen(QMainWindow):
         elif i == 4:
             self.merge_frame_4.setProperty("state", color)
             self.merge_frame_4.style().polish(self.merge_frame_4)
+        elif i == 5:
+            self.merge_volume_eb.setProperty("state", color)
+            self.merge_volume_eb.style().polish(self.merge_volume_eb)
 
     def check_fields_unique(self):
         ids = []
@@ -367,28 +379,57 @@ class PlatesScreen(QMainWindow):
                     self.ok_arr[i] = False
                     self.plate_ids[i] = -1
 
+    def get_free_box_index(self, ok_list, mod):
+        try:
+            next_index = ok_list.index(False, mod)
+            return next_index
+        except ValueError:
+            return 0
+
+    def move_focus(self, mod, ok_list):
+        if ok_list[mod] is True:
+            next_box = self.get_free_box_index(ok_list, mod)
+            if next_box == 0:
+                self.join_result_eb.setFocus()
+            elif next_box == 1:
+                self.join_q1_eb.setFocus()
+            elif next_box == 2:
+                self.join_q2_eb.setFocus()
+            elif next_box == 3:
+                self.join_q3_eb.setFocus()
+            elif next_box == 4:
+                self.join_q4_eb.setFocus()
+
     def mod0(self):
+        self.currentTexts[0] = self.join_result_eb.text()
         self.mod_arr[0] = 1
-        self.merge_check()
+        self.merge_check(volume_was_modified=False)
 
     def mod1(self):
+        self.currentTexts[1] = self.join_q1_eb.text()
         self.mod_arr[1] = 1
-        self.merge_check()
+        self.merge_check(volume_was_modified=False)
     
     def mod2(self):
+        self.currentTexts[2] = self.join_q2_eb.text()
         self.mod_arr[2] = 1
-        self.merge_check()
+        self.merge_check(volume_was_modified=False)
     
     def mod3(self):
+        self.currentTexts[3] = self.join_q3_eb.text()
         self.mod_arr[3] = 1
-        self.merge_check()
+        self.merge_check(volume_was_modified=False)
     
     def mod4(self):
+        self.currentTexts[4] = self.join_q4_eb.text()
         self.mod_arr[4] = 1
-        self.merge_check()
+        self.merge_check(volume_was_modified=False)
 
-    def merge_check(self):
-        self.debugprint("before")
+    def mod_vol(self):
+        self.currentTexts[5] = self.merge_volume_eb.text()
+        self.merge_check(volume_was_modified=True)
+
+    def merge_check(self, volume_was_modified=True):
         noEmptyEntriesOK = (self.join_result_eb.text() != "") and \
             ((self.join_q1_eb.text() != "") or \
             (self.join_q2_eb.text() != "") or \
@@ -397,21 +438,22 @@ class PlatesScreen(QMainWindow):
         
         if self.mod_arr[1] != 0:
             self.size_arr[1], self.ok_arr[1] = self.verify_merge_plate(self.join_q1_eb.text(), 1)
-            self.mod_arr[1] = 0
         if self.mod_arr[2] != 0:
             self.size_arr[2], self.ok_arr[2] = self.verify_merge_plate(self.join_q2_eb.text(), 2)
-            self.mod_arr[2] = 0
         if self.mod_arr[3] != 0:
             self.size_arr[3], self.ok_arr[3] = self.verify_merge_plate(self.join_q3_eb.text(), 3)
-            self.mod_arr[3] = 0
         if self.mod_arr[4] != 0:
             self.size_arr[4], self.ok_arr[4] = self.verify_merge_plate(self.join_q4_eb.text(), 4)
-            self.mod_arr[4] = 0
         if self.mod_arr[0] != 0:
             self.size_arr[0], self.ok_arr[0] = self.verify_merge_plate(self.join_result_eb.text(), 0)
-            self.mod_arr[0] = 0
         
         self.check_fields_unique()
+        if volume_was_modified is False:
+            mod = self.mod_arr.index(1)
+            # move focus
+            self.move_focus(mod, self.ok_arr)
+
+        self.mod_arr = [0]*5
 
         fieldsFilledOK = \
             ((self.ok_arr[1] is True) or ((self.ok_arr[1] is False) and (self.size_arr[1] == -1))) and \
@@ -423,10 +465,12 @@ class PlatesScreen(QMainWindow):
 
         sizesMatchingOK = self.check_merge_sizes()# sizes between parts match
         self.color_boxes()
-        targetSizeOk = (self.size_arr[0] != -1) and \
+        targetSizeOK = (self.size_arr[0] != -1) and \
             (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
 
-        if noEmptyEntriesOK and fieldsFilledOK and sizesMatchingOK and targetSizeOk and (self.merge_volume_eb.text() != ""):
+        volumeOK = (self.merge_volume_eb.text() != "")
+
+        if noEmptyEntriesOK and fieldsFilledOK and sizesMatchingOK and targetSizeOK and volumeOK:
             self.nine6to384_btn.setEnabled(True)
             self.nine6to384_btn.setProperty("state", "good")
             self.nine6to384_btn.style().polish(self.nine6to384_btn)
@@ -434,14 +478,6 @@ class PlatesScreen(QMainWindow):
             self.nine6to384_btn.setEnabled(False)
             self.nine6to384_btn.setProperty("state", "mismatch")
             self.nine6to384_btn.style().polish(self.nine6to384_btn)
-        self.debugprint("after")
-
-    def debugprint(self, i):
-        print(i)
-        print(f"dom_size: {self.dom_size}")
-        print(f"mod_arr:  {self.mod_arr}" )
-        print(f"size_arr: {self.size_arr}")
-        print(f"ok_arr:   {self.ok_arr}")
 
     def nine6to384_merge(self):
         r = None
