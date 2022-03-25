@@ -260,20 +260,37 @@ class MergePlates(tornado.web.RequestHandler):
             return df
 
         def getPlate(sPlate):
-            sSql = f"""
-            SELECT
-            p.plate_id,
-            c.well,
-            compound_id,
-            notebook_ref,
-            c.form,
-            c.conc,
-            c.volume
-            FROM cool.config c, cool.plate p, cool.plating_sequence ps
-            WHERE p.CONFIG_ID = c.CONFIG_ID
-            and p.TYPE_ID = ps.TYPE_ID
-            and c.WELL = ps.WELL and p.plate_id = '{sPlate}'
-	    order by ps.seq"""
+            if sPlate.startswith('P'):
+                sSql = f"""
+                SELECT
+                p.plate_id,
+                c.well,
+                compound_id,
+                notebook_ref,
+                c.form,
+                c.conc,
+                c.volume
+                FROM cool.config c, cool.plate p, cool.plating_sequence ps
+                WHERE p.CONFIG_ID = c.CONFIG_ID
+                and p.TYPE_ID = ps.TYPE_ID
+                and c.WELL = ps.WELL and p.plate_id = '{sPlate}'
+	        order by ps.seq"""
+            elif sPlate.startswith('MX'):
+                sSql = f"""
+                select
+                mt.matrix_id plate,
+                mt.position well,
+                b.compound_id,
+                t.notebook_ref,
+                'DMSO' form,
+                t.conc,
+                t.VOLUME
+                from microtube.tube t, microtube.matrix_tube mt, bcpvs.batch b
+                where t.tube_id = mt.tube_id
+                and b.notebook_ref = t.notebook_ref
+                and mt.matrix_id = '{sPlate}'
+                """
+
             sSlask = cur.execute(sSql)
             tRes = cur.fetchall()
             return tRes
@@ -286,6 +303,8 @@ class MergePlates(tornado.web.RequestHandler):
                 sBatch = i[3]
                 sForm = i[4]
                 sConc = i[5]
+                if sConc == None:
+                    sConc = 'NULL'
                 dfTargetWell = quadrant.loc[quadrant[1] == sWell][2]
                 sTargetWell = list(dfTargetWell)[0]
                 sConfigId = 'config'
@@ -299,18 +318,17 @@ class MergePlates(tornado.web.RequestHandler):
                 '{sCmpId}',
                 '{sBatch}',
                 '{sForm}',
-                '{sConc}',
+                {sConc},
                 '{sVolume}'
                 )
                 """
                 cur.execute(sSql)
         
-        #sVolume = self.get_argument("volume")
-        sVolume = 200
-        q1 = self.get_argument("q1")
-        q2 = self.get_argument("q2")
-        q3 = self.get_argument("q3")
-        q4 = self.get_argument("q4")
+        sVolume = self.get_argument("volume")
+        q1 = self.get_argument("q1").upper()
+        q2 = self.get_argument("q2").upper()
+        q3 = self.get_argument("q3").upper()
+        q4 = self.get_argument("q4").upper()
         targetPlate = self.get_argument("target").upper()
 
         sSql = f"""
@@ -1369,6 +1387,21 @@ class searchVials(tornado.web.RequestHandler):
             jRes.append(res_to_json(tRes, cur)[0])
         self.finish(json.dumps(jRes))
 
+
+@jwtauth
+class VerifyLocation(tornado.web.RequestHandler):
+    def get(self, sLocation):
+        sSql = f"""
+        select * from loctree.locations where loc_id = '{sLocation}'
+        """
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) != 1:
+            self.set_status(400)
+            self.finish('Unknown location')
+        else:
+            self.finish()
+            
 
 @jwtauth
 class searchBatches(tornado.web.RequestHandler):

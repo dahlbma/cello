@@ -240,10 +240,19 @@ def getRack(token, rack):
         res = r.content
     return res
 
+def verifyLocation(token, location):
+    r = requests.get(f'{baseUrl}verifyLocation/{location}',
+                      headers={'token': token})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
+
+    
 def readScannedRack(token, location, file):
     r = requests.post(f'{baseUrl}readScannedRack',
                       headers={'token': token},
-                      data={'location':location},
+                      data={'location': location},
                       files={'file':file})
     if r.status_code != 200:
         return r.content.decode(), False

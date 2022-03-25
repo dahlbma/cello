@@ -199,6 +199,7 @@ def make_app():
         (r"/transitVials/(?P<sVials>[^\/]+)", application.TransitVials),
         (r"/printVial/(?P<sVial>[^\/]+)", application.printVial),
         (r"/discardVial/(?P<sVial>[^\/]+)", application.discardVial),
+        (r"/verifyLocation/(?P<sLocation>[^\/]+)", application.VerifyLocation),
         (r"/getLocation", application.getLocation),
         (r"/deleteLocation/(?P<sLocation>[^\/]+)", application.DeleteLocation),
         (r"/moveVialToLocation/(?P<sVial>[^\/]+)/(?P<sUser>[^\/]+)",
