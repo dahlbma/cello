@@ -316,7 +316,8 @@ class PlatesScreen(QMainWindow):
         if len(self.sizes_dict) < 1:
             self.dom_size = -1
             return False
-        self.dom_size = int(max(self.sizes_dict, key = lambda x: len(self.sizes_dict[x])))
+        self.dom_size = int(max(self.sizes_dict,
+            key = lambda x: len(self.sizes_dict[x])))
         
         if len(self.sizes_dict) == 1:
             return True
@@ -332,7 +333,8 @@ class PlatesScreen(QMainWindow):
         pattern2 = '^[mM]{1}[xX]{1}[0-9]{4}$'
 
         t0 = self.currentTexts[0]
-        if ((not self.ok_arr[0]) and (self.size_arr[0] != -1)) or ((t0 != "") and (not (re.match(pattern1, t0) or re.match(pattern2, t0)) )):
+        if ((not self.ok_arr[0]) and (self.size_arr[0] != -1)) or \
+             ((t0 != "") and (not (re.match(pattern1, t0) or re.match(pattern2, t0)) )):
             self.mark_merge_box(0, "bad")
         elif (self.ok_arr[0] and all(c == False for c in self.ok_arr[1:])) \
              or ((self.dom_size != -1) and (self.dom_size*4 == self.size_arr[0])):
@@ -341,7 +343,8 @@ class PlatesScreen(QMainWindow):
             self.mark_merge_box(0, "mismatch")
         for i in range(1, 5):
             tx = self.currentTexts[i]
-            if ((not self.ok_arr[i]) and (self.size_arr[i] != -1)) or ((tx != "") and (not (re.match(pattern1, tx) or re.match(pattern2, tx)) )):
+            if ((not self.ok_arr[i]) and (self.size_arr[i] != -1)) or \
+                 ((tx != "") and (not (re.match(pattern1, tx) or re.match(pattern2, tx)) )):
                     self.mark_merge_box(i, "bad")
             elif (self.dom_size != -1) and\
                  (i in (self.sizes_dict[f'{self.dom_size}'])):
@@ -440,15 +443,20 @@ class PlatesScreen(QMainWindow):
             (self.join_q4_eb.text() != "")) # at least one (1) q# and result is non-empty
         
         if self.mod_arr[1] != 0:
-            self.size_arr[1], self.ok_arr[1] = self.verify_merge_plate(self.join_q1_eb.text(), 1)
+            self.size_arr[1], self.ok_arr[1] = \
+                self.verify_merge_plate(self.join_q1_eb.text(), 1)
         if self.mod_arr[2] != 0:
-            self.size_arr[2], self.ok_arr[2] = self.verify_merge_plate(self.join_q2_eb.text(), 2)
+            self.size_arr[2], self.ok_arr[2] = \
+                self.verify_merge_plate(self.join_q2_eb.text(), 2)
         if self.mod_arr[3] != 0:
-            self.size_arr[3], self.ok_arr[3] = self.verify_merge_plate(self.join_q3_eb.text(), 3)
+            self.size_arr[3], self.ok_arr[3] = \
+                self.verify_merge_plate(self.join_q3_eb.text(), 3)
         if self.mod_arr[4] != 0:
-            self.size_arr[4], self.ok_arr[4] = self.verify_merge_plate(self.join_q4_eb.text(), 4)
+            self.size_arr[4], self.ok_arr[4] = \
+                self.verify_merge_plate(self.join_q4_eb.text(), 4)
         if self.mod_arr[0] != 0:
-            self.size_arr[0], self.ok_arr[0] = self.verify_merge_plate(self.join_result_eb.text(), 0)
+            self.size_arr[0], self.ok_arr[0] = \
+                self.verify_merge_plate(self.join_result_eb.text(), 0)
         
         self.check_fields_unique()
         if volume_was_modified is False:
@@ -473,7 +481,8 @@ class PlatesScreen(QMainWindow):
 
         volumeOK = (self.merge_volume_eb.text() != "")
 
-        if noEmptyEntriesOK and fieldsFilledOK and sizesMatchingOK and targetSizeOK and volumeOK:
+        if noEmptyEntriesOK and fieldsFilledOK and sizesMatchingOK and \
+             targetSizeOK and volumeOK:
             self.nine6to384_btn.setEnabled(True)
             self.nine6to384_btn.setProperty("state", "good")
             self.nine6to384_btn.style().polish(self.nine6to384_btn)
