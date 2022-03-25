@@ -373,7 +373,6 @@ Nr of failed tubes: {res['iError']}''')
             self.addRow()
         
         self.create_microtubes_table.setCurrentCell(0, 0)
-        #self.create_microtubes_table.editItem(self.create_microtubes_table.item(0, 0))
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
 
     def create_import_file(self):

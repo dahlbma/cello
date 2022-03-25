@@ -205,7 +205,7 @@ class SearchScreen(QMainWindow):
             self.batch_export_btn.setEnabled(False)
             self.batch_table.setRowCount(0)
             self.structure_lab.clear()
-        logging.getLogger(self.mod_name).info(f"receieved data")#{self.batches_data}")
+        logging.getLogger(self.mod_name).info(f"receieved data")
         self.setBatchTableData(self.batches_data)
         self.batch_table.setCurrentCell(0,0)
         self.batch_export_btn.setEnabled(True)

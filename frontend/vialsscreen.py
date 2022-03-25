@@ -35,11 +35,9 @@ class VialsScreen(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.vials_tab_wg.currentIndex() == 0:
-                # press button
                 self.check_vial_search_input()
                 return
-            else: # index = 1
-                # maybe not?
+            else:
                 return
 
     def tabChanged(self):
@@ -63,7 +61,6 @@ class VialsScreen(QMainWindow):
         self.edit_vial_error_lab.setText('')
         vialId = re.sub("[^0-9a-zA-Z]+", " ", vialId)
         logging.getLogger(self.mod_name).info(f"vial search {vialId}")
-        #res = [{'':5}]#dbInterface.<>(self.token, vialId)
         res = dbInterface.verifyVial(self.token, vialId)
         try:
             self.vial_data = json.loads(str(res))

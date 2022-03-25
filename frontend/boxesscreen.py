@@ -25,8 +25,6 @@ class BoxesScreen(QMainWindow):
         self.boxes_tab_wg.setCurrentIndex(0)
         self.boxes_tab_wg.currentChanged.connect(self.tabChanged)
 
-        #locations = [None,]
-        #self.add_location_cb.addItems(locations)
         types = [None, "200", "64", "50", 'Matrix',]
         self.add_box_type_cb.addItems(types)
         self.add_box_btn.clicked.connect(self.addBox)
@@ -81,15 +79,12 @@ class BoxesScreen(QMainWindow):
                 if self.box_search_eb.text() != "":
                     self.find_in_box_tree()
                 return
-            else: # index = 1
-                # maybe not?
+            else:
                 return
 
     def tabChanged(self):
         page_index = self.boxes_tab_wg.currentIndex()
         if page_index == 0:
-            #self.boxes_tree.clear()
-            #self.init_boxes_tree()
             self.add_description_eb.setFocus()
             self.structure_lab.clear()
         elif page_index == 1:
@@ -140,8 +135,6 @@ class BoxesScreen(QMainWindow):
     def take_children(self, item):
         children = item.takeChildren()
         l = [f'({child.text(0)}:{child.text(2)})' for child in children]
-        #if len(l) > 0:
-            #print("took " + ', '.join(l))
 
     def find_in_box_tree(self):
         path = None
@@ -221,7 +214,7 @@ class BoxesScreen(QMainWindow):
             self.boxes_tree.collapseItem(self.boxes_tree.currentItem())
             self.boxes_tree.expandItem(self.boxes_tree.currentItem())
         else:
-            #TODO send error message
+            #TODO send received error message
             logging.getLogger(self.mod_name).error(f"addBox failed with [{sBoxName}, {sBoxSize}, {sParent}]")
 
     def check_addbox_input(self):
@@ -243,7 +236,7 @@ class BoxesScreen(QMainWindow):
             self.boxes_tree.collapseItem(self.boxes_tree.currentItem())
             self.boxes_tree.expandItem(self.boxes_tree.currentItem())
         else:
-            #TODO send error message
+            #TODO send received error message
             logging.getLogger(self.mod_name).error(f"addLocation failed with [{sLocationName}, {sLocationType}, {sParent}]")
 
     def check_addlocation_input(self):
@@ -257,13 +250,11 @@ class BoxesScreen(QMainWindow):
 
     def deleteLocation(self):
         target = f"{self.delete_location_lab.text()}/{self.add_location_barcode}"
-        #target_barcode = self.add_location_barcode 
         logging.getLogger(self.mod_name).info(f"delete {target}!")
         
-        #delete request
+        # send delete request
         r, ret = dbInterface.deleteLocation(self.token, self.add_location_barcode)
         if ret is False:
-            #TODO send error message
             self.delete_location_error_lab.setText(r.content.decode())
             logging.getLogger(self.mod_name).error(f"error removing {target}: {r.content.decode()}")
             self.resetInput()
@@ -277,7 +268,6 @@ class BoxesScreen(QMainWindow):
 
     def check_deletion_params(self):
         if self.boxes_tree.currentItem() is not None:
-            #self.take_children(self.boxes_tree.currentItem())
             nr_o_children = self.get_children(self.boxes_tree.currentItem())
             if (nr_o_children == 0) or \
                (self.boxes_tree.currentItem().childIndicatorPolicy() == QTreeWidgetItem.DontShowIndicator):
@@ -302,7 +292,7 @@ class BoxesScreen(QMainWindow):
         if re.match(pattern, t):
             self.search_for_box(t)
         else:
-            #no match
+            # no match
             self.box_search = None
             self.box_table.setRowCount(0)
 
@@ -314,18 +304,9 @@ class BoxesScreen(QMainWindow):
         try:
             res = res.replace("null", "\"\"")
             self.box_data = json.loads(res)
-            logging.getLogger(self.mod_name).info(f"recieved data")#: {self.box_data}")
+            logging.getLogger(self.mod_name).info(f"recieved data")
         except:
             self.box_data = None
-    
-        #if (self.box_data is None) or (len(self.box_data) == 0):
-        #    self.box_data = None
-        #    self.path_js = None
-        #    self.update_print_btn.setEnabled(False)
-        #    self.box_table.setRowCount(0)
-        #    self.update_name_lab.setText("Box not found!")
-        #    self.update_name_lab.setStyleSheet("background-color: red")
-        #    return
     
         path_res = dbInterface.getBoxLocation(self.token, box)
         logging.getLogger(self.mod_name).info(f"recieved path: {path_res}")
@@ -397,9 +378,7 @@ class BoxesScreen(QMainWindow):
         else:
             self.box_table.setCurrentCell(r, 0)
             self.box_table.editItem(self.box_table.item(r, col))
-            self.box_table.scrollToItem(self.box_table.item(r, col), QAbstractItemView.PositionAtCenter)
-            
-            
+            self.box_table.scrollToItem(self.box_table.item(r, col), QAbstractItemView.PositionAtCenter)    
         return
 
     def transitVials(self):

@@ -222,15 +222,6 @@ def getMicroTubes(token, batches):
         res = r.content
     return res
 
-    #{
-    #    "batchId": "305055385",
-    #    "tubeId": "2004959484",
-    #    "volume": 200.0,
-    #    "matrixId": "MX6282",
-    #    "position": "C04",
-    #    "location": "LCBKI_SLL/A4590_CDC/KIWI/Inside KIWI"
-    #},
-
 def getRack(token, rack):
     r = requests.get(f'{baseUrl}getRack/{rack}',
                       headers={'token': token})

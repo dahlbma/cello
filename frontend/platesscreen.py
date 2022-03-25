@@ -42,17 +42,16 @@ class PlatesScreen(QMainWindow):
         self.upload_pbar.setValue(0)
         self.upload_pbar.hide()
 
-        #self.merge_status_palette = {'good':QColor(167, 221, 181), 'bad':QColor(234, 112, 112), 'mismatch':QColor(154, 231, 244)}
         self.nine6to384_btn.clicked.connect(self.nine6to384_merge)
         self.nine6to384_btn.setEnabled(False)
 
-        self.plate_ids = [-1]*5
+        self.plate_ids = [-1]*5 # i=0: result, i=1:q1, ...
         self.dom_size = -1
-        self.mod_arr = [0]*5 # i=0: result, i=1:q1, ...
-        self.size_arr = [-1]*5 # i=0: result, i=1:q1, ...
-        self.ok_arr = [False]*5 # i=0: result, i=1:q1, ...
+        self.mod_arr = [0]*5 
+        self.size_arr = [-1]*5
+        self.ok_arr = [False]*5
 
-        self.currentTexts = [""]*6
+        self.currentTexts = [""]*6 # i=0: result, i=1:q1, ..., i=5:volume_eb
 
         self.join_q1_eb.textChanged.connect(self.mod1)
         self.join_q2_eb.textChanged.connect(self.mod2)
@@ -68,12 +67,10 @@ class PlatesScreen(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.plates_tab_wg.currentIndex() == 0:
-                # press button
                 return
             elif self.plates_tab_wg.currentIndex() == 1:
                 self.check_plate_search_input()
-            else: # index = 1
-                # maybe not?
+            else:
                 return
 
     def tabChanged(self):
@@ -167,12 +164,12 @@ class PlatesScreen(QMainWindow):
     def editComment(self):
         new_comment = self.plate_comment_eb.text()
         plate = self.plate_search_eb.text()
-        #try:
-        _, status = dbInterface.updatePlateName(self.token, plate, new_comment)
-            #if status is False:
-            #    raise Exception
-        #except:
-        #    logging.getLogger(self.mod_name).info(f"updating comment failed")
+        try:
+            _, status = dbInterface.updatePlateName(self.token, plate, new_comment)
+            if status is False:
+                raise Exception
+        except:
+            logging.getLogger(self.mod_name).info(f"updating comment failed")
         self.check_plate_search_input()
 
     def setDiscard(self, state):

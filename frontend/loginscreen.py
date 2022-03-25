@@ -17,7 +17,6 @@ class LoginScreen(QMainWindow):
         self.mod_name = "login"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/welcomescreen.ui"), self)
-        #self.passwordfield.setEchoMode(QtWidgets.QLineEdit.Password)
         self.login.clicked.connect(self.loginfunction)
         saDatabases = dbInterface.getDatabase()
         self.server_cb.addItems(saDatabases)

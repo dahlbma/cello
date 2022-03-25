@@ -149,7 +149,6 @@ logger.addHandler(ch)
 logger.addHandler(fh)
 
 
-#try:
 # base app settings
 os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
 app = QApplication(['Cello Launcher'])
@@ -159,6 +158,7 @@ launch = LauncherScreen()
 widget = QtWidgets.QStackedWidget()
 widget.addWidget(launch)
 
+# window sizing stuff
 desktop = QApplication.desktop()
 windowHeight = 340
 windowWidth = 508
@@ -175,5 +175,3 @@ widget.show()
 app.setWindowIcon(QtGui.QIcon('asssets/chem.ico'))
 widget.setWindowIcon(QtGui.QIcon('assets/chem.ico'))
 sys.exit(app.exec_())
-#except Exception as e:
-#    logger.info(str(e))
