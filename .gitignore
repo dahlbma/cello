@@ -8,6 +8,7 @@ dist/
 *.sdf
 *.mol
 error_msg.txt
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
