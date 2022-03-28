@@ -18,6 +18,7 @@ class LoginScreen(QMainWindow):
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/welcomescreen.ui"), self)
         self.login.clicked.connect(self.loginfunction)
+        saDatabases = None
         try:
             saDatabases = dbInterface.getDatabase()
         except Exception as e:
