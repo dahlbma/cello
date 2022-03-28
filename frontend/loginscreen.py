@@ -18,7 +18,11 @@ class LoginScreen(QMainWindow):
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/welcomescreen.ui"), self)
         self.login.clicked.connect(self.loginfunction)
-        saDatabases = dbInterface.getDatabase()
+        try:
+            saDatabases = dbInterface.getDatabase()
+        except Exception as e:
+            send_msg("Connection Error", f"Cello has encountered a fatal error:\n\n{str(e)}\n\nPlease restart Cello.", icon=QMessageBox.Critical, e=e)
+            sys.exit()
         self.server_cb.addItems(saDatabases)
     
     def keyPressEvent(self, event):
