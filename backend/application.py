@@ -731,16 +731,16 @@ def getBoxFromDb(sBox):
         pass
 
     sSlask = cur.execute(f"""select a.coordinate, tt.vial_id,
-    tt.compound_id, tt.notebook_ref batch_id
-    from
-    (SELECT v.pos, v.vial_id, c.compound_id, v.location, v.notebook_ref
-    from glass.vial v
-    left join bcpvs.batch c on v.notebook_ref = c.notebook_ref
-    where v.location = '{sBox}') tt
-    right outer join
-    (select coordinate from glass.box_sequence order by coordinate limit {positions}) a
-    on tt.pos = a.coordinate
-    order by a.coordinate asc""")
+ tt.compound_id, tt.notebook_ref batch_id
+ from
+ (SELECT v.pos, v.vial_id, c.compound_id, v.location, v.notebook_ref
+ from glass.vial v
+ left join bcpvs.batch c on v.notebook_ref = c.notebook_ref
+ where v.location = '{sBox}') tt
+ right outer join
+ (select coordinate from glass.box_sequence order by coordinate limit {positions}) a
+ on tt.pos = a.coordinate
+ order by a.coordinate asc""")
     
     tRes = cur.fetchall()
 
