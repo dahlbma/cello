@@ -38,6 +38,8 @@ class MicrotubesScreen(QMainWindow):
         self.choose_file_btn.clicked.connect(self.getRackFile)
         self.upload_file_btn.clicked.connect(self.uploadRackFile)
         self.update_box_eb.textChanged.connect(self.unlockRackUpload)
+        self.upload_copy_log_btn.clicked.connect(self.copyLog)
+        self.upload_copy_log_btn.setEnabled(False)
 
         self.addRows()
         self.create_add_rows_btn.clicked.connect(self.addRows)
@@ -92,6 +94,7 @@ class MicrotubesScreen(QMainWindow):
             self.tubes_export_btn.setEnabled(False)
             self.tubes_batches_table.setRowCount(0)
             self.structure_lab.clear()
+            logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}] returned: {res}")
             return
         logging.getLogger(self.mod_name).info(f"receieved {len(self.batches_data)} responses")
         self.setTubesBatchesTableData(self.batches_data)
@@ -177,6 +180,7 @@ class MicrotubesScreen(QMainWindow):
             self.rack_moveto_eb.setEnabled(False)
             self.rack_table.setRowCount(0)
             self.structure_lab.clear()
+            logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}] returned: {res}")
             return
         logging.getLogger(self.mod_name).info(f"receieved {len(self.rack_data)} responses")
         self.setRackTableData(self.rack_data)
@@ -245,14 +249,17 @@ class MicrotubesScreen(QMainWindow):
 
     def getRackFile(self):
         self.upload_result_lab.setText('')
-        self.upload_fname = QFileDialog.getOpenFileName(self, 'Open file', 
+        self.upload_fnames = QFileDialog.getOpenFileNames(self, 'Open file', 
                                                 '.', "")
-        if self.upload_fname[0] == '':
+        if len(self.upload_fnames[0]) == 0:
+            print("no files??")
             return
         
-        filename = os.path.basename(self.upload_fname[0])
+        filename = self.upload_fnames[0][0]
+        if len(self.upload_fnames[0]) > 1:
+            filename = os.path.basename(', '.join(self.upload_fnames[0]))
         self.path_lab.setText(filename)
-        self.path_lab.setToolTip(self.upload_fname[0])
+        self.path_lab.setToolTip('\n'.join(self.upload_fnames[0]))
         self.upload_result_lab.setText("Set box destination for racks.")
         self.update_box_eb.setEnabled(True)
         self.update_box_eb.clear()
@@ -270,18 +277,33 @@ class MicrotubesScreen(QMainWindow):
             self.upload_file_btn.setEnabled(False)
 
     def uploadRackFile(self):
-        try:
-            with open(self.upload_fname[0], "rb") as f:
-                r, b = dbInterface.readScannedRack(self.token, self.update_box_eb.text(), f)
-                res = json.loads(r)
-                self.upload_result_lab.setText(f'''Rack updated: {res['sRack']}
-Failed tubes: {res['FailedTubes']}
-Nr of ok tubes: {res['iOk']}
-Nr of failed tubes: {res['iError']}''')
-            self.update_box_eb.setEnabled(False)
-        except:
-            return
+        res_txt = ""
+        for file_name in self.upload_fnames[0]:
+            try:
+                with open(file_name, "rb") as f:
+                    r, b = dbInterface.readScannedRack(self.token, self.update_box_eb.text(), f)
+                    res = json.loads(r)
+                    res_txt += f'''File: {file_name}
+    Rack updated: {res['sRack']}
+    Failed tubes: {res['FailedTubes']}
+    Nr of ok tubes: {res['iOk']}
+    Nr of failed tubes: {res['iError']}\n\n'''
+                    #self.upload_result_lab.setText(f'''Rack updated: {res['sRack']}
+    #Failed tubes: {res['FailedTubes']}
+    #Nr of ok tubes: {res['iOk']}
+    #Nr of failed tubes: {res['iError']}''')
+                #self.update_box_eb.setEnabled(False)
+            except:
+                print(f"readScannedRack failed with response: {r}")
+
+        self.update_box_eb.setEnabled(False)
+        self.upload_copy_log_btn.setEnabled(True)
+        self.upload_result_lab.setText(res_txt)
     
+    def copyLog(self):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.upload_result_lab.text())
+
     
     def addRow(self):
         self.create_microtubes_table.insertRow(self.create_microtubes_table.rowCount())

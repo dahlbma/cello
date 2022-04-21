@@ -25,12 +25,12 @@ class BoxesScreen(QMainWindow):
         self.boxes_tab_wg.setCurrentIndex(0)
         self.boxes_tab_wg.currentChanged.connect(self.tabChanged)
 
-        types = [None, "200", "64", "50", 'Matrix',]
+        types = [' ', "200", "64", "50", 'Matrix',]
         self.add_box_type_cb.addItems(types)
         self.add_box_btn.clicked.connect(self.addBox)
         self.add_box_btn.setEnabled(False)
 
-        types = [None, "Room", "Fridge-Freezer", "Shelf"]
+        types = [' ', "Room", "Fridge-Freezer", "Shelf"]
         self.add_location_type_cb.addItems(types)
         self.add_location_btn.clicked.connect(self.addLocation)
         self.add_location_btn.setEnabled(False)
@@ -198,10 +198,10 @@ class BoxesScreen(QMainWindow):
 
     def resetInput(self):
         self.add_description_eb.setText('')
-        self.add_box_type_cb.setCurrentText(None)
+        self.add_box_type_cb.setCurrentText(' ')
         self.add_box_btn.setEnabled(False)
 
-        self.add_location_type_cb.setCurrentText(None)
+        self.add_location_type_cb.setCurrentText(' ')
         self.location_description_eb.setText('')
 
     def addBox(self):
@@ -215,11 +215,13 @@ class BoxesScreen(QMainWindow):
             self.boxes_tree.expandItem(self.boxes_tree.currentItem())
         else:
             #TODO send received error message
-            logging.getLogger(self.mod_name).error(f"addBox failed with [{sBoxName}, {sBoxSize}, {sParent}]")
+            err = f"addBox failed with [{sBoxName}, {sBoxSize}, {sParent}]"
+            send_msg("Error Adding Box", f"Error Message:\n{err}", icon=QMessageBox.Warning, e=err)
+            logging.getLogger(self.mod_name).error(err)
 
     def check_addbox_input(self):
         if (self.add_location_lab.text() != "") and \
-            (self.add_box_type_cb.currentText() != "") and \
+            (self.add_box_type_cb.currentText() != ' ') and \
             (self.add_description_eb.text() != "") and \
             (self.boxes_tree.currentItem().childIndicatorPolicy() != QTreeWidgetItem.DontShowIndicator):
             self.add_box_btn.setEnabled(True)
@@ -236,12 +238,13 @@ class BoxesScreen(QMainWindow):
             self.boxes_tree.collapseItem(self.boxes_tree.currentItem())
             self.boxes_tree.expandItem(self.boxes_tree.currentItem())
         else:
-            #TODO send received error message
-            logging.getLogger(self.mod_name).error(f"addLocation failed with [{sLocationName}, {sLocationType}, {sParent}]")
+            err = f"addLocation failed with [{sLocationName}, {sLocationType}, {sParent}]"
+            send_msg("Error Adding Location", f"Error Message:\n{err}", icon=QMessageBox.Warning, e=err)
+            logging.getLogger(self.mod_name).error(err)
 
     def check_addlocation_input(self):
         if (self.location_location_lab.text() != "") and \
-            (self.add_location_type_cb.currentText() != "") and \
+            (self.add_location_type_cb.currentText() != ' ') and \
             (self.location_description_eb.text() != "") and \
             (self.boxes_tree.currentItem().childIndicatorPolicy() != QTreeWidgetItem.DontShowIndicator):
             self.add_location_btn.setEnabled(True)
@@ -391,6 +394,7 @@ class BoxesScreen(QMainWindow):
 
         logging.getLogger(self.mod_name).info(f"send vials: {vials} to transit")
         r = dbInterface.transitVials(self.token, vials)
+        logging.getLogger(self.mod_name).info(f"transitVials returned response: {r}")
 
         self.search_for_box(self.box_search)
         return
