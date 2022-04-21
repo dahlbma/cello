@@ -24,7 +24,7 @@ class PlatesScreen(QMainWindow):
 
         self.new_plates_save_btn.clicked.connect(self.createPlates)
         self.new_plates_save_btn.setEnabled(False)
-        types = [None, "96", "384", "1536"]
+        types = [' ', "96", "384", "1536"]
         self.new_plates_type_cb.addItems(types)
         self.new_plates_type_cb.currentTextChanged.connect(self.check_plates_input)
         self.new_plate_comment_eb.textChanged.connect(self.check_plates_input)
@@ -32,9 +32,12 @@ class PlatesScreen(QMainWindow):
         self.plate_data = None
         self.plate_search_btn.clicked.connect(self.check_plate_search_input)
         self.plate_comment_btn.clicked.connect(self.editComment)
+        self.plate_discard_btn.clicked.connect(self.discardPlate)
         self.setDiscard(False)
         self.plate_discard_chk.stateChanged.connect(self.readyDiscard)
         self.plate_export_btn.clicked.connect(self.plate_export_data)
+        self.plate_print_btn.clicked.connect(self.printPlate)
+        self.plate_print_btn.setEnabled(False)
 
         self.choose_file_btn.clicked.connect(self.import_plates_file)
         self.upload_file_btn.clicked.connect(self.upload_plate_table)
@@ -83,7 +86,7 @@ class PlatesScreen(QMainWindow):
             return
 
     def check_plates_input(self):
-        if (self.new_plates_type_cb.currentText() != "") and \
+        if (self.new_plates_type_cb.currentText() != ' ') and \
             (self.new_plate_comment_eb.text() != ""):
             self.new_plates_save_btn.setEnabled(True)
         else:
@@ -98,8 +101,10 @@ class PlatesScreen(QMainWindow):
             if not status:
                 raise Exception
             self.new_plates_res_lab.setText(res)
+            self.new_plates_type_cb.setCurrentText(' ')
         except:
             logging.getLogger(self.mod_name).info(f"create plates [{type}:{name}:{nr_o_ps}] failed:\n{res}")
+        #TODO reset input
 
     def check_plate_search_input(self):
         pattern = '^[pP]{1}[0-9]{6}$'
@@ -113,6 +118,7 @@ class PlatesScreen(QMainWindow):
             self.plate_comment_eb.setEnabled(False)
             self.plate_comment_btn.setEnabled(False)
             self.plate_table.setRowCount(0)
+            self.plate_print_btn.setEnabled(False)
             self.setDiscard(False)
 
     def plateSearch(self, plate):
@@ -122,21 +128,24 @@ class PlatesScreen(QMainWindow):
         res = dbInterface.getPlate(self.token, plate)
         try:
             self.plate_data = json.loads(res)
-            logging.getLogger(self.mod_name).info(f"received data")
             if len(self.plate_data) < 1:
                 raise Exception
+            logging.getLogger(self.mod_name).info(f"received data")
             self.plate_comment_eb.setEnabled(True)
             self.plate_comment_btn.setEnabled(True)
             self.plate_comment_eb.setText(self.plate_data[0]['description'])
             self.setPlateTableData(self.plate_data)
             self.setDiscard(False)
             self.setDiscard(True)
+            self.plate_print_btn.setEnabled(True)
         except:
+            logging.getLogger(self.mod_name).info(f"no data received")
             self.plate_data = None
             self.plate_comment_eb.setText("")
             self.plate_comment_eb.setEnabled(False)
             self.plate_comment_btn.setEnabled(False)
-            self.plate_table.setRowCount(0)          
+            self.plate_table.setRowCount(0)
+            self.plate_print_btn.setEnabled(False)        
     
     def setPlateTableData(self, data):
         self.plate_table.setRowCount(0)
@@ -172,6 +181,10 @@ class PlatesScreen(QMainWindow):
             logging.getLogger(self.mod_name).info(f"updating comment failed")
         self.check_plate_search_input()
 
+    def printPlate(self):
+        plate = self.plate_search_eb.text()
+        dbInterface.printPlateLabel(self.token, plate)
+
     def setDiscard(self, state):
         if state:
             self.plate_discard_chk.setEnabled(True)
@@ -185,6 +198,12 @@ class PlatesScreen(QMainWindow):
             self.plate_discard_btn.setEnabled(True)
         else:
             self.plate_discard_btn.setEnabled(False)
+
+    def discardPlate(self):
+        plate = self.plate_search_eb.text()
+        r = dbInterface.discardPlate(self.token, plate)
+        logging.getLogger(self.mod_name).info(f"discardPlate [{plate}] returned: {r}")
+
 
     def plate_export_data(self):
         export_table(self.plate_table)

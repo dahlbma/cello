@@ -28,7 +28,7 @@ class VialsScreen(QMainWindow):
 
         self.edit_vial_id_eb.textChanged.connect(self.check_vial_search_input)
 
-        types = [None, "10", "20", "50", "Solid"]
+        types = [' ', "10", "20", "50", "Solid"]
         self.edit_vconc_cb.addItems(types)
 
 
@@ -73,7 +73,7 @@ class VialsScreen(QMainWindow):
             self.edit_compound_id_eb.setText('')
             self.edit_form_weight_eb.setText('')
             self.edit_tare_eb.setText('')
-            self.edit_vconc_cb.setCurrentText(None)
+            self.edit_vconc_cb.setCurrentText(' ')
             self.edit_gross_weight_eb.setText('')
             self.edit_net_weight_eb.setText('')
             self.edit_dilution_eb.setText('')

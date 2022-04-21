@@ -35,12 +35,11 @@ class SearchScreen(QMainWindow):
 
         self.v_search = False
         self.vial_search_eb.textChanged.connect(self.check_vial_search_input)
-        self.onevial_checkout_cb.addItems([None,
-                                           'a location',
-                                           'another location',
-                                           'a third location'])
+
         self.discard_vial_btn.clicked.connect(self.discardVial)
         self.print_label_btn.clicked.connect(self.printLabel)
+        self.discard_vial_btn.setEnabled(False)
+        self.print_label_btn.setEnabled(False)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
@@ -73,6 +72,9 @@ class SearchScreen(QMainWindow):
         t = self.vial_search_eb.text()
         if re.match(pattern, t):
             self.searchVial(t)
+        else:
+            self.discard_vial_btn.setEnabled(False)
+            self.print_label_btn.setEnabled(False)
 
     def searchVial(self, vialId):
         vialId = re.sub("[^0-9a-zA-Z]+", " ", vialId)
@@ -88,7 +90,6 @@ class SearchScreen(QMainWindow):
             self.onevial_compound_id_eb.setText('')
             self.onevial_box_loc_eb.setText('')
             self.onevial_coords_eb.setText('')
-            self.onevial_checkout_cb.setCurrentText(None)
             self.structure_lab.clear()
             self.discard_vial_btn.setEnabled(False)
             self.print_label_btn.setEnabled(False)
@@ -100,13 +101,14 @@ class SearchScreen(QMainWindow):
         self.onevial_compound_id_eb.setText(f"{self.vial_data[0]['compound_id']}")
         self.onevial_box_loc_eb.setText(f"{self.vial_data[0]['box_id']}")
         self.onevial_coords_eb.setText(f"{self.vial_data[0]['coordinate']}")
-        self.onevial_checkout_cb.setCurrentText('a location')
         self.discard_vial_btn.setEnabled(True)
         self.print_label_btn.setEnabled(True)
         displayMolfile(self, vialId)
 
     def discardVial(self):
-        print(f"discard vial {self.vial_search_eb.text()}")
+        vial = self.vial_search_eb.text()
+        r = dbInterface.discardVial(self.token, vial)
+        logging.getLogger(self.mod_name).info(f"discardVial [{vial}] returned: {r}")
 
     def printLabel(self):
         dbInterface.printVialLabel(self.token, self.vial_search_eb.text())

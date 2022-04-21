@@ -8,7 +8,7 @@ def listify(data, addBlank=True):
     res = json.loads(res)
     cleanList = list()
     if addBlank:
-        cleanList.append(None)
+        cleanList.append(' ')
     for i in res:
         cleanList.append(i[0])
     return cleanList
@@ -116,6 +116,12 @@ def printBoxLabel(token, sBox):
 
 def printVialLabel(token, sVial):
     r = requests.get(f'{baseUrl}printVial/{sVial}',
+                     headers={'token': token})
+    res = r.content.decode()
+    return res
+
+def printPlateLabel(token, sPlate):
+    r = requests.get(f'{baseUrl}printPlate/{sPlate}',
                      headers={'token': token})
     res = r.content.decode()
     return res
@@ -337,3 +343,19 @@ def uploadWellInformation(token,
         return r.content.decode(), False
     else:
         return r.content.decode(), True
+
+def discardVial(token, vial_id):
+    r = requests.put(f'{baseUrl}discardVial/{vial_id}',
+                      headers={'token': token})
+    if r.status_code != 200:
+        return r, False
+    else:
+        return r, True
+
+def discardPlate(token, plate_id):
+    r = requests.put(f'{baseUrl}discardPlate/{plate_id}',
+                      headers={'token': token})
+    if r.status_code != 200:
+        return r, False
+    else:
+        return r, True
