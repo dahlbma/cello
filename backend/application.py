@@ -14,6 +14,7 @@ from rdkit.Chem import Draw
 import mydb
 import config
 import pandas as pd
+from os.path import exists
 
 db = mydb.disconnectSafeConnect()
 cur = db.cursor()
@@ -1041,7 +1042,13 @@ class generateVialId(tornado.web.RequestHandler):
 
 
 @jwtauth
-class discardVial(tornado.web.RequestHandler):
+class DiscardPlate(tornado.web.RequestHandler):
+    def get(self, sPlate):
+        pass
+
+
+@jwtauth
+class DiscardVial(tornado.web.RequestHandler):
     def get(self, sVial):
         sSql = """update vialdb.box_positions set vial_id=%s,
                   update_date=now()
@@ -1176,6 +1183,10 @@ class UpdateVialPosition(tornado.web.RequestHandler):
                    where vial_id = '{sVialId}'"""
         sSlask = cur.execute(sSql)
 
+@jwtauth
+class PrintPlate(tornado.web.RequestHandler):
+    def get(self, sPlate):
+        pass
 
 @jwtauth
 class printBox(tornado.web.RequestHandler):
@@ -1524,7 +1535,7 @@ class DeleteLocation(tornado.web.RequestHandler):
         sSlask = cur.execute(f"""
         delete from loctree.locations where loc_id = '{sLocation}'
         """)
-        
+
 
 @jwtauth
 class MoveVialToLocation(tornado.web.RequestHandler):
@@ -1591,6 +1602,9 @@ class GetFreeBoxes(tornado.web.RequestHandler):
 @jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
     def get(self, sId):
+        if exists(f'mols/{sId}.png'):
+            self.finish()
+            return
         sId = sId.lower()
         m = re.search("v\d\d\d\d\d\d", sId)
         sSql = ""
