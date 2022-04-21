@@ -700,8 +700,8 @@ def logVialChange(sVialId, sLogMessage, sNewPos=None):
     """
     try:
         sSlask = cur.execute(sSql)
-    except:
-        pass
+    except Exception as e:
+        logging.error("Vial_log error {str(e)}")
 
 def getVialPosition(sVialId):
     sSql = f"""select IFNULL(v.location, '') location, l.name, IFNULL(v.pos, '') coordinate
@@ -1043,22 +1043,20 @@ class generateVialId(tornado.web.RequestHandler):
 
 @jwtauth
 class DiscardPlate(tornado.web.RequestHandler):
-    def get(self, sPlate):
-        pass
+    def put(self, sPlate):
+        sSql = f"""update cool.plate set discarded = 1 where plate_id = '{sPlate}'"""
+        sSlask = cur.execute(sSql)
+        self.finish()
 
 
 @jwtauth
 class DiscardVial(tornado.web.RequestHandler):
-    def get(self, sVial):
-        sSql = """update vialdb.box_positions set vial_id=%s,
-                  update_date=now()
-                  where vial_id=%s""" % (None, sVial)
+    def put(self, sVial):
+        sNull = 'NULL'
+        sSql = f"""update glass.vial set location = 'SL11008', pos = {sNull}
+        where vial_id = '{sVial}'"""
         sSlask = cur.execute(sSql)
-        sSql = """update vialdb.vial set discarded='Discarded',
-                  update_date=now(), checkedout=%s
-                  where vial_id=%s""" % (None, sVial)
-        sSlask = cur.execute(sSql)
-        logVialChange(sVial, '', 'Discarded')
+        logVialChange(sVial, 'Discarding vial', 'Discarded')
         self.finish()
 
 
