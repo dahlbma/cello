@@ -251,7 +251,6 @@ class MicrotubesScreen(QMainWindow):
         self.upload_result_lab.setText('')
         self.upload_fnames = QFileDialog.getOpenFileNames(self, 'Open file', 
                                                 '.', "")
-        print(self.upload_fnames[0])
         if len(self.upload_fnames[0]) == 0:
             print("no files??")
             return
@@ -304,11 +303,6 @@ class MicrotubesScreen(QMainWindow):
     def copyLog(self):
         clipboard = QApplication.clipboard()
         clipboard.setText(self.upload_result_lab.text())
-        print("test scroll")
-        t = self.upload_result_lab.text()
-        for i in range(100):
-            t +="\n > >"
-        self.upload_result_lab.setText(t)
 
     
     def addRow(self):
