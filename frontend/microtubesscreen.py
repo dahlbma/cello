@@ -92,6 +92,7 @@ class MicrotubesScreen(QMainWindow):
             self.tubes_export_btn.setEnabled(False)
             self.tubes_batches_table.setRowCount(0)
             self.structure_lab.clear()
+            logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}] returned: {res}")
             return
         logging.getLogger(self.mod_name).info(f"receieved {len(self.batches_data)} responses")
         self.setTubesBatchesTableData(self.batches_data)
@@ -177,6 +178,7 @@ class MicrotubesScreen(QMainWindow):
             self.rack_moveto_eb.setEnabled(False)
             self.rack_table.setRowCount(0)
             self.structure_lab.clear()
+            logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}] returned: {res}")
             return
         logging.getLogger(self.mod_name).info(f"receieved {len(self.rack_data)} responses")
         self.setRackTableData(self.rack_data)

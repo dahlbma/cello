@@ -93,6 +93,7 @@ class SearchScreen(QMainWindow):
             self.structure_lab.clear()
             self.discard_vial_btn.setEnabled(False)
             self.print_label_btn.setEnabled(False)
+            logging.getLogger(self.mod_name).info(f"vial search for {vialId} returned: {res}")
             return
         logging.getLogger(self.mod_name).info(f"receieved {self.vial_data}")
         self.v_search = True
@@ -126,6 +127,7 @@ class SearchScreen(QMainWindow):
             self.multvial_export_btn.setEnabled(False)
             self.multvial_table.setRowCount(0)
             self.structure_lab.clear()
+            logging.getLogger(self.mod_name).info(f"multvial search for {vials} returned: {res}")
             return
         logging.getLogger(self.mod_name).info(f"receieved {self.multvial_data}")
         self.setMultvialTableData(self.multvial_data)

@@ -78,6 +78,7 @@ class VialsScreen(QMainWindow):
             self.edit_net_weight_eb.setText('')
             self.edit_dilution_eb.setText('')
             self.structure_lab.clear()
+            logging.getLogger(self.mod_name).info(f"vial search for {vialId} returned: {res}")
             return
         logging.getLogger(self.mod_name).info(f"receieved {self.vial_data}")
         self.v_search = True
