@@ -646,69 +646,10 @@
           </item>
           <item row="1" column="1">
            <layout class="QGridLayout" name="gridLayout_4">
-            <item row="0" column="1">
-             <widget class="QLabel" name="label_11">
-              <property name="font">
-               <font>
-                <pointsize>14</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Create empty vials</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_12">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>35</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Number of vials:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1">
              <widget class="QLineEdit" name="create_n_vial_eb"/>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_13">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>35</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Vial type:</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="1">
-             <widget class="QComboBox" name="create_type_cb"/>
-            </item>
-            <item row="3" column="1">
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
                <spacer name="horizontalSpacer_9">
@@ -753,6 +694,40 @@
                </spacer>
               </item>
              </layout>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_12">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Number of vials:</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_11">
+              <property name="font">
+               <font>
+                <pointsize>14</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Create empty vials</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
