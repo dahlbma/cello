@@ -1275,17 +1275,6 @@ class createBox(tornado.web.RequestHandler):
 
 
 @jwtauth
-class getFirstEmptyCoordForBox(tornado.web.RequestHandler):
-    def get(self, sBox):
-        sSlask = cur.execute("""select coordinate from vialdb.box_positions
-                                where (vial_id is null or vial_id ='')
-                                and box_id = '%s'
-                                order by coordinate asc limit 1""" % (sBox))
-        tRes = cur.fetchall()
-        self.write(json.dumps(res_to_json(tRes, cur)))
-
-
-@jwtauth
 class getBoxOfType(tornado.web.RequestHandler):
     def get(self, sBoxType):
         sSlask = cur.execute("""select distinct(p.box_id)
