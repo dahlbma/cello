@@ -179,7 +179,7 @@ Plates</string>
                </widget>
               </item>
               <item row="6" column="1">
-               <widget class="QLineEdit" name="new_plate_comment_eb">
+               <widget class="QLineEdit" name="new_plates_comment_eb">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>0</horstretch>
