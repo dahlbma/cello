@@ -182,7 +182,6 @@ def make_app():
          application.UpdateRackLocation),
         (r"/readScannedRack", application.ReadScannedRack),
         (r"/updateBox/(?P<sBox>[^\/]+)", application.updateBox),
-        (r"/createLocation", application.createLocation),
         (r"/getFreeBoxes", application.GetFreeBoxes),
         (r"/createPlates/(?P<sPlateType>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sNumberOfPlates>[^\/]+)",
          application.CreatePlates),

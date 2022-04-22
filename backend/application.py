@@ -791,23 +791,6 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 
 
 @jwtauth
-class createLocation(tornado.web.RequestHandler):
-    def post(self, *args, **kwargs):
-        self.set_header("Content-Type", "application/json")
-        try:
-            sDescription = self.get_argument("description", default='', strip=False)
-        except:
-            logging.error("Error cant find file1 in the argument list")
-            return
-        sLoc = getNewLocationId()
-        sSql = f"""insert into vialdb.box_location (location_id,
-                   location_description, update_date)
-                   values ({sLoc}, {sDescription}, now())"""
-        sSlask = cur.execute(sSql)
-        self.write(json.dumps({'locId':sLoc,
-                               'locDescription':sDescription}))
-
-@jwtauth
 class getLocations(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.set_header("Content-Type", "application/json")
