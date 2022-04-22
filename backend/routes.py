@@ -194,7 +194,6 @@ def make_app():
         (r"/verifyPlate/(?P<sPlate>[^\/]+)", application.VerifyPlate),
         (r"/updatePlateName/(?P<sPlate>[^\/]+)/(?P<sPlateName>[^\/]+)",
          application.UpdatePlateName),
-        (r"/searchLocation/(?P<sLocation>[^\/]+)", application.searchLocation),
         (r"/batchInfo/(?P<sBatch>[^\/]+)", application.batchInfo),
         (r"/searchBatches/(?P<sBatches>[^\/]+)", application.searchBatches),
         (r"/searchVials/(?P<sVials>[^\/]+)", application.searchVials),

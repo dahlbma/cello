@@ -815,29 +815,6 @@ class getLocations(tornado.web.RequestHandler):
 
 
 @jwtauth
-class searchLocation(tornado.web.RequestHandler):
-    def get(self, sLocation):
-        self.set_header("Content-Type", "application/json")
-        sSlask = cur.execute("""
-                     SELECT l.location_id as locId,
-                           location_description as locDescription,
-                           box_id as boxId,
-                           box_description as boxDescription
-                           from vialdb.box_location l
-                 	   left join vialdb.box b
-                           on l.location_id = b.location_id
-                           where l.location_id = '%s'""" % (sLocation))
-        tRes = cur.fetchall()
-        #jRes = []
-        #for row in tRes:
-        #    jRes.append({"locId":row.location_id,
-        #                 "locDescription":row.location_description,
-        #                 "boxId":row.box_id,
-        #                 "boxDescription":row.box_description})
-        self.write(json.dumps(res_to_json(tRes, cur)))
-
-
-@jwtauth
 class verifyVial(tornado.web.RequestHandler):
     def get(self, sVial):
         sSql = f"""SELECT batch_id, vial_type
