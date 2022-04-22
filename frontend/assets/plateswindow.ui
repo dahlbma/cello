@@ -116,7 +116,7 @@
                </font>
               </property>
               <property name="text">
-               <string>New Plates</string>
+               <string>Create New Plates</string>
               </property>
               <property name="wordWrap">
                <bool>false</bool>
