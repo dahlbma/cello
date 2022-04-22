@@ -1090,16 +1090,6 @@ class vialInfo(tornado.web.RequestHandler):
 
 
 @jwtauth
-class getVialTypes(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        sSlask = cur.execute("""SELECT vial_type, vial_type_desc, concentration
-                                from vialdb.vial_type
-                                order by vial_order asc""")
-        tRes = cur.fetchall()
-        self.write(json.dumps(res_to_json(tRes, cur)))
-
-
-@jwtauth
 class GetBoxLocation(tornado.web.RequestHandler):
     def get(self, sBox):
         sSlask = cur.execute(f"""SELECT name, path

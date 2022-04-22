@@ -214,7 +214,6 @@ def make_app():
         (r"/addMicrotube/(?P<sTubeId>[^\/]+)/(?P<sBatchId>[^\/]+)/(?P<sVolume>[^\/]+)/(?P<sConc>[^\/]*)",
          application.AddMicrotube),
         (r"/verifyVial/(?P<sVial>[^\/]+)", application.verifyVial),
-        (r"/getVialTypes", application.getVialTypes),
         (r"/createBox", application.createBox),
         (r'.*', util.BaseHandler),
     ], **settings)
