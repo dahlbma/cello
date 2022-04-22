@@ -79,9 +79,13 @@ class MicrotubesScreen(QMainWindow):
             self.choose_file_btn.setFocus()
             self.upload_result_lab.setText('')
         elif page_index == 3:
+            self.new_racks_comment_eb.setFocus()
+        elif page_index == 4:
             r, c = getNextFreeRow(self.create_microtubes_table, 0, 0, entireRowFree=True, fromSame=True)
             self.create_microtubes_table.setCurrentCell(r, c)
             self.create_microtubes_table.setFocus()
+        elif page_index == 5:
+            self.move_rack_id_eb.setFocus()
 
     def search_microtubes(self):
         batches = self.tubes_batch_eb.text()

@@ -22,12 +22,16 @@ class PlatesScreen(QMainWindow):
         self.goto_boxes_btn.clicked.connect(self.gotoBoxes)
         self.goto_microtubes_btn.clicked.connect(self.gotoMicrotubes)
 
+        self.plates_tab_wg.setCurrentIndex(0)
+        self.new_plates_comment_eb.setFocus()
+        self.plates_tab_wg.currentChanged.connect(self.tabChanged)
+
         self.new_plates_save_btn.clicked.connect(self.createPlates)
         self.new_plates_save_btn.setEnabled(False)
         types = [' ', "96", "384", "1536"]
         self.new_plates_type_cb.addItems(types)
         self.new_plates_type_cb.currentTextChanged.connect(self.check_plates_input)
-        self.new_plate_comment_eb.textChanged.connect(self.check_plates_input)
+        self.new_plates_comment_eb.textChanged.connect(self.check_plates_input)
 
         self.plate_data = None
         self.plate_search_btn.clicked.connect(self.check_plate_search_input)
@@ -79,10 +83,17 @@ class PlatesScreen(QMainWindow):
     def tabChanged(self):
         page_index = self.plates_tab_wg.currentIndex()
         if page_index == 0:
+            self.new_plates_comment_eb.setFocus()
             return
         elif page_index == 1:
+            self.plate_search_eb.setFocus()
             return
         elif page_index == 2:
+            self.choose_file_btn.setFocus()
+            return
+        elif page_index == 3:
+            self.join_q1_eb.setFocus()
+            #self.move_focus(0, self.ok_arr)
             return
 
     def check_plates_input(self):

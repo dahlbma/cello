@@ -89,7 +89,7 @@ class BoxesScreen(QMainWindow):
     def tabChanged(self):
         page_index = self.boxes_tab_wg.currentIndex()
         if page_index == 0:
-            self.add_description_eb.setFocus()
+            self.box_search_eb.setFocus()
             self.structure_lab.clear()
         elif page_index == 1:
             self.update_box_eb.setFocus()
