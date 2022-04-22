@@ -204,7 +204,6 @@ def make_app():
         (r"/updateVialPosition/(?P<sVialId>[^\/]+)/(?P<sBoxId>[^\/]+)/(?P<sPos>[^\/]+)",
          application.UpdateVialPosition),
         (r"/editVial", application.EditVial),
-        (r"/generateVialId", application.generateVialId),
         (r"/vialInfo/(?P<sVial>[^\/]+)", application.vialInfo),
         (r"/addMicrotube/(?P<sTubeId>[^\/]+)/(?P<sBatchId>[^\/]+)/(?P<sVolume>[^\/]+)/(?P<sConc>[^\/]*)",
          application.AddMicrotube),

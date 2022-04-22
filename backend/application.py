@@ -994,13 +994,6 @@ class createManyVialsNLabels(tornado.web.RequestHandler):
 
 
 @jwtauth
-class generateVialId(tornado.web.RequestHandler):
-    def get(self):
-        sNewVial = getNextVialId()
-        self.write(json.dumps({'vial_id':sNewVial}))
-
-
-@jwtauth
 class DiscardPlate(tornado.web.RequestHandler):
     def put(self, sPlate):
         sSql = f"""update cool.plate set discarded = 1 where plate_id = '{sPlate}'"""
