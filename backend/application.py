@@ -1015,7 +1015,7 @@ class DiscardVial(tornado.web.RequestHandler):
 @jwtauth
 class vialInfo(tornado.web.RequestHandler):
     def get(self, sVial):
-        sSql = f"""SELECT batch_id from vialdb.vial where vial_id='%s'""" % sVial
+        sSql = f"""SELECT notebook_ref batch_id from glass.vial where vial_id='%s'""" % sVial
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         lError = False
