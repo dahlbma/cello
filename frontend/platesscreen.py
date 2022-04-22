@@ -102,9 +102,10 @@ class PlatesScreen(QMainWindow):
                 raise Exception
             self.new_plates_res_lab.setText(res)
             self.new_plates_type_cb.setCurrentText(' ')
+            self.new_plates_comment_eb.setText("")
+            self.new_n_plates_sb.setValue(1)
         except:
             logging.getLogger(self.mod_name).info(f"create plates [{type}:{name}:{nr_o_ps}] failed:\n{res}")
-        #TODO reset input
 
     def check_plate_search_input(self):
         pattern = '^[pP]{1}[0-9]{6}$'
@@ -366,8 +367,7 @@ class PlatesScreen(QMainWindow):
                  (i in (self.sizes_dict[f'{self.dom_size}'])):
                 self.mark_merge_box(i, "good")
             else:
-                self.mark_merge_box(i, "mismatch")
-            
+                self.mark_merge_box(i, "mismatch")     
 
     def mark_merge_box(self, i, color):
         # sets dynamic property defined by QtDesigner in the .ui-file
