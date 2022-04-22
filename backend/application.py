@@ -1471,21 +1471,6 @@ class searchBatches(tornado.web.RequestHandler):
 
 
 @jwtauth
-class getLocation(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        sSlask = cur.execute("SET CHARACTER SET utf8")
-        self.set_header("Content-Type", "application/json;charset=utf-8")
-        sSlask = cur.execute("select vial_location from vialdb.vial_location")
-        tRes = cur.fetchall()
-        tRes = list(tRes)
-        tRes.insert(0, {'vial_location': u''})
-        tRes = tuple(tRes)
-        #tRes = {'vial_location': u''}.update(tRes)
-        self.write(json.dumps(res_to_json(tRes, cur),
-                              ensure_ascii=False).encode('utf8'))
-
-
-@jwtauth
 class DeleteLocation(tornado.web.RequestHandler):
     def put(self, sLocation):
         sSlask = cur.execute(f"""

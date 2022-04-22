@@ -203,7 +203,6 @@ def make_app():
         (r"/discardVial/(?P<sVial>[^\/]+)", application.DiscardVial),
         (r"/discardPlate/(?P<sPlate>[^\/]+)", application.DiscardPlate),
         (r"/verifyLocation/(?P<sLocation>[^\/]+)", application.VerifyLocation),
-        (r"/getLocation", application.getLocation),
         (r"/deleteLocation/(?P<sLocation>[^\/]+)", application.DeleteLocation),
         (r"/moveVialToLocation/(?P<sVial>[^\/]+)/(?P<sUser>[^\/]+)",
          application.MoveVialToLocation),
