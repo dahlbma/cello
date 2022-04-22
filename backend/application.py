@@ -192,6 +192,11 @@ class getMicroTubes(tornado.web.RequestHandler):
 
 
 @jwtauth
+class CreateRacks(tornado.web.RequestHandler):
+    def put(self, sRackName, sNumberOfRacks):
+        saNewRacks = dict()
+        
+@jwtauth
 class CreatePlates(tornado.web.RequestHandler):
     def put(self, sPlateType, sPlateName, sNumberOfPlates):
         saNewPlates = dict()
@@ -611,8 +616,13 @@ class UploadBinary(tornado.web.RequestHandler):
 
 
 @jwtauth
-class uploadEmptyVials(tornado.web.RequestHandler):
+class UploadTaredVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
+        saError = ''
+        iOk = 78
+        iError = 0
+        self.finish(json.dumps({'FailedVials':saError, 'iOk':iOk, 'iError':iError}))
+        return
         try:
             # self.request.files['file'][0]:
             # {'body': 'Label Automator ___', 'content_type': u'text/plain', 'filename': u'k.txt'}
@@ -781,61 +791,10 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 
 
 @jwtauth
-class createLocation(tornado.web.RequestHandler):
-    def post(self, *args, **kwargs):
-        self.set_header("Content-Type", "application/json")
-        try:
-            sDescription = self.get_argument("description", default='', strip=False)
-        except:
-            logging.error("Error cant find file1 in the argument list")
-            return
-        sLoc = getNewLocationId()
-        sSql = f"""insert into vialdb.box_location (location_id,
-                   location_description, update_date)
-                   values ({sLoc}, {sDescription}, now())"""
-        sSlask = cur.execute(sSql)
-        self.write(json.dumps({'locId':sLoc,
-                               'locDescription':sDescription}))
-
-@jwtauth
-class getLocations(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        self.set_header("Content-Type", "application/json")
-        sSlask = cur.execute("""SELECT location_id, location_description
-                                from vialdb.box_location
-                                order by pk""")
-        tRes = cur.fetchall()
-        self.write(json.dumps(res_to_json(tRes, cur), indent=4))
-
-
-@jwtauth
-class searchLocation(tornado.web.RequestHandler):
-    def get(self, sLocation):
-        self.set_header("Content-Type", "application/json")
-        sSlask = cur.execute("""
-                     SELECT l.location_id as locId,
-                           location_description as locDescription,
-                           box_id as boxId,
-                           box_description as boxDescription
-                           from vialdb.box_location l
-                 	   left join vialdb.box b
-                           on l.location_id = b.location_id
-                           where l.location_id = '%s'""" % (sLocation))
-        tRes = cur.fetchall()
-        #jRes = []
-        #for row in tRes:
-        #    jRes.append({"locId":row.location_id,
-        #                 "locDescription":row.location_description,
-        #                 "boxId":row.box_id,
-        #                 "boxDescription":row.box_description})
-        self.write(json.dumps(res_to_json(tRes, cur)))
-
-
-@jwtauth
 class verifyVial(tornado.web.RequestHandler):
     def get(self, sVial):
-        sSql = f"""SELECT batch_id, vial_type
-                  from vialdb.vial
+        sSql = f"""SELECT notebook_ref batch_id, type_id vial_type
+                  from glass.vial
                   where vial_id='{sVial}'"""
         tRes = cur.execute(sSql)
         tRes = cur.fetchall()
@@ -1035,13 +994,6 @@ class createManyVialsNLabels(tornado.web.RequestHandler):
 
 
 @jwtauth
-class generateVialId(tornado.web.RequestHandler):
-    def get(self):
-        sNewVial = getNextVialId()
-        self.write(json.dumps({'vial_id':sNewVial}))
-
-
-@jwtauth
 class DiscardPlate(tornado.web.RequestHandler):
     def put(self, sPlate):
         sSql = f"""update cool.plate set discarded = 1 where plate_id = '{sPlate}'"""
@@ -1085,16 +1037,6 @@ class vialInfo(tornado.web.RequestHandler):
                where vial_id ='{sVial}'"""
         
         sSlask = cur.execute(sSql)
-        tRes = cur.fetchall()
-        self.write(json.dumps(res_to_json(tRes, cur)))
-
-
-@jwtauth
-class getVialTypes(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        sSlask = cur.execute("""SELECT vial_type, vial_type_desc, concentration
-                                from vialdb.vial_type
-                                order by vial_order asc""")
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
 
@@ -1223,70 +1165,6 @@ class printBox(tornado.web.RequestHandler):
         f.close()
         os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
         self.finish("Printed")
-
-
-@jwtauth
-class createBox(tornado.web.RequestHandler):
-    def createVials(self, sBoxId, iVialPk):
-        for iVial in range(NR_OF_VIALS_IN_BOX):
-            iCoord = iVial + 1
-            sSql = """insert into vialdb.box_positions
-                      (box_id, coordinate, update_date)
-                      values (%s, %s, now())""" % (sBoxId, iCoord)
-            sSlask = cur.execute(sSql)
-
-    def post(self, *args, **kwargs):
-        try:
-            sDescription = self.get_argument("description", default='', strip=False)
-            sType = self.get_argument("type", default='', strip=False)
-            sLocation = self.get_argument("location", default='', strip=False)
-            sSlask = cur.execute("""SELECT vial_type from vialdb.vial_type
-                               where vial_type_desc = '%s'""" % (sType))[0].vial_type
-            iVialPk = cur.fetchall()
-        except:
-            logging.error("Error cant find description or type in the argument list")
-            logging.error(sDescription)
-            logging.error("sType " + sType)
-            logging.error("sLocation " + sLocation)
-            return
-        sBox = getNewBoxId()
-        sSql = """insert into vialdb.box (box_id, box_description, vial_type,
-                  location_id, update_date) values (%s, %s, %s, %s, now())"""
-        sSlask = cur.execute(sSql, sBox, sDescription, iVialPk, sLocation)
-        self.createVials(sBox, iVialPk)
-        self.write(json.dumps({'boxId':sBox,
-                               'boxDescription':sDescription}))
-        zplVial = """^XA
-^CFA,20
-^A0,25,20
-^FO295,20^FDBox: %s^FS
-^A0,25,20
-^FO295,45^FDType: %s^FS
-^A0,25,20
-^FO295,70^FD%s^FS
-^A0,25,20
-
-^FX Third section with barcode.
-^BY1,3,45
-^FO490,30^BCR^FD%s^FS
-^XZ
-""" % (sBox.upper(), sType, sDescription, sBox.upper())
-        f = open('/tmp/file.txt','w')
-        f.write(zplVial)
-        f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
-        self.finish("Printed")
-
-
-@jwtauth
-class getFirstEmptyCoordForBox(tornado.web.RequestHandler):
-    def get(self, sBox):
-        sSlask = cur.execute("""select coordinate from vialdb.box_positions
-                                where (vial_id is null or vial_id ='')
-                                and box_id = '%s'
-                                order by coordinate asc limit 1""" % (sBox))
-        tRes = cur.fetchall()
-        self.write(json.dumps(res_to_json(tRes, cur)))
 
 
 @jwtauth
@@ -1486,21 +1364,6 @@ class searchBatches(tornado.web.RequestHandler):
 
 
 @jwtauth
-class getLocation(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        sSlask = cur.execute("SET CHARACTER SET utf8")
-        self.set_header("Content-Type", "application/json;charset=utf-8")
-        sSlask = cur.execute("select vial_location from vialdb.vial_location")
-        tRes = cur.fetchall()
-        tRes = list(tRes)
-        tRes.insert(0, {'vial_location': u''})
-        tRes = tuple(tRes)
-        #tRes = {'vial_location': u''}.update(tRes)
-        self.write(json.dumps(res_to_json(tRes, cur),
-                              ensure_ascii=False).encode('utf8'))
-
-
-@jwtauth
 class DeleteLocation(tornado.web.RequestHandler):
     def put(self, sLocation):
         sSlask = cur.execute(f"""
@@ -1533,45 +1396,6 @@ class DeleteLocation(tornado.web.RequestHandler):
         sSlask = cur.execute(f"""
         delete from loctree.locations where loc_id = '{sLocation}'
         """)
-
-
-@jwtauth
-class MoveVialToLocation(tornado.web.RequestHandler):
-    def get(self, sVial, sUser):
-        sSlask = cur.execute("""
-          select vial_location
-          from vialdb.vial_location
-          where vial_location = '%s'""" % sUser)
-        tRes = cur.fetchall()
-        if len(tRes) != 1:
-            return
-        sUser = tRes[0].vial_location
-
-        sOldBox, sOldCoordinate, sCheckedOut = getVialPosition(sVial)
-        sOldPos = ""
-
-        if sOldBox != '':
-            sOldPos = sOldBox + ' ' + sOldCoordinate
-        else:
-            sOldPos = sCheckedOut
-        logVialChange(sVial, sOldPos, sUser)
-
-        # Reset discarded flag if it was set 
-        sSql = """update vialdb.vial set 
-                  discarded=%s, 
-                  update_date=now() 
-                  where vial_id=%s 
-               """ % (None, sVial)
-        sSlask = cur.execute(sSql)
-
-        # Erase the old place of the vial
-        deleteOldVialPosition(sVial)
- 
-        sSql = """update vialdb.vial set 
-                  checkedout = %s 
-                  where vial_id = %s 
-               """ % (sUser, sVial)
-        sSlask = cur.execute(sSql)
 
 
 @jwtauth
