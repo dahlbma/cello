@@ -791,17 +791,6 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 
 
 @jwtauth
-class getLocations(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        self.set_header("Content-Type", "application/json")
-        sSlask = cur.execute("""SELECT location_id, location_description
-                                from vialdb.box_location
-                                order by pk""")
-        tRes = cur.fetchall()
-        self.write(json.dumps(res_to_json(tRes, cur), indent=4))
-
-
-@jwtauth
 class verifyVial(tornado.web.RequestHandler):
     def get(self, sVial):
         sSql = f"""SELECT batch_id, vial_type

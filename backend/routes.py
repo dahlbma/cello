@@ -162,7 +162,6 @@ def make_app():
         (r"/createMolImage/(?P<sId>[^\/]+)", application.CreateMolImage),
         (r"/uploadBinary", application.UploadBinary),
         (r"/uploadTaredVials", application.UploadTaredVials),
-        (r"/getLocations", application.getLocations),
         (r"/getLocationPath/(?P<sLocation>[^\/]+)", application.GetLocationPath),
         (r"/getLocationChildren/(?P<sLocation>[^\/]+)", application.GetLocationChildren),
         (r"/getLocationByStorage/(?P<sStorage>[^\/]+)", application.GetLocationByStorage),
