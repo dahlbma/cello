@@ -1199,59 +1199,6 @@ class printBox(tornado.web.RequestHandler):
 
 
 @jwtauth
-class createBox(tornado.web.RequestHandler):
-    def createVials(self, sBoxId, iVialPk):
-        for iVial in range(NR_OF_VIALS_IN_BOX):
-            iCoord = iVial + 1
-            sSql = """insert into vialdb.box_positions
-                      (box_id, coordinate, update_date)
-                      values (%s, %s, now())""" % (sBoxId, iCoord)
-            sSlask = cur.execute(sSql)
-
-    def post(self, *args, **kwargs):
-        try:
-            sDescription = self.get_argument("description", default='', strip=False)
-            sType = self.get_argument("type", default='', strip=False)
-            sLocation = self.get_argument("location", default='', strip=False)
-            sSlask = cur.execute("""SELECT vial_type from vialdb.vial_type
-                               where vial_type_desc = '%s'""" % (sType))[0].vial_type
-            iVialPk = cur.fetchall()
-        except:
-            logging.error("Error cant find description or type in the argument list")
-            logging.error(sDescription)
-            logging.error("sType " + sType)
-            logging.error("sLocation " + sLocation)
-            return
-        sBox = getNewBoxId()
-        sSql = """insert into vialdb.box (box_id, box_description, vial_type,
-                  location_id, update_date) values (%s, %s, %s, %s, now())"""
-        sSlask = cur.execute(sSql, sBox, sDescription, iVialPk, sLocation)
-        self.createVials(sBox, iVialPk)
-        self.write(json.dumps({'boxId':sBox,
-                               'boxDescription':sDescription}))
-        zplVial = """^XA
-^CFA,20
-^A0,25,20
-^FO295,20^FDBox: %s^FS
-^A0,25,20
-^FO295,45^FDType: %s^FS
-^A0,25,20
-^FO295,70^FD%s^FS
-^A0,25,20
-
-^FX Third section with barcode.
-^BY1,3,45
-^FO490,30^BCR^FD%s^FS
-^XZ
-""" % (sBox.upper(), sType, sDescription, sBox.upper())
-        f = open('/tmp/file.txt','w')
-        f.write(zplVial)
-        f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
-        self.finish("Printed")
-
-
-@jwtauth
 class getBoxOfType(tornado.web.RequestHandler):
     def get(self, sBoxType):
         sSlask = cur.execute("""select distinct(p.box_id)
