@@ -108,7 +108,6 @@ class VialsScreen(QMainWindow):
                 self.edit_vial_error_lab.setText(res)
             self.edit_dilution_eb.setText(str(res[0]['dilution_factor']))
             self.edit_vial_error_lab.setText('')
+            dbInterface.printVialLabel(self.token, self.edit_vial_id_eb.text())
         except Exception as e:
             logging.getLogger(self.mod_name).error(str(e))
-
-    #TODO add print button to editvial
