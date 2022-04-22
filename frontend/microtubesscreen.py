@@ -260,12 +260,11 @@ class MicrotubesScreen(QMainWindow):
         self.upload_fnames = QFileDialog.getOpenFileNames(self, 'Open file', 
                                                 '.', "")
         if len(self.upload_fnames[0]) == 0:
-            print("no files??")
             return
         
         filename = self.upload_fnames[0][0]
         if len(self.upload_fnames[0]) > 1:
-            filename = os.path.basename(', '.join(self.upload_fnames[0]))
+            filename += " ..."
         self.path_lab.setText(filename)
         self.path_lab.setToolTip('\n'.join(self.upload_fnames[0]))
         self.upload_result_lab.setText("Set box destination for racks.")
