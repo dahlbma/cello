@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1257</width>
+    <width>1180</width>
     <height>810</height>
    </rect>
   </property>
@@ -74,7 +74,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="microtubes_tab_wg">
         <property name="currentIndex">
-         <number>2</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="tubes_tab">
          <attribute name="title">
@@ -136,7 +136,7 @@
               </property>
              </spacer>
             </item>
-            <item row="1" column="0">
+            <item row="1" column="0" colspan="2">
              <layout class="QHBoxLayout" name="horizontalLayout">
               <item>
                <widget class="QLineEdit" name="tubes_batch_eb">
@@ -147,7 +147,7 @@
                  </size>
                 </property>
                 <property name="placeholderText">
-                 <string>Batches or Tubes</string>
+                 <string>Batches or Tubes (E51867002, 1476787458)</string>
                 </property>
                </widget>
               </item>
@@ -407,7 +407,7 @@
                  </size>
                 </property>
                 <property name="placeholderText">
-                 <string>Rack</string>
+                 <string>Rack (MX1897)</string>
                 </property>
                </widget>
               </item>
@@ -665,7 +665,7 @@
             <item row="2" column="1">
              <widget class="QLineEdit" name="update_box_eb">
               <property name="placeholderText">
-               <string>Box Location</string>
+               <string>Box Location (SL32864)</string>
               </property>
              </widget>
             </item>
@@ -693,7 +693,7 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>429</width>
+                 <width>394</width>
                  <height>536</height>
                 </rect>
                </property>
@@ -983,12 +983,12 @@ Microtubes</string>
            <rect>
             <x>90</x>
             <y>90</y>
-            <width>113</width>
+            <width>151</width>
             <height>25</height>
            </rect>
           </property>
           <property name="placeholderText">
-           <string>Rack Id</string>
+           <string>Rack Id (MX1897)</string>
           </property>
          </widget>
          <widget class="QLineEdit" name="move_box_id_eb">
@@ -996,12 +996,12 @@ Microtubes</string>
            <rect>
             <x>90</x>
             <y>130</y>
-            <width>113</width>
+            <width>151</width>
             <height>25</height>
            </rect>
           </property>
           <property name="placeholderText">
-           <string>Move to: </string>
+           <string>Location (SL32864)</string>
           </property>
          </widget>
          <widget class="QLabel" name="move_status_lab">
