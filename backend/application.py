@@ -618,6 +618,10 @@ class UploadBinary(tornado.web.RequestHandler):
 @jwtauth
 class UploadTaredVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
+        saError = ''
+        iOk = 78
+        iError = 0
+        self.finish(json.dumps({'FailedVials':saError, 'iOk':iOk, 'iError':iError}))
         return
         try:
             # self.request.files['file'][0]:
