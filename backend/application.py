@@ -192,6 +192,11 @@ class getMicroTubes(tornado.web.RequestHandler):
 
 
 @jwtauth
+class CreateRacks(tornado.web.RequestHandler):
+    def put(self, sRackName, sNumberOfRacks):
+        saNewRacks = dict()
+        
+@jwtauth
 class CreatePlates(tornado.web.RequestHandler):
     def put(self, sPlateType, sPlateName, sNumberOfPlates):
         saNewPlates = dict()
@@ -611,8 +616,9 @@ class UploadBinary(tornado.web.RequestHandler):
 
 
 @jwtauth
-class uploadEmptyVials(tornado.web.RequestHandler):
+class UploadTaredVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
+        return
         try:
             # self.request.files['file'][0]:
             # {'body': 'Label Automator ___', 'content_type': u'text/plain', 'filename': u'k.txt'}
