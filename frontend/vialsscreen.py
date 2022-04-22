@@ -1,6 +1,6 @@
 import sys, os, logging, re
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
@@ -30,6 +30,13 @@ class VialsScreen(QMainWindow):
 
         types = [' ', "10", "20", "50", "Solid"]
         self.edit_vconc_cb.addItems(types)
+
+        self.browse_btn.clicked.connect(self.import_tare_file)
+        self.upload_btn.clicked.connect(self.addTare)
+        self.upload_btn.setEnabled(False)
+        self.upload_copy_log_btn.clicked.connect(self.copyLog)
+        self.upload_copy_log_btn.setEnabled(False)
+
 
 
     def keyPressEvent(self, event):
@@ -111,3 +118,41 @@ class VialsScreen(QMainWindow):
             dbInterface.printVialLabel(self.token, self.edit_vial_id_eb.text())
         except Exception as e:
             logging.getLogger(self.mod_name).error(str(e))
+
+
+    def import_tare_file(self):
+        self.tare_fname = QFileDialog.getOpenFileName(self, 'Import Tare File', 
+                                                '.', "")
+        if self.tare_fname[0] == '':
+            self.upload_btn.setEnabled(False)
+            return
+
+        self.file_status_lab.setText(self.tare_fname[0])
+        self.file_status_lab.setToolTip(self.tare_fname[0])
+        self.upload_btn.setEnabled(True)
+        self.upload_btn.setFocus()
+
+
+    def addTare(self):
+        try:
+            with open(self.tare_fname[0], "r") as f:
+                r, b = dbInterface.uploadTaredVials(self.token, f)
+                res = json.loads(r)
+                self.upload_result_lab.setText(f'''File: {self.tare_fname[0]}
+    Failed vials: {res['FailedVials']}
+    Nr of ok vials: {res['iOk']}
+    Nr of failed vials: {res['iError']}\n\n''')
+                if b is False:
+                    raise Exception
+                self.tare_fname = None
+                self.file_status_lab.setText("")
+                self.file_status_lab.setToolTip(None)
+        except:
+            print(f"addTare failed with response: {r}")
+
+        self.upload_btn.setEnabled(False)
+        self.upload_copy_log_btn.setEnabled(True)
+    
+    def copyLog(self):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.upload_result_lab.text())

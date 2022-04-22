@@ -82,6 +82,16 @@ def editVial(token,
         res = json.loads(res)
         return res, True
 
+def uploadTaredVials(token, file):
+    r = requests.post(f'{baseUrl}uploadTaredVials',
+                     headers={'token': token},
+                     files={'file':file})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
+
+
 def getLocationsByStorage(token, storage):
     r = requests.get(f'{baseUrl}getLocationByStorage/{storage}',
                      headers={'token':token})
