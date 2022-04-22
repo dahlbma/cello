@@ -793,8 +793,8 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 @jwtauth
 class verifyVial(tornado.web.RequestHandler):
     def get(self, sVial):
-        sSql = f"""SELECT batch_id, vial_type
-                  from vialdb.vial
+        sSql = f"""SELECT notebook_ref batch_id, type_id vial_type
+                  from glass.vial
                   where vial_id='{sVial}'"""
         tRes = cur.execute(sSql)
         tRes = cur.fetchall()
