@@ -245,6 +245,13 @@ def verifyLocation(token, location):
     else:
         return r.content.decode(), True
 
+def createRacks(token, name, nr_o_rs):
+    r = requests.put(f'{baseUrl}createRacks/{name}/{nr_o_rs}',
+                      headers={'token':token})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
     
 def readScannedRack(token, location, file):
     r = requests.post(f'{baseUrl}readScannedRack',

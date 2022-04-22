@@ -41,6 +41,10 @@ class MicrotubesScreen(QMainWindow):
         self.upload_copy_log_btn.clicked.connect(self.copyLog)
         self.upload_copy_log_btn.setEnabled(False)
 
+        self.new_racks_comment_eb.textChanged.connect(self.check_racks_input)
+        self.new_racks_save_btn.clicked.connect(self.createRacks)
+        self.new_racks_save_btn.setEnabled(False)
+
         self.addRows()
         self.create_add_rows_btn.clicked.connect(self.addRows)
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
@@ -303,6 +307,27 @@ class MicrotubesScreen(QMainWindow):
     def copyLog(self):
         clipboard = QApplication.clipboard()
         clipboard.setText(self.upload_result_lab.text())
+
+
+    def check_racks_input(self):
+        if self.new_racks_comment_eb.text() != "":
+            self.new_racks_save_btn.setEnabled(True)
+        else:
+            self.new_racks_save_btn.setEnabled(False)
+
+    def createRacks(self):
+        name = self.new_racks_comment_eb.text()
+        nr_o_rs = self.new_n_racks_sb.value()
+        try:
+            res, status = dbInterface.createRacks(self.token, name, nr_o_rs)
+            if not status:
+                raise Exception
+            self.new_racks_res_lab.setText(res)
+            self.new_racks_comment_eb.setText("")
+            self.new_n_racks_sb.setValue(1)
+        except:
+            logging.getLogger(self.mod_name).info(f"create racks [{name}:{nr_o_rs}] failed:\n{res}")
+
 
     
     def addRow(self):
