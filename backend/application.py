@@ -1506,45 +1506,6 @@ class DeleteLocation(tornado.web.RequestHandler):
 
 
 @jwtauth
-class MoveVialToLocation(tornado.web.RequestHandler):
-    def get(self, sVial, sUser):
-        sSlask = cur.execute("""
-          select vial_location
-          from vialdb.vial_location
-          where vial_location = '%s'""" % sUser)
-        tRes = cur.fetchall()
-        if len(tRes) != 1:
-            return
-        sUser = tRes[0].vial_location
-
-        sOldBox, sOldCoordinate, sCheckedOut = getVialPosition(sVial)
-        sOldPos = ""
-
-        if sOldBox != '':
-            sOldPos = sOldBox + ' ' + sOldCoordinate
-        else:
-            sOldPos = sCheckedOut
-        logVialChange(sVial, sOldPos, sUser)
-
-        # Reset discarded flag if it was set 
-        sSql = """update vialdb.vial set 
-                  discarded=%s, 
-                  update_date=now() 
-                  where vial_id=%s 
-               """ % (None, sVial)
-        sSlask = cur.execute(sSql)
-
-        # Erase the old place of the vial
-        deleteOldVialPosition(sVial)
- 
-        sSql = """update vialdb.vial set 
-                  checkedout = %s 
-                  where vial_id = %s 
-               """ % (sUser, sVial)
-        sSlask = cur.execute(sSql)
-
-
-@jwtauth
 class GetFreeBoxes(tornado.web.RequestHandler):
     def get(self):
         sSql = f"""

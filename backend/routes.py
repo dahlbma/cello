@@ -204,8 +204,6 @@ def make_app():
         (r"/discardPlate/(?P<sPlate>[^\/]+)", application.DiscardPlate),
         (r"/verifyLocation/(?P<sLocation>[^\/]+)", application.VerifyLocation),
         (r"/deleteLocation/(?P<sLocation>[^\/]+)", application.DeleteLocation),
-        (r"/moveVialToLocation/(?P<sVial>[^\/]+)/(?P<sUser>[^\/]+)",
-         application.MoveVialToLocation),
         (r"/updateVialPosition/(?P<sVialId>[^\/]+)/(?P<sBoxId>[^\/]+)/(?P<sPos>[^\/]+)",
          application.UpdateVialPosition),
         (r"/editVial", application.EditVial),
