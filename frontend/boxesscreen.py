@@ -60,6 +60,10 @@ class BoxesScreen(QMainWindow):
         self.delete_checkbox.stateChanged.connect(self.enableDelete)
         self.delete_location_btn.clicked.connect(self.deleteLocation)
 
+        self.boxes_tree.currentItemChanged.connect(self.setLocLabel)
+        self.print_loc_btn.clicked.connect(self.printLocationLabel)
+        self.print_loc_btn.setEnabled(False)
+
         self.update_box_eb.textChanged.connect(self.check_search_input)
         self.update_print_btn.clicked.connect(self.printLabel)
         self.update_print_btn.setEnabled(False)
@@ -130,7 +134,6 @@ class BoxesScreen(QMainWindow):
             else:
                 childItem.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
         return len(children)
-        
 
     def take_children(self, item):
         children = item.takeChildren()
@@ -288,6 +291,14 @@ class BoxesScreen(QMainWindow):
         else:
             self.delete_location_btn.setEnabled(False)
 
+    def setLocLabel(self, item):
+        self.print_loc_lab.setText(item.text(2))
+        self.print_loc_btn.setEnabled(True)
+
+    def printLocationLabel(self):
+        loc = self.print_loc_lab.text()
+        dbInterface.printBoxLabel(self.token, loc)
+
 
     def check_search_input(self):
         pattern = '^[a-zA-Z]{2}[0-9]{5}$'
@@ -298,7 +309,6 @@ class BoxesScreen(QMainWindow):
             # no match
             self.box_search = None
             self.box_table.setRowCount(0)
-
 
     def search_for_box(self, box):
         logging.getLogger(self.mod_name).info(f"box search {box}")
