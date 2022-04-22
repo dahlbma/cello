@@ -20,35 +20,35 @@ class QCustomTableWidgetItem (QTableWidgetItem):
 def gotoSearch(self):
     resize_window(self)
     self.window().setCurrentIndex(1)
-    self.window().widget(1).search_tab_wg.setCurrentIndex(0)
+    #self.window().widget(1).search_tab_wg.setCurrentIndex(0)
     self.window().widget(1).vial_search_eb.setFocus()
     return
 
 def gotoVials(self):
     resize_window(self)
     self.window().setCurrentIndex(2)
-    self.window().widget(2).vials_tab_wg.setCurrentIndex(0)
+    #self.window().widget(2).vials_tab_wg.setCurrentIndex(0)
     self.window().widget(2).edit_vial_id_eb.setFocus()
     return
 
 def gotoBoxes(self):
     resize_window(self)
     self.window().setCurrentIndex(3)
-    self.window().widget(3).boxes_tab_wg.setCurrentIndex(0)
+    #self.window().widget(3).boxes_tab_wg.setCurrentIndex(0)
     self.window().widget(3).add_description_eb.setFocus()
     return
 
 def gotoMicrotubes(self):
     resize_window(self)
     self.window().setCurrentIndex(4)
-    self.window().widget(4).microtubes_tab_wg.setCurrentIndex(0)
+    #self.window().widget(4).microtubes_tab_wg.setCurrentIndex(0)
     self.window().widget(4).tubes_batch_eb.setFocus()
     return
 
 def gotoPlates(self):
     resize_window(self)
     self.window().setCurrentIndex(5)
-    self.window().widget(5).plates_tab_wg.setCurrentIndex(0)
+    #self.window().widget(5).plates_tab_wg.setCurrentIndex(0)
     self.window().widget(5).new_n_plates_sb.setFocus()
     return
 
