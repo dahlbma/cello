@@ -669,38 +669,6 @@ class UploadTaredVials(tornado.web.RequestHandler):
 
         self.finish(json.dumps({'FailedVials':saError, 'iOk':iOk, 'iError':iError}))
 
-def getNewLocationId():
-    sSlask = cur.execute("""SELECT pk, location_id, location_description
-                            from vialdb.box_location
-                            order by pk desc limit 1""")
-    tRes = cur.fetchall()
-    if len(tRes) == 0:
-        iKey = 0
-    else:
-        iKey = tRes[0].pk
-    sKey = '%05d' % (iKey + 1)
-    sLoc = 'DP' + sKey
-    return sLoc
-
-def getNewBoxId():
-    sSlask = cur.execute("""SELECT pk from vialdb.box order by pk desc limit 1""")
-    tRes = cur.fetchall()
-    if len(tRes) == 0:
-        iKey = 0
-    else:
-        iKey = tRes[0].pk
-    sKey = '%05d' % (iKey + 1)
-    sLoc = 'DB' + sKey
-    return sLoc
-
-def deleteOldVialPosition(sVialId):
-    sSql = f"""update vialdb.box_positions set
-               vial_id={None},
-               update_date=now()
-               where vial_id={sVialId}
-    """
-    sSlask = cur.execute(sSql)
-
 def logVialChange(sVialId, sLogMessage, sNewPos=None):
     sSql = f"""
     insert into glass.vial_log (vial_id, updated_date, changes)
