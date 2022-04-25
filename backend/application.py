@@ -614,7 +614,21 @@ class UploadBinary(tornado.web.RequestHandler):
         output_file.write(file1['body'])
         output_file.close()
 
+@jwtauth
+class UploadVersionNo(tornado.web.RequestHandler):
+    def post(self, *args, **kwargs):
+        ver_no = self.get_argument("ver_no")
+        ver_file = "ver.dat"
 
+        with open(ver_file, "r") as f:
+            data = json.load(f)
+        
+        data["version"] = ver_no
+
+        with open(ver_file, "w") as f:
+            json.dump(data, f)
+
+            
 @jwtauth
 class UploadTaredVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):

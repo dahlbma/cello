@@ -44,6 +44,15 @@ def getVersion():
     r = requests.get(f'{baseUrl}getVersionData') # get file version
     return r
 
+def uploadVersionNo(token, ver_no):
+    r = requests.post(f'{baseUrl}getVersionData',
+                      data = {'ver_no':ver_no},
+                      headers = {'token':token}) # get file version
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
+
 def getVialInfo(token, vialId):
     r = requests.get(f'{baseUrl}vialInfo/{vialId}',
             headers={'token':token})
