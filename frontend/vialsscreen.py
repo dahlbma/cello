@@ -32,11 +32,11 @@ class VialsScreen(QMainWindow):
         self.edit_vconc_cb.addItems(types)
 
         self.browse_btn.clicked.connect(self.import_tare_file)
+        self.create_vials_btn.clicked.connect(self.create_empty_vials)
         self.upload_btn.clicked.connect(self.addTare)
         self.upload_btn.setEnabled(False)
         self.upload_copy_log_btn.clicked.connect(self.copyLog)
         self.upload_copy_log_btn.setEnabled(False)
-
 
 
     def keyPressEvent(self, event):
@@ -120,6 +120,10 @@ class VialsScreen(QMainWindow):
             logging.getLogger(self.mod_name).error(str(e))
 
 
+    def create_empty_vials(self):
+        iNrVials = self.create_n_vial_eb.text()
+        res = dbInterface.createEmptyVials(self.token, iNrVials)
+    
     def import_tare_file(self):
         self.tare_fname = QFileDialog.getOpenFileName(self, 'Import Tare File', 
                                                 '.', "")
