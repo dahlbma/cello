@@ -119,6 +119,7 @@ class AddMicrotube(tornado.web.RequestHandler):
             self.finish(sError)
             return
 
+
 @jwtauth
 class getMicroTubes(tornado.web.RequestHandler):
     def get(self, sBatches):
@@ -195,7 +196,8 @@ class getMicroTubes(tornado.web.RequestHandler):
 class CreateRacks(tornado.web.RequestHandler):
     def put(self, sRackName, sNumberOfRacks):
         saNewRacks = dict()
-        
+
+
 @jwtauth
 class CreatePlates(tornado.web.RequestHandler):
     def put(self, sPlateType, sPlateName, sNumberOfPlates):
@@ -910,13 +912,13 @@ class printVial(tornado.web.RequestHandler):
             return
 
 def getNextVialId():
-    sTmp = "V%"
-    sSql = """select vial_id from vialdb.vial where vial_id like %s
-              order by LENGTH(vial_id) DESC, vial_id desc limit 1""" % (sTmp)
+    sTmp = "V[0-9]+"
+    sSql = f"""select vial_id from vialdb.vial where vial_id REGEXP '{sTmp}'
+              order by LENGTH(vial_id) DESC, vial_id desc limit 1"""
     sSlask =  cur.execute(sSql)
     sVial = cur.fetchall()
     try:
-        sVial = sVial[0]['vial_id']
+        sVial = sVial[0][0]
     except:
         logging.error(sVial)
         
@@ -927,6 +929,31 @@ def getNextVialId():
         return
     sNewVial = 'V' + str(iVial + 1).zfill(7)
     return sNewVial
+
+
+@jwtauth
+class CreateEmptyVials(tornado.web.RequestHandler):
+    def put(self, sNrOfVials):
+        iNrOfVials = int(sNrOfVials)
+        for i in range(iNrOfVials):
+            sDate = (time.strftime("%Y-%m-%d"))
+            sCmp = ""
+            sBatch = ""
+            sVial = getNextVialId()
+            sType = '2'
+
+            sSql = f"""insert into glass.vial
+            (vial_id,
+            vial_type,
+            update_date)
+            values ('{sVial}', 2, now())
+            """
+            try:
+                sSlask = cur.execute(sSql)
+                logVialChange(sVial, '', 'Created')
+            except:
+                sError = 'Vial already in database'
+            doPrint(sCmp, sBatch, sType, sDate, sVial)
 
 
 @jwtauth

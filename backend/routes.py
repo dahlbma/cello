@@ -165,6 +165,10 @@ def make_app():
         (r"/getLocationPath/(?P<sLocation>[^\/]+)", application.GetLocationPath),
         (r"/getLocationChildren/(?P<sLocation>[^\/]+)", application.GetLocationChildren),
         (r"/getLocationByStorage/(?P<sStorage>[^\/]+)", application.GetLocationByStorage),
+
+        (r"/createEmptyVials/(?P<sNrOfVials>[^\/]+)", application.CreateEmptyVials),
+
+        
         (r"/createManyVialsNLabels", application.createManyVialsNLabels),
         (r"/addBox/(?P<sParent>[^\/]+)/(?P<sBoxName>[^\/]+)/(?P<sBoxSize>[^\/]+)",
          application.AddBox),
