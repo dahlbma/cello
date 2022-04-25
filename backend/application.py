@@ -640,6 +640,8 @@ class UploadTaredVials(tornado.web.RequestHandler):
         saError = []
         for sLine in saFile:
             saLine = sLine.split('\t')
+            if len(saLine) == 1:
+                saLine = sLine.split(',')
 
             if len(saLine) == 4 or len(saLine) == 2:
                 sVial = ''.join(saLine[0].split())
