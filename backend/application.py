@@ -810,6 +810,19 @@ class verifyVial(tornado.web.RequestHandler):
         """
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
+        if len(tRes) == 0:
+            tRes = [{'vial_id': sVial,
+                     'batch_id': '',
+                     'compound_id': '',
+                     'tare': '',
+                     'batch_formula_weight': '',
+                     'net': '',
+                     'gross': '',
+                     'conc': '',
+                     'dilution_factor':''}]
+            self.write(json.dumps(tRes))
+            return
+        print(res_to_json(tRes, cur))
         self.write(json.dumps(res_to_json(tRes, cur)))
 
 
@@ -835,21 +848,23 @@ class batchInfo(tornado.web.RequestHandler):
 @jwtauth
 class EditVial(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
-        #sCompoundId = self.get_argument("compound_id")
         sVial = self.get_argument("sVial")
         sBatch = self.get_argument("batch_id")
         conc = self.get_argument("conc")
-        #sBoxType = self.get_argument("sBoxType[vial_type]")
         sTare = self.get_argument("tare")
         sGross = self.get_argument("iGross")
         sNetWeight = self.get_argument("iNetWeight")
-        #iDilutionFactor = self.get_argument("iDilutionFactor")
 
+
+        print(sBatch)
+
+        
         sSql = f"""
         select notebook_ref from glass.vial
-        where vial_id = '{sVial}'"""
+        where vial_id = '{sVial}' and notebook_ref is not NULL"""
         cur.execute(sSql)
         tRes = cur.fetchall()
+        return
         if len(tRes) > 0 and tRes[0][0] != sBatch:
             sError = f"{sVial} already assigned to batch {tRes[0][0]}"
             logging.error("Error updating vial " + str(sVial))
@@ -859,7 +874,6 @@ class EditVial(tornado.web.RequestHandler):
             return
 
         logging.info(self.request.arguments.values())
-
         if conc in ('', 'Solid'):
             sSql = f"""
             update glass.vial set
@@ -867,9 +881,9 @@ class EditVial(tornado.web.RequestHandler):
             conc = NULL,
             form = 'solid',
             updated_date = now(),
-            tare = {sTare},
-            net = {sNetWeight},
-            gross = {sGross}
+            tare = '{sTare}',
+            net = '{sNetWeight}',
+            gross = '{sGross}'
             where vial_id = '{sVial}'
             """
         else:
@@ -879,9 +893,9 @@ class EditVial(tornado.web.RequestHandler):
             conc = '{conc}',
             form = NULL,
             updated_date = now(),
-            tare = {sTare},
-            net = {sNetWeight},
-            gross = {sGross}
+            tare = '{sTare}',
+            net = '{sNetWeight}',
+            gross = '{sGross}'
             where vial_id = '{sVial}'
             """
 
@@ -927,21 +941,23 @@ class printVial(tornado.web.RequestHandler):
 
 def getNextVialId():
     sTmp = "V[0-9]+"
-    sSql = f"""select vial_id from vialdb.vial where vial_id REGEXP '{sTmp}'
-              order by LENGTH(vial_id) DESC, vial_id desc limit 1"""
+
+    sSql = 'select pkey from glass.vial_id_sequence'
     sSlask =  cur.execute(sSql)
-    sVial = cur.fetchall()
-    try:
-        sVial = sVial[0][0]
-    except:
-        logging.error(sVial)
-        
-    try:
-        iVial = int(sVial.split('V')[1])
-    except:
-        logging.error("Error in getNextVialId " + sVial)
-        return
-    sNewVial = 'V' + str(iVial + 1).zfill(7)
+    iVialPkey = cur.fetchall()[0][0]
+    sNewVial = 'V' + str(iVialPkey).zfill(6)
+
+    while True:
+        sSql = f"""select vial_id from glass.vial where vial_id = '{sNewVial}'"""
+        sSlask =  cur.execute(sSql)
+        res = cur.fetchall()
+        if len(res) == 1:
+            iVialPkey += 1
+            sNewVial = 'V' + str(iVialPkey).zfill(6)
+        else:
+            break
+    sSql = f"""update glass.vial_id_sequence set pkey = {iVialPkey}"""
+    sSlask =  cur.execute(sSql)
     return sNewVial
 
 
@@ -958,8 +974,8 @@ class CreateEmptyVials(tornado.web.RequestHandler):
 
             sSql = f"""insert into glass.vial
             (vial_id,
-            vial_type,
-            update_date)
+            type_id,
+            updated_date)
             values ('{sVial}', 2, now())
             """
             try:
@@ -967,39 +983,7 @@ class CreateEmptyVials(tornado.web.RequestHandler):
                 logVialChange(sVial, '', 'Created')
             except:
                 sError = 'Vial already in database'
-            doPrint(sCmp, sBatch, sType, sDate, sVial)
-
-
-@jwtauth
-class createManyVialsNLabels(tornado.web.RequestHandler):
-    def post(self, *args, **kwargs):
-        iNumberOfVials = int(self.get_argument("numberOfVials",
-                                               default='',
-                                               strip=False))
-        sType = self.get_argument("vialType", default='', strip=False)
-        sSql = """SELECT vial_type_desc FROM vialdb.vial_type
-                  where vial_type = %s""" % (sType)
-        sSlask = cur.execute(sSql)[0]['vial_type_desc']
-        sTypeDesc = cur.fetchall()
-        for i in range(iNumberOfVials):
-            sDate = (time.strftime("%Y-%m-%d"))
-            sCmp = ""
-            sBatch = ""
-            sVial = getNextVialId()
-            
-            sSql = """insert into vialdb.vial
-            (vial_id,
-            vial_type,
-            update_date,
-            checkedout)
-            values ('%s', '%s', now(), '%s')
-            """ % (sVial, sType, 'Unused')
-            try:
-                sSlask = cur.execute(sSql)
-                logVialChange(sVial, '', 'Created')
-            except:
-                sError = 'Vial already in database'
-            doPrint(sCmp, sBatch, sTypeDesc, sDate, sVial)
+            doPrint(sCmp, sBatch, '', sDate, sVial)
 
 
 @jwtauth

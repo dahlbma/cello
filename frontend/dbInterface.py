@@ -119,6 +119,14 @@ def getBatches(token, batchIds):
     except:
         return r.content
 
+def createEmptyVials(token, iNrVials):
+    r = requests.put(f'{baseUrl}createEmptyVials/{iNrVials}',
+            headers={'token':token})
+    try:
+        return r.content.decode()
+    except:
+        return r.content    
+    
 def getManyVials(token, vialIds):
     r = requests.get(f'{baseUrl}searchVials/{vialIds}',
             headers={'token':token})
