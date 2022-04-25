@@ -11,8 +11,8 @@ def upload(target, version, launcher):
         if login_response.status_code != 200:
             raise Exception
     except:
-        print("Incorrect credentials. Exitting.")
-        sys.exit()
+        print(f"Login failed with code {login_response.status_code}. Exitting.")
+        return
     token = login_response.content
     os_name = platform.system()
     if target != None:
@@ -23,10 +23,9 @@ def upload(target, version, launcher):
                     r, status = dbInterface.uploadBinary(token, os_name, f)
                     if not status:
                         raise Exception
+                    print("Main upload successful.")
                 except:
                     print("Main upload failed.")
-                    sys.exit()
-                print("Main upload successful.")
     if version != None:
         ver_path = version
         if os.path.isfile(ver_path):
@@ -37,10 +36,9 @@ def upload(target, version, launcher):
                     r, status = dbInterface.uploadVersionNo(token, ver_no)
                     if not status:
                         raise Exception
+                    print("Version number update successful.")
                 except:
                     print("Version number update failed.")
-                    sys.exit()
-                print("Version number update successful.")
     if launcher != None:
         lau_path = launcher
         if os.path.isfile(lau_path):
@@ -49,11 +47,9 @@ def upload(target, version, launcher):
                     r, status = dbInterface.uploadLauncher(token, os_name, f)
                     if not status:
                         raise Exception
+                    print("Launcher upload successful.")
                 except:
                     print("Launcher upload failed.")
-                    sys.exit()
-                print("Launcher upload successful.")
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', action="store", dest="target", type=str, default=None)
