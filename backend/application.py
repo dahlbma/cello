@@ -618,11 +618,6 @@ class UploadBinary(tornado.web.RequestHandler):
 @jwtauth
 class UploadTaredVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
-        saError = ''
-        iOk = 78
-        iError = 0
-        self.finish(json.dumps({'FailedVials':saError, 'iOk':iOk, 'iError':iError}))
-        return
         try:
             # self.request.files['file'][0]:
             # {'body': 'Label Automator ___', 'content_type': u'text/plain', 'filename': u'k.txt'}
@@ -630,12 +625,11 @@ class UploadTaredVials(tornado.web.RequestHandler):
         except:
             logging.error("Error cant find file1 in the argument list")
             return
-
         original_fname = file1['filename']
         extension = os.path.splitext(original_fname)[1]
         fname = ''.join(random.choice(string.ascii_lowercase + string.digits) for x in range(6))
         finalFilename = "uploads/" + original_fname
-        output_file = open("uploads/" + original_fname, 'w')
+        output_file = open("uploads/" + original_fname, 'wb')
         output_file.write(file1['body'])
         output_file.close()
 
@@ -646,7 +640,6 @@ class UploadTaredVials(tornado.web.RequestHandler):
         saError = []
         for sLine in saFile:
             saLine = sLine.split('\t')
-            #logging.info(saLine)
 
             if len(saLine) == 4 or len(saLine) == 2:
                 sVial = ''.join(saLine[0].split())
@@ -654,20 +647,25 @@ class UploadTaredVials(tornado.web.RequestHandler):
                 if m:
                     sTare = ''.join(saLine[1].split())
                     try:
-                        sSql = f"""insert into vialdb.vial (vial_id, tare, update_date) 
-                                   values ({sVial}, {sTare}, now())"""
+                        sSql = f"""insert into glass.vial (vial_id, type_id, tare, updated_date) 
+                                   values ('{sVial}', 2, {sTare}, now())"""
                         sSlask = cur.execute(sSql)
                         iOk += 1
-                    except:
-                        iError += 1
-                        saError.append(sVial)
-                        sSql = f"""update vialdb.vial set
-                                   tare = {sTare},
-                                   update_date = now()
-                                   where vial_id = {sVial}
-                        """
-                        logging.info("Upload vial: " + sVial + ' Tare: ' + sTare)
-                        sSlask = cur.execute(sSql)
+                    except Exception as e:
+                        res = str(e).find('1062') # Duplicate key error is 1062 and it is ok
+                        if res == 1:
+                            sSql = f"""update glass.vial set
+                            tare = {sTare},
+                            updated_date = now()
+                            where vial_id = '{sVial}'
+                            """
+                            sSlask = cur.execute(sSql)
+                            logging.info("Upload vial: " + sVial + ' Tare: ' + sTare)
+                            iOk += 1
+                        else:
+                            logging.error(str(e))
+                            saError.append(sVial)
+                            iError += 1
 
         self.finish(json.dumps({'FailedVials':saError, 'iOk':iOk, 'iError':iError}))
 
