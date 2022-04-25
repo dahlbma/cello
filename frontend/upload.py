@@ -1,4 +1,4 @@
-import sys, os, platform, dbInterface
+import sys, os, platform, dbInterface, json
 import getpass
 
 if (len(sys.argv) == 2) or (len(sys.argv) == 3):
@@ -28,15 +28,18 @@ if (len(sys.argv) == 2) or (len(sys.argv) == 3):
                 sys.exit()
             print("Upload successful.")
     if len(sys.argv) == 3:
-        ver_no = f"{sys.argv[2]}"
-        if os.path.isfilever_dat_path():
-            try:
-                r, status = dbInterface.uploadVersionNo(token, ver_no)
-                if not status:
-                    raise Exception
-            except:
-                print("Version number update failed.")
-                sys.exit()
+        ver_path = f"{sys.argv[2]}"
+        if os.path.isfile(ver_path):
+            with open(ver_path, "r") as ver_file:
+                data = json.load(ver_file)
+                ver_no = data["version"]
+                try:
+                    r, status = dbInterface.uploadVersionNo(token, ver_no)
+                    if not status:
+                        raise Exception
+                except:
+                    print("Version number update failed.")
+                    sys.exit()
             print("Version number update successful.")
     sys.exit()
 
