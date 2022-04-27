@@ -2,6 +2,7 @@ import tornado.autoreload
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
+from tornado import web
 import util
 import os
 import application
@@ -210,6 +211,10 @@ def make_app():
          application.AddMicrotube),
         (r"/verifyVial/(?P<sVial>[^\/]+)", application.verifyVial),
         (r'.*', util.BaseHandler),
+        (r"/uploadLauncher", application.UploadLauncher), # upload
+        (r"/getCelloLauncher/Windows/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Windows/"}),
+        (r"/getCelloLauncher/Linux/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Linux/"}),
+        (r"/getCelloLauncher/Darwin/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Darwin/"})
     ], **settings)
 
 if __name__ == "__main__":
