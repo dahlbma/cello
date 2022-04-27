@@ -71,7 +71,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="vials_tab_wg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="edit_tab">
          <attribute name="title">
@@ -598,7 +598,7 @@
            </spacer>
           </item>
           <item row="0" column="1" rowspan="2">
-           <layout class="QGridLayout" name="gridLayout_3" rowstretch="0,0,0,0,0" rowminimumheight="0,0,0,0,0">
+           <layout class="QGridLayout" name="gridLayout_3" rowstretch="0,0,0,0" rowminimumheight="0,0,0,0">
             <item row="3" column="1">
              <widget class="QScrollArea" name="scrollArea">
               <property name="widgetResizable">
@@ -705,43 +705,24 @@
           <string>Create empty vials</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="0" column="1">
-           <spacer name="verticalSpacer_5">
+          <item row="2" column="1">
+           <spacer name="verticalSpacer_6">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
+             <enum>QSizePolicy::Preferred</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
               <width>20</width>
-              <height>46</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="0">
-           <spacer name="horizontalSpacer_10">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>39</width>
-              <height>20</height>
+              <height>100</height>
              </size>
             </property>
            </spacer>
           </item>
           <item row="1" column="1">
            <layout class="QGridLayout" name="gridLayout_4">
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="create_n_vial_eb"/>
-            </item>
             <item row="2" column="1">
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
@@ -822,6 +803,44 @@
               </property>
              </widget>
             </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="create_n_vial_eb"/>
+            </item>
+            <item row="3" column="1">
+             <widget class="QScrollArea" name="scrollArea_2">
+              <property name="widgetResizable">
+               <bool>true</bool>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents_3">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>162</width>
+                 <height>6897</height>
+                </rect>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_15">
+                <item row="0" column="1">
+                 <widget class="QLabel" name="empty_vials_result_lab">
+                  <property name="focusPolicy">
+                   <enum>Qt::ClickFocus</enum>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                  <property name="textInteractionFlags">
+                   <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
            </layout>
           </item>
           <item row="1" column="2">
@@ -830,7 +849,7 @@
              <enum>Qt::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
+             <enum>QSizePolicy::Preferred</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -840,8 +859,8 @@
             </property>
            </spacer>
           </item>
-          <item row="2" column="1">
-           <spacer name="verticalSpacer_6">
+          <item row="0" column="1">
+           <spacer name="verticalSpacer_5">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
@@ -851,7 +870,23 @@
             <property name="sizeHint" stdset="0">
              <size>
               <width>20</width>
-              <height>507</height>
+              <height>46</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="0">
+           <spacer name="horizontalSpacer_10">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Maximum</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>39</width>
+              <height>20</height>
              </size>
             </property>
            </spacer>

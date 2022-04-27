@@ -120,9 +120,6 @@ class VialsScreen(QMainWindow):
             logging.getLogger(self.mod_name).error(str(e))
 
 
-    def create_empty_vials(self):
-        iNrVials = self.create_n_vial_eb.text()
-        res = dbInterface.createEmptyVials(self.token, iNrVials)
     
     def import_tare_file(self):
         self.tare_fname = QFileDialog.getOpenFileName(self, 'Import Tare File', 
@@ -160,3 +157,10 @@ class VialsScreen(QMainWindow):
     def copyLog(self):
         clipboard = QApplication.clipboard()
         clipboard.setText(self.upload_result_lab.text())
+
+
+    def create_empty_vials(self):
+        iNrVials = self.create_n_vial_eb.text()
+        res = dbInterface.createEmptyVials(self.token, iNrVials)
+        out = "Vials created:\n" + "\n".join(list(json.loads(res)))
+        self.empty_vials_result_lab.setText(out)
