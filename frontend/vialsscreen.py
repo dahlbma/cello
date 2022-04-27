@@ -27,6 +27,7 @@ class VialsScreen(QMainWindow):
         self.vials_tab_wg.currentChanged.connect(self.tabChanged)
 
         self.edit_vial_id_eb.textChanged.connect(self.check_vial_search_input)
+        self.edit_update_btn.clicked.connect(self.updateVial)
 
         types = [' ', "10", "20", "50", "Solid"]
         self.edit_vconc_cb.addItems(types)
@@ -42,7 +43,6 @@ class VialsScreen(QMainWindow):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.vials_tab_wg.currentIndex() == 0:
-                self.check_vial_search_input()
                 return
             else:
                 return
@@ -90,7 +90,6 @@ class VialsScreen(QMainWindow):
         logging.getLogger(self.mod_name).info(f"receieved {self.vial_data}")
         self.v_search = True
         self.edit_update_btn.setEnabled(True)
-        self.edit_update_btn.clicked.connect(self.updateVial)
         self.errorlabel.setText('')
         self.edit_batch_id_eb.setText(f"{self.vial_data[0]['batch_id']}")
         self.edit_compound_id_eb.setText(f"{self.vial_data[0]['compound_id']}")
@@ -116,6 +115,7 @@ class VialsScreen(QMainWindow):
             self.edit_dilution_eb.setText(str(res[0]['dilution_factor']))
             self.edit_vial_error_lab.setText('')
             dbInterface.printVialLabel(self.token, self.edit_vial_id_eb.text())
+            self.check_vial_search_input()
         except Exception as e:
             logging.getLogger(self.mod_name).error(str(e))
 
