@@ -28,7 +28,7 @@ class MicrotubesScreen(QMainWindow):
         self.tubes_search_btn.clicked.connect(self.search_microtubes)
         self.tubes_export_btn.clicked.connect(self.export_tubes_batches_data)
         self.tubes_ids_export_btn.clicked.connect(self.export_tube_ids)
-
+        self.tubes_batches_table.currentItemChanged.connect(self.showMicrotubeMol)
 
         self.rack_search_btn.clicked.connect(self.search_rack)
         self.rack_export_btn.clicked.connect(self.export_rack_data)
@@ -72,6 +72,7 @@ class MicrotubesScreen(QMainWindow):
         self.structure_lab.clear()
         if page_index == 0:
             self.tubes_batch_eb.setFocus()
+            self.showMicrotubeMol(self.tubes_batches_table.currentItem())
         elif page_index == 1:
             self.rack_search_eb.setFocus()
             self.rack_moldisplay()
@@ -150,6 +151,11 @@ class MicrotubesScreen(QMainWindow):
                 logging.error(f"search for {data[n]['batchId']} returned bad response: {data[n]}")
         self.tubes_batches_table.setSortingEnabled(True)
         return
+
+    def showMicrotubeMol(self, item):
+        if item is not None:
+            batchId = self.tubes_batches_table.item(item.row(), 0).text()
+            displayMolfile(self, batchId)
 
     def export_tubes_batches_data(self):
         export_table(self.tubes_batches_table)
