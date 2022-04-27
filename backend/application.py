@@ -799,7 +799,7 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
     f = open('/tmp/file.txt','w')
     f.write(zplVial)
     f.close()
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
+    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
 @jwtauth
@@ -968,20 +968,8 @@ class printVial(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         if len(tRes) > 0:
             sDate = (time.strftime("%Y-%m-%d"))
-            ##################################################################################
-            ##################################################################################
-            ##################################################################################
-            ##################################################################################
-            ##################################################################################
-            ##################################################################################
-            ##################################################################################
-            ##################################################################################
-            ##################################################################################
-            ##################################################################################
-            ##################################################################################
-            # Uncomment the next two lines!!
-            #doPrint(tRes[0][1], tRes[0][0],
-            #        tRes[0][2], sDate, sVial)
+            doPrint(tRes[0][1], tRes[0][0],
+                    tRes[0][2], sDate, sVial)
             self.finish("Printed")
             return
 
@@ -1011,6 +999,7 @@ def getNextVialId():
 class CreateEmptyVials(tornado.web.RequestHandler):
     def put(self, sNrOfVials):
         iNrOfVials = int(sNrOfVials)
+        saResultingVials = []
         for i in range(iNrOfVials):
             sDate = (time.strftime("%Y-%m-%d"))
             sCmp = ""
@@ -1030,6 +1019,8 @@ class CreateEmptyVials(tornado.web.RequestHandler):
             except:
                 sError = 'Vial already in database'
             doPrint(sCmp, sBatch, '', sDate, sVial)
+            saResultingVials.append(sVial)
+        self.write(json.dumps(saResultingVials))
 
 
 @jwtauth
@@ -1202,7 +1193,7 @@ class printBox(tornado.web.RequestHandler):
         f = open('/tmp/file.txt','w')
         f.write(zplVial)
         f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
+        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
         self.finish("Printed")
 
 
