@@ -802,9 +802,12 @@ class verifyVial(tornado.web.RequestHandler):
 
         sSql = f"""
         select v.vial_id, v.notebook_ref batch_id, b.compound_id,
-        v.tare, b.BIOLOGICAL_MW batch_formula_weight, v.net, v.gross,
+        IFNULL(v.tare, '') tare,
+        b.BIOLOGICAL_MW batch_formula_weight,
+        IFNULL(v.net, '') net,
+        IFNULL(v.gross, '') gross,
         FORMAT(FLOOR(v.conc), 0) conc,
-        ROUND((((v.net*1000)/b.BIOLOGICAL_MW)/conc)*1000000) dilution_factor
+        IFNULL(ROUND((((v.net*1000)/b.BIOLOGICAL_MW)/conc)*1000000), '') dilution_factor
         from glass.vial v, bcpvs.batch b
         where v.notebook_ref = b.notebook_ref and v.vial_id = '{sVial}'
         """
@@ -822,7 +825,6 @@ class verifyVial(tornado.web.RequestHandler):
                      'dilution_factor':''}]
             self.write(json.dumps(tRes))
             return
-        print(res_to_json(tRes, cur))
         self.write(json.dumps(res_to_json(tRes, cur)))
 
 
@@ -855,17 +857,21 @@ class EditVial(tornado.web.RequestHandler):
         sGross = self.get_argument("iGross")
         sNetWeight = self.get_argument("iNetWeight")
 
-
-        print(sBatch)
-
+        if sTare in ('', 'None'):
+            sTare = 'NULL'
+        if sNetWeight in ('', 'None'):
+            sNetWeight = 'NULL'
+        if sGross in ('', 'None'):
+            sGross = 'NULL'
         
         sSql = f"""
         select notebook_ref from glass.vial
-        where vial_id = '{sVial}' and notebook_ref is not NULL"""
+        where vial_id = '{sVial}'"""
         cur.execute(sSql)
         tRes = cur.fetchall()
-        return
-        if len(tRes) > 0 and tRes[0][0] != sBatch:
+        if len(tRes) == 1 and tRes[0][0] == None:
+            pass
+        elif len(tRes) > 0 and tRes[0][0] != sBatch:
             sError = f"{sVial} already assigned to batch {tRes[0][0]}"
             logging.error("Error updating vial " + str(sVial))
             logging.error(sError)
@@ -881,9 +887,9 @@ class EditVial(tornado.web.RequestHandler):
             conc = NULL,
             form = 'solid',
             updated_date = now(),
-            tare = '{sTare}',
-            net = '{sNetWeight}',
-            gross = '{sGross}'
+            tare = {sTare},
+            net = {sNetWeight},
+            gross = {sGross}
             where vial_id = '{sVial}'
             """
         else:
@@ -893,9 +899,9 @@ class EditVial(tornado.web.RequestHandler):
             conc = '{conc}',
             form = NULL,
             updated_date = now(),
-            tare = '{sTare}',
-            net = '{sNetWeight}',
-            gross = '{sGross}'
+            tare = {sTare},
+            net = {sNetWeight},
+            gross = {sGross}
             where vial_id = '{sVial}'
             """
 
@@ -934,8 +940,20 @@ class printVial(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         if len(tRes) > 0:
             sDate = (time.strftime("%Y-%m-%d"))
-            doPrint(tRes[0][1], tRes[0][0],
-                    tRes[0][2], sDate, sVial)
+            ##################################################################################
+            ##################################################################################
+            ##################################################################################
+            ##################################################################################
+            ##################################################################################
+            ##################################################################################
+            ##################################################################################
+            ##################################################################################
+            ##################################################################################
+            ##################################################################################
+            ##################################################################################
+            # Uncomment the next two lines!!
+            #doPrint(tRes[0][1], tRes[0][0],
+            #        tRes[0][2], sDate, sVial)
             self.finish("Printed")
             return
 
