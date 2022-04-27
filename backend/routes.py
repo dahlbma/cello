@@ -163,6 +163,7 @@ def make_app():
         (r"/dist/(.*)", tornado.web.StaticFileHandler, {"path": "dist/"}),
         (r"/createMolImage/(?P<sId>[^\/]+)", application.CreateMolImage),
         (r"/uploadBinary", application.UploadBinary),
+        (r"/uploadLauncher", application.UploadLauncher),
         (r"/uploadTaredVials", application.UploadTaredVials),
         (r"/getLocationPath/(?P<sLocation>[^\/]+)", application.GetLocationPath),
         (r"/getLocationChildren/(?P<sLocation>[^\/]+)", application.GetLocationChildren),
@@ -210,11 +211,10 @@ def make_app():
         (r"/addMicrotube/(?P<sTubeId>[^\/]+)/(?P<sBatchId>[^\/]+)/(?P<sVolume>[^\/]+)/(?P<sConc>[^\/]*)",
          application.AddMicrotube),
         (r"/verifyVial/(?P<sVial>[^\/]+)", application.verifyVial),
-        (r'.*', util.BaseHandler),
-        (r"/uploadLauncher", application.UploadLauncher), # upload
         (r"/getCelloLauncher/Windows/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Windows/"}),
         (r"/getCelloLauncher/Linux/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Linux/"}),
-        (r"/getCelloLauncher/Darwin/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Darwin/"})
+        (r"/getCelloLauncher/Darwin/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Darwin/"}),
+        (r'.*', util.BaseHandler),
     ], **settings)
 
 if __name__ == "__main__":
