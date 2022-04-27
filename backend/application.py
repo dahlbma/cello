@@ -18,7 +18,6 @@ from os.path import exists
 
 db = mydb.disconnectSafeConnect()
 cur = db.cursor()
-
 NR_OF_VIALS_IN_BOX = 200
 
 def res_to_json(response, cursor):
