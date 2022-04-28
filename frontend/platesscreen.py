@@ -98,14 +98,14 @@ class PlatesScreen(QMainWindow):
 
     def check_plates_input(self):
         if (self.new_plates_type_cb.currentText() != ' ') and \
-            (self.new_plate_comment_eb.text() != ""):
+            (self.new_plates_comment_eb.text() != ""):
             self.new_plates_save_btn.setEnabled(True)
         else:
             self.new_plates_save_btn.setEnabled(False)
 
     def createPlates(self):
         type = self.new_plates_type_cb.currentText()
-        name = self.new_plate_comment_eb.text()
+        name = self.new_plates_comment_eb.text()
         nr_o_ps = self.new_n_plates_sb.value()
         try:
             res, status = dbInterface.createPlates(self.token, type, name, nr_o_ps)
