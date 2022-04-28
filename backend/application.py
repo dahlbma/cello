@@ -380,6 +380,17 @@ class UploadWellInformation(tornado.web.RequestHandler):
         sConc = self.get_argument("conc")
         sVolume = self.get_argument("volume")
 
+        sSql = f'''insert into cool.config
+        (config_id, well, compound_id, notebook_ref, form, conc, volume)
+        values
+        ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', '{sConc}', '{sVolume}')
+        '''
+        try:
+            cur.execute(sSql)
+        except Exception as e:
+            self.set_status(400)
+            self.finish(str(e))
+
 
 @jwtauth
 class VerifyPlate(tornado.web.RequestHandler):
@@ -429,6 +440,7 @@ class GetPlate(tornado.web.RequestHandler):
 	order by ps.seq"""
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
+        print(sSql)
         self.write(json.dumps(res_to_json(tRes, cur), indent=4))
 
 
@@ -799,7 +811,7 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
     f = open('/tmp/file.txt','w')
     f.write(zplVial)
     f.close()
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
 
 
 @jwtauth
@@ -1156,7 +1168,19 @@ class UpdateVialPosition(tornado.web.RequestHandler):
 @jwtauth
 class PrintPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
-        pass
+        s = f'''
+^XA
+^FO10,10^BY2
+^B3N,N,35,Y,N
+^A0N,20,30^BCN,40,Y,N,N
+^FD{sPlate}^FS
+^XZ
+'''
+        f = open('/tmp/file.txt','w')
+        f.write(s)
+        f.close()
+        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
+
 
 @jwtauth
 class printBox(tornado.web.RequestHandler):
@@ -1193,7 +1217,7 @@ class printBox(tornado.web.RequestHandler):
         f = open('/tmp/file.txt','w')
         f.write(zplVial)
         f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
         self.finish("Printed")
 
 
