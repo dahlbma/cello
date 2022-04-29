@@ -1170,16 +1170,19 @@ class PrintPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
         s = f'''
 ^XA
-^FO10,10^BY2
-^B3N,N,35,Y,N
-^A0N,20,30^BCN,40,Y,N,N
-^FD{sPlate}^FS
-^XZ
+^MMT
+^PW400
+^LL0064
+^LS0
+^BY2,3,43^FT53,45^BCN,,Y,N
+^FD>:P>{sPlate}^FS
+^FT239,40^A0N,28,31^FH\^FD{sPlate}^FS
+^PQ1,0,1,Y^XZ
 '''
         f = open('/tmp/file.txt','w')
         f.write(s)
         f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
+        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
 @jwtauth
