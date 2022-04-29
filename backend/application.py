@@ -1246,7 +1246,7 @@ class printBox(tornado.web.RequestHandler):
 ^MMT
 ^PW400
 ^LL0064
-^LS0
+^LS210
 ^CFA,20
 ^A0,25,20
 ^FO295,20^FDBox: %s^FS
