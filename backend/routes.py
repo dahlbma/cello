@@ -192,6 +192,7 @@ def make_app():
         (r"/uploadWellInformation", application.UploadWellInformation),
         (r"/mergePlates", application.MergePlates),
         (r"/getPlate/(?P<sPlate>[^\/]+)", application.GetPlate),
+        (r"/setPlateType/(?P<sPlate>[^\/]+)/(?P<sPlateType>[^\/]+)", application.SetPlateType),
         (r"/verifyPlate/(?P<sPlate>[^\/]+)", application.VerifyPlate),
         (r"/updatePlateName/(?P<sPlate>[^\/]+)/(?P<sPlateName>[^\/]+)",
          application.UpdatePlateName),

@@ -368,7 +368,43 @@ class MergePlates(tornado.web.RequestHandler):
             plate = getPlate(q4)
             transferWells(quadrant, plate, targetPlate)
 
-        
+@jwtauth
+class SetPlateType(tornado.web.RequestHandler):
+    def put(self, sPlate, sPlateType):
+        if sPlateType == "96":
+            # This is the type_id in the db for 96 well plates
+            iPlateType = 1
+        elif sPlateType == "384":
+            # This is the type_id in the db for 384 well plates
+            iPlateType = 16
+        elif sPlateType == "1536":
+            # This is the type_id in the db for 1536 well plates
+            iPlateType = 47
+        else:
+            sError = 'Wrong plate size'
+            logging.error(f'Wrong plate size {sPlateType}')
+            self.set_status(400)
+            self.finish(sError)
+            return
+
+        sSql = f"""select plate_id, type_id from cool.plate where plate_id = '{sPlate}'"""
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) == 0:
+            sError = 'Plate not found'
+            logging.error(f'{sError} {sPlate}')
+            self.set_status(400)
+            self.finish(sError)
+            return
+
+        sSql = f'''
+        update cool.plate
+        set type_id = '{iPlateType}'
+        where plate_id = '{sPlate}'
+        '''
+        self.finish()
+
+    
 @jwtauth
 class UploadWellInformation(tornado.web.RequestHandler):
     def post(self):
@@ -791,6 +827,10 @@ def getBoxFromDb(sBox):
 
 def doPrint(sCmp, sBatch, sType, sDate, sVial):
     zplVial = """^XA
+^MMT
+^PW400
+^LL0064
+^LS210
 ^CFA,20
 ^A0,25,20
 ^FO300,20^FDCmp: %s^FS
@@ -811,7 +851,7 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
     f = open('/tmp/file.txt','w')
     f.write(zplVial)
     f.close()
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
+    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
 @jwtauth
@@ -1203,6 +1243,10 @@ class printBox(tornado.web.RequestHandler):
         sType = tRes[0][1]
         sDescription = tRes[0][0]
         zplVial = """^XA
+^MMT
+^PW400
+^LL0064
+^LS0
 ^CFA,20
 ^A0,25,20
 ^FO295,20^FDBox: %s^FS
@@ -1220,7 +1264,7 @@ class printBox(tornado.web.RequestHandler):
         f = open('/tmp/file.txt','w')
         f.write(zplVial)
         f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420d /tmp/file.txt")
+        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
         self.finish("Printed")
 
 
