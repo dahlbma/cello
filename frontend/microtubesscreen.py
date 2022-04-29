@@ -52,6 +52,8 @@ class MicrotubesScreen(QMainWindow):
         self.create_import_btn.clicked.connect(self.create_import_file)
         self.create_export_btn.clicked.connect(self.export_create_data)
 
+        self.clear_microtube_btn.clicked.connect(self.clear_input)
+
         self.move_rack_id_eb.returnPressed.connect(self.moveRackStep1)
         self.move_box_id_eb.returnPressed.connect(self.moveRackStep2)
         self.move_box_id_eb.setEnabled(False)
@@ -346,6 +348,9 @@ class MicrotubesScreen(QMainWindow):
         for i in range(0, 10):
             self.create_microtubes_table.insertRow(self.create_microtubes_table.rowCount())
 
+    def clear_input(self):
+        self.create_microtubes_table.setRowCount(0)
+        self.addRows()
 
     def checkEmpty(self):
         noempty = True
