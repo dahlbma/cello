@@ -43,11 +43,15 @@ class PlatesScreen(QMainWindow):
         self.plate_print_btn.clicked.connect(self.printPlate)
         self.plate_print_btn.setEnabled(False)
 
+        self.plate_table.currentItemChanged.connect(self.plate_moldisplay)
+
         self.choose_file_btn.clicked.connect(self.import_plates_file)
         self.upload_file_btn.clicked.connect(self.upload_plate_table)
         self.upload_export_btn.clicked.connect(self.export_upload_data)
         self.upload_pbar.setValue(0)
         self.upload_pbar.hide()
+
+        self.upload_plates_table.currentItemChanged.connect(self.upload_moldisplay)
 
         self.nine6to384_btn.clicked.connect(self.nine6to384_merge)
         self.nine6to384_btn.setEnabled(False)
@@ -82,19 +86,18 @@ class PlatesScreen(QMainWindow):
 
     def tabChanged(self):
         page_index = self.plates_tab_wg.currentIndex()
+        self.structure_lab.clear()
         if page_index == 0:
             self.new_plates_comment_eb.setFocus()
-            return
         elif page_index == 1:
             self.plate_search_eb.setFocus()
-            return
+            self.plate_moldisplay(self.plate_table.currentItem())
         elif page_index == 2:
             self.choose_file_btn.setFocus()
-            return
+            self.upload_moldisplay(self.upload_plates_table.currentItem())
         elif page_index == 3:
             self.join_q1_eb.setFocus()
             #self.move_focus(0, self.ok_arr)
-            return
 
     def check_plates_input(self):
         if (self.new_plates_type_cb.currentText() != ' ') and \
@@ -163,24 +166,27 @@ class PlatesScreen(QMainWindow):
         self.plate_table.setRowCount(0)
         self.plate_table.setRowCount(len(data))
         for n in range(len(data)):
-            newItem = QTableWidgetItem(f"{data[n]['well']}")
-            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-            self.plate_table.setItem(n, 0, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['compound_id']}")
-            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-            self.plate_table.setItem(n, 1, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['notebook_ref']}")
-            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-            self.plate_table.setItem(n, 2, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['form']}")
-            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-            self.plate_table.setItem(n, 3, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['conc']}")
-            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-            self.plate_table.setItem(n, 4, newItem)
-            newItem = QTableWidgetItem(f"{data[n]['volume']}")
-            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-            self.plate_table.setItem(n, 5, newItem)
+            try:
+                newItem = QTableWidgetItem(f"{data[n]['well']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                self.plate_table.setItem(n, 0, newItem)
+                newItem = QTableWidgetItem(f"{data[n]['compound_id']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                self.plate_table.setItem(n, 1, newItem)
+                newItem = QTableWidgetItem(f"{data[n]['notebook_ref']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                self.plate_table.setItem(n, 2, newItem)
+                newItem = QTableWidgetItem(f"{data[n]['form']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                self.plate_table.setItem(n, 3, newItem)
+                newItem = QTableWidgetItem(f"{data[n]['conc']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                self.plate_table.setItem(n, 4, newItem)
+                newItem = QTableWidgetItem(f"{data[n]['volume']}")
+                newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                self.plate_table.setItem(n, 5, newItem)
+            except:
+                logging.error(f"plate search failed with data row: {data[n]}")
 
     def editComment(self):
         new_comment = self.plate_comment_eb.text()
@@ -215,6 +221,14 @@ class PlatesScreen(QMainWindow):
         plate = self.plate_search_eb.text()
         r = dbInterface.discardPlate(self.token, plate)
         logging.getLogger(self.mod_name).info(f"discardPlate [{plate}] returned: {r}")
+
+    def plate_moldisplay(self, item):
+        if (item is not None):
+            batchId = self.plate_table.item(item.row(), 2).text()
+            if len(batchId) > 0:
+                displayMolfile(self, batchId)
+                return
+        self.structure_lab.clear()
 
 
     def plate_export_data(self):
@@ -259,6 +273,12 @@ class PlatesScreen(QMainWindow):
                     if error is True:
                         newItem.setBackground(QColor(250, 103, 92))
                     self.upload_plates_table.setItem(n, m, newItem)
+                    for k in range(m, self.upload_plate_table.columnCount()):
+                        # empty cells
+                        newItem = QTableWidgetItem("")
+                        newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                        newItem.setBackground(QColor(250, 103, 92))
+                        self.upload_plates_table.setItem(n, m, newItem)
         except:
             logging.getLogger(self.mod_name).error("plate file import failed")
 
@@ -307,6 +327,14 @@ class PlatesScreen(QMainWindow):
         
         QApplication.restoreOverrideCursor()
         self.populate_upload_table(repopulate_data, error=True)
+
+    def upload_moldisplay(self, item):
+        if (item is not None):
+            batchId = self.upload_plates_table.item(item.row(), 3).text()
+            if len(batchId) > 0:
+                displayMolfile(self, batchId)
+                return
+        self.structure_lab.clear()
 
     def export_upload_data(self):
         export_table(self.upload_plates_table)
