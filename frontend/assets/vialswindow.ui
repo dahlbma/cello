@@ -71,7 +71,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="vials_tab_wg">
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="edit_tab">
          <attribute name="title">
@@ -609,8 +609,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>429</width>
-                 <height>425</height>
+                 <width>98</width>
+                 <height>35</height>
                 </rect>
                </property>
                <layout class="QGridLayout" name="gridLayout_13">
@@ -816,8 +816,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>162</width>
-                 <height>6897</height>
+                 <width>98</width>
+                 <height>35</height>
                 </rect>
                </property>
                <layout class="QGridLayout" name="gridLayout_15">
