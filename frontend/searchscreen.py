@@ -110,7 +110,8 @@ class SearchScreen(QMainWindow):
         vial = self.vial_search_eb.text()
         r = dbInterface.discardVial(self.token, vial)
         logging.getLogger(self.mod_name).info(f"discardVial [{vial}] returned: {r}")
-
+        self.searchVial(vial)
+        
     def printLabel(self):
         dbInterface.printVialLabel(self.token, self.vial_search_eb.text())
         
