@@ -403,3 +403,11 @@ def discardPlate(token, plate_id):
         return r, False
     else:
         return r, True
+
+def setPlateType(token, plate_id, plate_type):
+    r = requests.put(f'{baseUrl}setPlateType/{plate_id}/{plate_type}',
+                      headers={'token': token})
+    if r.status_code != 200:
+        return r, False
+    else:
+        return r, True

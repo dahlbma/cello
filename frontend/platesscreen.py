@@ -45,6 +45,13 @@ class PlatesScreen(QMainWindow):
 
         self.plate_table.currentItemChanged.connect(self.plate_moldisplay)
 
+        self.upload_populated = False
+        self.data_issue = False
+        self.upload_file_btn.setEnabled(False)
+
+        self.upload_plate_size_cb.addItems(types)
+        self.upload_plate_size_cb.currentTextChanged.connect(self.enable_upload)
+
         self.choose_file_btn.clicked.connect(self.import_plates_file)
         self.upload_file_btn.clicked.connect(self.upload_plate_table)
         self.upload_export_btn.clicked.connect(self.export_upload_data)
@@ -234,6 +241,13 @@ class PlatesScreen(QMainWindow):
     def plate_export_data(self):
         export_table(self.plate_table)
 
+    def enable_upload(self):
+        if (self.upload_populated is True) and \
+           (self.upload_plate_size_cb.currentText() != ' ') and \
+           (self.data_issue is False):
+            self.upload_file_btn.setEnabled(True)
+        else:
+            self.upload_file_btn.setEnabled(False)
 
     def import_plates_file(self):
         fname = QFileDialog.getOpenFileName(self, 'Import from File', 
@@ -249,7 +263,7 @@ class PlatesScreen(QMainWindow):
                 f.seek(0)
                 reader = csv.reader(f, dialect)
                 self.path_lab.setText(fname[0])
-                self.upload_file_btn.setEnabled(True)
+                #self.upload_file_btn.setEnabled(True)
                 self.upload_pbar.setValue(0)
                 self.upload_pbar.hide()
                 data = list(reader)
@@ -260,27 +274,38 @@ class PlatesScreen(QMainWindow):
             self.upload_plates_data = None
             self.upload_file_btn.setEnabled(False)
             logging.getLogger(self.mod_name).error("plates file import failed")
+        self.enable_upload()
 
     def populate_upload_table(self, data, error=False):
-        self.upload_plates_table.setRowCount(0)
-        self.upload_plates_table.setRowCount(len(data))
-        # assume data like [{col1, col2, col3, ...}, {...}]
-        try:
-            for n in range(len(data)):
-                for m in range(len(data[n])):
-                    newItem = QTableWidgetItem(f"{data[n][m]}")
-                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    if error is True:
-                        newItem.setBackground(QColor(250, 103, 92))
-                    self.upload_plates_table.setItem(n, m, newItem)
-                    for k in range(m, self.upload_plate_table.columnCount()):
-                        # empty cells
-                        newItem = QTableWidgetItem("")
+        if len(data) == 0:
+            self.upload_populated = False
+        else:
+            self.data_issue = error
+            self.upload_plates_table.setRowCount(0)
+            self.upload_plates_table.setRowCount(len(data))
+            # assume data like [{col1, col2, col3, ...}, {...}]
+            try:
+                for n in range(len(data)):
+                    for m in range(len(data[n])):
+                        if (data[n][m] is None) or (len(data[n][m]) == 0):
+                            self.data_issue = True
+                        newItem = QTableWidgetItem(f"{data[n][m]}")
                         newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                        newItem.setBackground(QColor(250, 103, 92))
+                        if error is True:
+                            newItem.setBackground(QColor(250, 103, 92))
                         self.upload_plates_table.setItem(n, m, newItem)
-        except:
-            logging.getLogger(self.mod_name).error("plate file import failed")
+                    if len(data[n]) < 7:
+                        self.data_issue = True
+                        for k in range(len(data[n]), 7):
+                            # empty cells
+                            newItem = QTableWidgetItem("")
+                            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                            newItem.setBackground(QColor(250, 103, 92))
+                            self.upload_plates_table.setItem(n, k, newItem)
+            except:
+                logging.getLogger(self.mod_name).error("plate file import failed")
+            self.upload_populated = True
+        
 
     def upload_plate_table(self):
         repopulate_data = []
@@ -291,8 +316,20 @@ class PlatesScreen(QMainWindow):
         self.upload_pbar.setValue(progress)
         self.upload_pbar.show()
         QApplication.setOverrideCursor(Qt.WaitCursor)
+        currentPlate = None
+        plateType = self.upload_plate_size_cb.currentText()
+        flush = False
         for row in range(self.upload_plates_table.rowCount()):
             plate_id = self.upload_plates_table.item(row, 0).text()
+            if plate_id != currentPlate:
+                res, ok = dbInterface.setPlateType(self.token, plate_id, plateType)
+                currentPlate = plate_id
+                if ok is False:
+                    logging.getLogger(self.mod_name).error(f"set plate type [{plate_id}:{plateType}] failed with response: [{res.content.decode()}:{res.status_code}]\nIgnoring plate [{plate_id}]")
+                    flush = True
+                else:
+                    flush = False
+            
             well = self.upload_plates_table.item(row, 1).text()
             compound_id = self.upload_plates_table.item(row, 2).text()
             batch = self.upload_plates_table.item(row, 3).text()
@@ -307,14 +344,16 @@ class PlatesScreen(QMainWindow):
                     form,
                     conc,
                     volume]
-            _, status = dbInterface.uploadWellInformation(self.token,
-                                                          plate_id,
-                                                          well,
-                                                          compound_id,
-                                                          batch,
-                                                          form,
-                                                          conc,
-                                                          volume)
+            status = False
+            if flush is False:
+                _, status = dbInterface.uploadWellInformation(self.token,
+                                                            plate_id,
+                                                            well,
+                                                            compound_id,
+                                                            batch,
+                                                            form,
+                                                            conc,
+                                                            volume)
             if status is False:
                 repopulate_data.append(data)
             else:
@@ -327,6 +366,7 @@ class PlatesScreen(QMainWindow):
         
         QApplication.restoreOverrideCursor()
         self.populate_upload_table(repopulate_data, error=True)
+        self.enable_upload()
 
     def upload_moldisplay(self, item):
         if (item is not None):

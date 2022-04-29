@@ -17,26 +17,6 @@
    <layout class="QGridLayout" name="gridLayout_7">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_6">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="goto_search_btn">
-        <property name="text">
-         <string>Search</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5">
-       <spacer name="horizontalSpacer_5">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>438</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item row="0" column="2">
        <widget class="QPushButton" name="goto_boxes_btn">
         <property name="enabled">
@@ -44,13 +24,6 @@
         </property>
         <property name="text">
          <string>Boxes</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="goto_vials_btn">
-        <property name="text">
-         <string>Vials</string>
         </property>
        </widget>
       </item>
@@ -74,10 +47,37 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="goto_search_btn">
+        <property name="text">
+         <string>Search</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="goto_vials_btn">
+        <property name="text">
+         <string>Vials</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>438</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -675,6 +675,16 @@ Plates</string>
                </size>
               </property>
              </spacer>
+            </item>
+            <item>
+             <widget class="QComboBox" name="upload_plate_size_cb">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="upload_file_btn">
@@ -1664,8 +1674,6 @@ QLineEdit[state=&quot;mismatch&quot;] {
    </layout>
   </widget>
  </widget>
- <resources>
-  <include location="plates_resource.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
