@@ -26,6 +26,8 @@ def upload(target, version, launcher):
                     print("Main upload successful.")
                 except:
                     print("Main upload failed.")
+        else:
+            print(f"file '{exec_path}' not found!")
     if version != None:
         ver_path = version
         if os.path.isfile(ver_path):
@@ -39,6 +41,8 @@ def upload(target, version, launcher):
                     print("Version number update successful.")
                 except:
                     print("Version number update failed.")
+        else:
+            print(f"file '{ver_path}' not found!")
     if launcher != None:
         lau_path = launcher
         if os.path.isfile(lau_path):
@@ -50,6 +54,8 @@ def upload(target, version, launcher):
                     print("Launcher upload successful.")
                 except:
                     print("Launcher upload failed.")
+        else:
+            print(f"file '{lau_path}' not found!")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', action="store", dest="target", type=str, default=None)

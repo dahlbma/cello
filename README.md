@@ -34,7 +34,7 @@ To use `upload.py`, use these options to provide files to upload.
 
 If you have built the main executable and launcher from the /frontend directory using *pyinstaller*, sample usage would look like this:
 
-    python3 upload.py -t dist/ce -l dist/cello
+    python3 upload.py -t dist/ce.exe -l dist/cello.exe
 
 Invoking this prompts a login verification from the server, after which the files are sent to the server.
 
@@ -42,3 +42,12 @@ Invoking this prompts a login verification from the server, after which the file
 </b>
 
 ## Backend
+
+## Download Launcher
+To download the launcher executable from the server, navigate to:
+
+    <baseUrl>getCelloLauncher/Windows/cello.exe
+    <baseUrl>getCelloLauncher/Linux/cello
+    <baseUrl>getCelloLauncher/Darwin/cello
+
+using your favourite internet browser.
