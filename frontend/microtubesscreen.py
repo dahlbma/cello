@@ -34,6 +34,7 @@ class MicrotubesScreen(QMainWindow):
         self.rack_export_btn.clicked.connect(self.export_rack_data)
 
         self.rack_table.currentItemChanged.connect(self.rack_moldisplay)
+        self.rack_table.currentItemChanged.connect(self.show_loc_id)
 
         self.choose_file_btn.clicked.connect(self.getRackFile)
         self.upload_file_btn.clicked.connect(self.uploadRackFile)
@@ -158,6 +159,8 @@ class MicrotubesScreen(QMainWindow):
         if item is not None:
             batchId = self.tubes_batches_table.item(item.row(), 0).text()
             displayMolfile(self, batchId)
+        else:
+            self.structure_lab.clear()
 
     def export_tubes_batches_data(self):
         export_table(self.tubes_batches_table)
@@ -191,17 +194,14 @@ class MicrotubesScreen(QMainWindow):
         try:
             self.rack_data = json.loads(res)
         except:
-            self.rack_data = None
+            self.rack_data = None   
             self.rack_export_btn.setEnabled(False)
-            self.rack_moveto_eb.setEnabled(False)
             self.rack_table.setRowCount(0)
             self.structure_lab.clear()
             logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}] returned: {res}")
             return
         logging.getLogger(self.mod_name).info(f"receieved {len(self.rack_data)} responses")
         self.setRackTableData(self.rack_data)
-        self.rack_moveto_eb.setEnabled(True)
-        self.rack_moveto_eb.setFocus()
         self.rack_table.setCurrentCell(0,0)
         self.rack_export_btn.setEnabled(True)
 
@@ -242,7 +242,7 @@ class MicrotubesScreen(QMainWindow):
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.rack_table.setItem(n, 5, newItem)
                     newItem = QTableWidgetItem(f"{data[n]['location']}")
-                    newItem.setToolTip(f"{data[n]['location']}")
+                    newItem.setToolTip(f"{data[n]['locId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.rack_table.setItem(n, 6, newItem)
             except:
@@ -250,14 +250,20 @@ class MicrotubesScreen(QMainWindow):
         self.rack_table.setSortingEnabled(True)
         return
 
-    def rack_moldisplay(self):
-        try:
-            if self.rack_table.rowCount() > 0:
-                row = self.rack_table.row(self.rack_table.currentItem())
-                compoundId = self.rack_table.item(row, 2).text()
+    def show_loc_id(self, item):
+        if (self.rack_table.rowCount() > 0) and (item is not None):
+            loc_id = self.rack_table.item(item.row(), 6).toolTip()
+            self.rack_boxid_lab.setText(loc_id)
+        else:
+            self.rack_boxid_lab.setText("")
+
+    def rack_moldisplay(self, item):
+            if (self.rack_table.rowCount() > 0) and (item is not None):
+                compoundId = self.rack_table.item(item.row(), 2).text()
                 displayMolfile(self, compoundId)
-        except:
-            return    
+            else:
+                self.structure_lab.clear()
+        
 
     def export_rack_data(self):
         export_table(self.rack_table)
