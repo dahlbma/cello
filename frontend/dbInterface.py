@@ -274,6 +274,15 @@ def getRack(token, rack):
         res = r.content
     return res
 
+def printRack(token, rack):
+    r = requests.get(f'{baseUrl}printRack/{rack}',
+                      headers={'token': token})
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    return res
+
 def verifyLocation(token, location):
     r = requests.get(f'{baseUrl}verifyLocation/{location}',
                       headers={'token': token})

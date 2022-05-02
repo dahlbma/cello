@@ -35,6 +35,10 @@ class MicrotubesScreen(QMainWindow):
 
         self.rack_table.currentItemChanged.connect(self.rack_moldisplay)
         self.rack_table.currentItemChanged.connect(self.show_loc_id)
+        self.rack_table.currentItemChanged.connect(self.check_print)
+
+        self.rack_print_label_btn.clicked.connect(self.print_rack)
+        self.rack_print_label_btn.setEnabled(False)
 
         self.choose_file_btn.clicked.connect(self.getRackFile)
         self.upload_file_btn.clicked.connect(self.uploadRackFile)
@@ -77,7 +81,7 @@ class MicrotubesScreen(QMainWindow):
             self.showMicrotubeMol(self.tubes_batches_table.currentItem())
         elif page_index == 1:
             self.rack_search_eb.setFocus()
-            self.rack_moldisplay()
+            self.rack_moldisplay(self.rack_table.currentItem())
         elif page_index == 2:
             self.choose_file_btn.setFocus()
             self.upload_result_lab.setText('')
@@ -255,6 +259,15 @@ class MicrotubesScreen(QMainWindow):
             self.rack_boxid_lab.setText(loc_id)
         else:
             self.rack_boxid_lab.setText("")
+    
+    def check_print(self, item):
+        if (self.rack_table.rowCount() > 0) and (item is not None):
+            self.currentRack = self.rack_table.item(item.row(), 4).text()
+            self.rack_print_label_btn.setEnabled(True)
+        else:
+            self.currentRack = None
+            self.rack_print_label_btn.setEnabled(False)
+
 
     def rack_moldisplay(self, item):
             if (self.rack_table.rowCount() > 0) and (item is not None):
@@ -262,7 +275,10 @@ class MicrotubesScreen(QMainWindow):
                 displayMolfile(self, compoundId)
             else:
                 self.structure_lab.clear()
-        
+
+    def print_rack(self):
+        rack = self.currentRack
+        dbInterface.printRack(self.token, rack)
 
     def export_rack_data(self):
         export_table(self.rack_table)
