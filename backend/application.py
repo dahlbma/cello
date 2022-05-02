@@ -71,6 +71,31 @@ def getNewPlateId():
     return sPlate
 
 
+def getNewRackId():
+    def nextPossibleRack():
+        sSql = f"select pkey from microtube.matrix_sequence"
+        cur.execute(sSql)
+        pkey = cur.fetchall()[0][0] +1
+        sSql = f"update microtube.matrix_sequence set pkey={pkey}"
+        cur.execute(sSql)
+        return pkey
+
+    sPlate = ''
+    pkey = 0
+    while(True):
+        pkey = nextPossibleRack()
+        sRack = 'MX' + str(pkey).zfill(4)
+        sSql = f"select matrix_id from microtube.matrix where matrix_id = '{sRack}'"
+        cur.execute(sSql)
+        res = cur.fetchall()
+        if len(res) > 0:
+            pass
+        else:
+            break
+
+    return sRack
+
+
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
     def put(self, sTubeId, sBatchId, sVolume, sConc):
@@ -193,8 +218,24 @@ class getMicroTubes(tornado.web.RequestHandler):
 
 @jwtauth
 class CreateRacks(tornado.web.RequestHandler):
-    def put(self, sRackName, sNumberOfRacks):
-        saNewRacks = dict()
+    def put(self, sNumberOfRacks):
+        saNewRacks = []
+        #rackKeys = []
+        #rackValues = []
+        iNumberOfRacks = int(sNumberOfRacks)
+        for i in range(iNumberOfRacks):
+            sNewRack = getNewRackId()
+            sSql = f"""
+            insert into microtube.matrix
+            (matrix_id, created_date)
+            values
+            ('{sNewRack}', now())
+            """
+            cur.execute(sSql)
+            saNewRacks.append(sNewRack)
+
+        res = json.dumps(saNewRacks, indent = 4)
+        self.write(res)
 
 
 @jwtauth
@@ -476,7 +517,6 @@ class GetPlate(tornado.web.RequestHandler):
 	order by ps.seq"""
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
-        print(sSql)
         self.write(json.dumps(res_to_json(tRes, cur), indent=4))
 
 
@@ -602,6 +642,7 @@ class getRack(tornado.web.RequestHandler):
                                  "location": str(row[5]),
                                  "conc": row[6],
                                  "compoundId": row[7],
+                                 "locId": row[9],
                                  "iRow" : sRow
                     })
                     iRow += 1
@@ -615,7 +656,7 @@ class getRack(tornado.web.RequestHandler):
             sSql = f"""select
             t.notebook_ref as batchId, t.tube_id as tubeId, t.volume*1000000 as volume,
             m.matrix_id as matrixId, mt.position as position, m.location as location,
-            t.conc * 1000, compound_id, SUBSTR(mt.position, 2,3) as rackrow
+            t.conc * 1000, compound_id, SUBSTR(mt.position, 2,3) as rackrow, m.loc_id
             from microtube.tube t, microtube.v_matrix_tube mt, microtube.v_matrix m,
             bcpvs.batch b
             where
@@ -1005,6 +1046,27 @@ class EditVial(tornado.web.RequestHandler):
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         self.finish(json.dumps(res_to_json(tRes, cur)))
+
+
+@jwtauth
+class PrintRack(tornado.web.RequestHandler):
+    def get(self, sRack):
+        logging.info("Printing label for " + sRack)
+        s = f'''
+^XA
+^MMT
+^PW400
+^LL0064
+^LS0
+^BY2,3,43^FT53,45^BCN,,Y,N
+^FD>:P>{sRack}^FS
+^FT239,40^A0N,28,31^FH\^FD{sRack}^FS
+^PQ1,0,1,Y^XZ
+'''
+        f = open('/tmp/file.txt','w')
+        f.write(s)
+        f.close()
+        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
 @jwtauth
