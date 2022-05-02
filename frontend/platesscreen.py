@@ -357,12 +357,11 @@ class PlatesScreen(QMainWindow):
                                                             volume)
             if status is False:
                 repopulate_data.append(data)
-            else:
-                iTickCount += 1
-                if iTickCount == iTicks:
-                    progress += 1
-                    iTickCount = 0
-                    self.upload_pbar.setValue(progress)
+            iTickCount += 1
+            if iTickCount == iTicks:
+                progress += 1
+                iTickCount = 0
+                self.upload_pbar.setValue(progress)
         self.upload_pbar.setValue(100)
         
         QApplication.restoreOverrideCursor()
