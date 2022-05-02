@@ -320,6 +320,7 @@ class PlatesScreen(QMainWindow):
         plateType = self.upload_plate_size_cb.currentText()
         flush = False
         for row in range(self.upload_plates_table.rowCount()):
+            QApplication.processEvents()
             plate_id = self.upload_plates_table.item(row, 0).text()
             if plate_id != currentPlate:
                 res, ok = dbInterface.setPlateType(self.token, plate_id, plateType)
