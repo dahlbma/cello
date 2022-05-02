@@ -282,8 +282,8 @@ def verifyLocation(token, location):
     else:
         return r.content.decode(), True
 
-def createRacks(token, name, nr_o_rs):
-    r = requests.put(f'{baseUrl}createRacks/{name}/{nr_o_rs}',
+def createRacks(token, nr_o_rs):
+    r = requests.put(f'{baseUrl}createRacks/{nr_o_rs}',
                       headers={'token':token})
     if r.status_code != 200:
         return r.content.decode(), False

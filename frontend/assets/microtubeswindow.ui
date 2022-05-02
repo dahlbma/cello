@@ -807,46 +807,7 @@
             </item>
             <item>
              <layout class="QGridLayout" name="gridLayout_14">
-              <item row="7" column="0">
-               <widget class="QLabel" name="label_9">
-                <property name="text">
-                 <string>Result:</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QSpinBox" name="new_n_racks_sb">
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>1000</number>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
-               <widget class="QLineEdit" name="new_racks_comment_eb">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>320</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="placeholderText">
-                 <string>Comment</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="1">
+              <item row="6" column="1">
                <widget class="QLabel" name="new_racks_res_lab">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
@@ -885,7 +846,7 @@ Racks</string>
                 </property>
                </widget>
               </item>
-              <item row="6" column="1">
+              <item row="5" column="1">
                <widget class="QPushButton" name="new_racks_save_btn">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -897,17 +858,27 @@ Racks</string>
                  <string notr="true">background-color: rgb(51, 122, 183)</string>
                 </property>
                 <property name="text">
-                 <string>Save</string>
+                 <string>Create Racks</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="label_6">
+              <item row="3" column="1">
+               <widget class="QSpinBox" name="new_n_racks_sb">
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>1000</number>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="label_9">
                 <property name="text">
-                 <string>Description</string>
+                 <string>Result:</string>
                 </property>
                 <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
                 </property>
                </widget>
               </item>
