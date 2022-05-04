@@ -50,7 +50,7 @@ To download the launcher executable from the server, navigate to:
     <baseUrl>getCelloLauncher/Linux/cello
     <baseUrl>getCelloLauncher/Darwin/cello
     Ex:
-    http://esox3.scilifelab.se:8084/getCelloLauncher/Windows/
+    http://esox3.scilifelab.se:8084/getCelloLauncher/Windows/cello.exe
 
 
 using your favourite internet browser.
