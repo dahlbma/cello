@@ -189,7 +189,8 @@ class MicrotubesScreen(QMainWindow):
 
     def search_rack(self):
         rack = self.rack_search_eb.text()
-        if len(rack) < 1:
+        if len(rack) < 6:
+            self.check_print(None)
             return
         logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}]")
         res = dbInterface.getRack(self.token, rack)
@@ -207,6 +208,9 @@ class MicrotubesScreen(QMainWindow):
         self.setRackTableData(self.rack_data)
         self.rack_table.setCurrentCell(0,0)
         self.rack_export_btn.setEnabled(True)
+        if len(self.rack_data) == 0:
+            self.check_print("empty")
+
 
     def setRackTableData(self, data):
         self.rack_table.setRowCount(0)
@@ -261,7 +265,12 @@ class MicrotubesScreen(QMainWindow):
             self.rack_boxid_lab.setText("")
     
     def check_print(self, item):
-        if (self.rack_table.rowCount() > 0) and (item is not None):
+        if item == "empty":
+            l = self.rack_search_eb.text().split(" ")
+            print(l)
+            self.currentRack = l[0]
+            self.rack_print_label_btn.setEnabled(True)
+        elif (self.rack_table.rowCount() > 0) and (item is not None):
             self.currentRack = self.rack_table.item(item.row(), 4).text()
             self.rack_print_label_btn.setEnabled(True)
         else:

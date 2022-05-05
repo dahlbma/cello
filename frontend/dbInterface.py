@@ -232,6 +232,14 @@ def getLocationChildren(token, location):
         res = r.content
     return res
 
+def moveBox(token, box, location):
+    r = requests.put(f'{baseUrl}moveBox/{box}/{location}',
+                     headers={'token': token})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return None, True
+
 def addBox(token, sParent, sBoxName, sBoxSize):
     r = requests.put(f'{baseUrl}addBox/{sParent}/{sBoxName}/{sBoxSize}',
                       headers={'token': token})
