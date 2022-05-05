@@ -173,6 +173,7 @@ def make_app():
          application.AddBox),
         (r"/addLocation/(?P<sParent>[^\/]+)/(?P<sLocationName>[^\/]+)/(?P<sLocationType>[^\/]+)",
          application.AddLocation),
+        (r"/moveBox/(?P<sBox>[^\/]+)/(?P<sLocation>[^\/]+)", application.MoveBox),
         (r"/getBox/(?P<sBox>[^\/]+)", application.GetBox),
         (r"/getBoxOfType/(?P<sBoxType>[^\/]+)", application.getBoxOfType),
         (r"/getBoxLocation/(?P<sBox>[^\/]+)", application.GetBoxLocation),

@@ -233,6 +233,7 @@ class CreateRacks(tornado.web.RequestHandler):
             """
             cur.execute(sSql)
             saNewRacks.append(sNewRack)
+            doPrintRack(sNewRack)
 
         res = json.dumps(saNewRacks, indent = 4)
         self.write(res)
@@ -526,6 +527,21 @@ class UpdateRackLocation(tornado.web.RequestHandler):
         sSql = f"""
         update microtube.matrix set location = '{sLocation}'
         where matrix_id = '{sRack}'
+        """
+        try:
+            sSlask = cur.execute(sSql)
+            self.finish()
+        except Exception as e:
+            self.set_status(400)
+            self.finish(str(e))
+            
+
+@jwtauth
+class MoveBox(tornado.web.RequestHandler):
+    def put(self, sBox, sLocation):
+        sSql = f"""
+        update loctree.locations set parent = '{sLocation}'
+        where loc_id = '{sBox}'
         """
         try:
             sSlask = cur.execute(sSql)
@@ -1048,11 +1064,8 @@ class EditVial(tornado.web.RequestHandler):
         self.finish(json.dumps(res_to_json(tRes, cur)))
 
 
-@jwtauth
-class PrintRack(tornado.web.RequestHandler):
-    def get(self, sRack):
-        logging.info("Printing label for " + sRack)
-        s = f'''
+def doPrintRack(sRack):
+    s = f'''
 ^XA
 ^MMT
 ^PW400
@@ -1063,11 +1076,17 @@ class PrintRack(tornado.web.RequestHandler):
 ^FT239,40^A0N,28,31^FH\^FD{sRack}^FS
 ^PQ1,0,1,Y^XZ
 '''
-        f = open('/tmp/file.txt','w')
-        f.write(s)
-        f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
-
+    f = open('/tmp/file.txt','w')
+    f.write(s)
+    f.close()
+    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+    
+        
+@jwtauth
+class PrintRack(tornado.web.RequestHandler):
+    def get(self, sRack):
+        logging.info("Printing label for " + sRack)
+        doPrintRack(sRack)
 
 @jwtauth
 class printVial(tornado.web.RequestHandler):
