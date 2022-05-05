@@ -1,7 +1,7 @@
 import requests
 import json
 
-baseUrl = 'http://esox3.scilifelab.se:8084/'
+baseUrl = 'http://esox3.scilifelab.se:8081/'
 
 def listify(data, addBlank=True):
     res = data.content.decode()
