@@ -70,6 +70,7 @@ class VialsScreen(QMainWindow):
         logging.getLogger(self.mod_name).info(f"vial search {vialId}")
         res = dbInterface.verifyVial(self.token, vialId)
         try:
+            self.vial_data = None
             self.vial_data = json.loads(str(res))
         except:
             self.vial_data = None
