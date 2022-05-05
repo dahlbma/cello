@@ -77,7 +77,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>2</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -1539,28 +1539,16 @@ QFrame#merge_frame_2[state=&quot;mismatch&quot;] {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton[state=&quot;base&quot;] {
-	image: url(:/arrow/arrow.png);
 }
-
 QPushButton[state=&quot;good&quot;] {
-	image: url(:/arrow/arrow.png);
 	background-color: rgb(167, 221, 181)
 }
 QPushButton[state=&quot;bad&quot;] {
-	image: url(:/arrow/arrow.png);
 	background-color: rgb(234, 112, 112)
 }
 QPushButton[state=&quot;mismatch&quot;] {
-	image: url(:/arrow/arrow.png);
 	background-color: rgb(154, 231, 244)
 }</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset>
-              <normaloff>arrow.png</normaloff>arrow.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -1584,7 +1572,7 @@ QPushButton[state=&quot;mismatch&quot;] {
                </sizepolicy>
               </property>
               <property name="text">
-               <string>Volume (mL)</string>
+               <string>Volume (µL)</string>
               </property>
              </widget>
             </item>
@@ -1604,7 +1592,7 @@ QLineEdit[state=&quot;mismatch&quot;] {
 }</string>
               </property>
               <property name="placeholderText">
-               <string>Volume (mL)</string>
+               <string>Volume (µL)</string>
               </property>
               <property name="state" stdset="0">
                <string>base</string>

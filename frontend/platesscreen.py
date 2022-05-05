@@ -3,7 +3,7 @@ from unittest import skip
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QLineEdit
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor, QIntValidator
+from PyQt5.QtGui import QColor, QIntValidator, QIcon
 
 from cellolib import *
 
@@ -16,6 +16,8 @@ class PlatesScreen(QMainWindow):
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/plateswindow.ui"), self)
         self.window().setWindowTitle("Plates")
+        
+        self.nine6to384_btn.setIcon(QIcon(resource_path("assets/arrow.png")))
 
         self.goto_search_btn.clicked.connect(self.gotoSearch)
         self.goto_vials_btn.clicked.connect(self.gotoVials)
