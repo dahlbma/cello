@@ -49,6 +49,10 @@ class BoxesScreen(QMainWindow):
 
         self.box_search_btn.clicked.connect(self.find_in_box_tree)
 
+        self.boxes_tree.currentItemChanged.connect(self.check_move_input)
+        self.move_location_eb.textChanged.connect(self.check_move_input)
+        self.move_box_btn.clicked.connect(self.moveBox)
+
         self.add_box_type_cb.currentTextChanged.connect(self.check_addbox_input)
         self.add_description_eb.textChanged.connect(self.check_addbox_input)
 
@@ -176,6 +180,8 @@ class BoxesScreen(QMainWindow):
 
     def setAddParams(self, item):
         if (item is not None):
+            self.move_box_lab.setText(item.text(2))
+
             self.add_location_lab.setText(item.text(0))
             self.add_storage_type_lab.setText(item.text(1))
 
@@ -187,6 +193,8 @@ class BoxesScreen(QMainWindow):
 
             self.add_location_barcode = item.text(2)
         else:
+            self.move_box_lab.setText("")
+            
             self.add_location_lab.setText("")
             self.add_storage_type_lab.setText("")
 
@@ -197,6 +205,34 @@ class BoxesScreen(QMainWindow):
             self.delete_storage_type_lab.setText("")
 
             self.add_location_barcode = None
+
+    def check_move_input(self):
+        #pattern = '^[a-zA-Z]{2}[0-9]{5}$'
+        #t = re.sub("[^0-9a-zA-Z]+", " ", self.move_location_eb.text())
+        if (self.move_box_lab.text() != "") and \
+            (self.move_location_eb.text() != ""):
+            self.move_box_btn.setEnabled(True)
+        else:
+            self.move_box_btn.setEnabled(False)
+        self.move_error_lab.setText("")
+        self.move_error_lab.setProperty("state", "true")
+        self.move_error_lab.style().polish(self.move_error_lab)
+
+    def moveBox(self):
+        box = self.move_box_lab.text()
+        loc = self.move_location_eb.text()
+        r, ok = dbInterface.moveBox(self.token, box, loc)
+        if ok:
+            self.move_error_lab.setText("Move OK!")
+            self.move_error_lab.setProperty("state", "true")
+            self.move_error_lab.style().polish(self.move_error_lab)
+            self.box_search_eb.setText(box)
+            self.reload_tree()
+        else:
+            self.move_error_lab.setText(r)
+            self.move_error_lab.setProperty("state", "false")
+            self.move_error_lab.style().polish(self.move_error_lab)
+
 
     def resetInput(self):
         self.add_description_eb.setText('')
