@@ -883,6 +883,7 @@ def getBoxFromDb(sBox):
     return res_to_json(tRes, cur)#jRes
 
 def doPrint(sCmp, sBatch, sType, sDate, sVial):
+
     zplVial = """^XA
 ^MMT
 ^PW400
@@ -901,10 +902,12 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 ^FO300,120^FDVial: %s^FS
 
 ^FX Third section with barcode.
-^BY1,3,45
-^FO490,30^BCR^FD%s^FS
+^BY2,3,45
+^FO300,142^BCN^FD%s^FS
 ^XZ
 """ % (sCmp, sBatch, sType, sDate, sVial, sVial)
+
+
     f = open('/tmp/file.txt','w')
     f.write(zplVial)
     f.close()
