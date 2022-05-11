@@ -511,7 +511,8 @@ class GetPlate(tornado.web.RequestHandler):
         notebook_ref,
         c.form,
         c.conc,
-        c.volume
+        c.volume,
+        p.TYPE_ID
         FROM cool.config c, cool.plate p, cool.plating_sequence ps
         WHERE p.CONFIG_ID = c.CONFIG_ID
         and p.TYPE_ID = ps.TYPE_ID
