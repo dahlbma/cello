@@ -36,6 +36,7 @@ def createPngFromMolfile(regno, molfile):
 
 class home(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
+        self.redirect('/vialdb/index.html')
         return
 
 def getNewLocId():

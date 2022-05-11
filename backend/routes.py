@@ -158,7 +158,6 @@ def make_app():
         (r"/uploadVersionNo", application.UploadVersionNo),
         (r"/getCelloBinary/(?P<os_name>[^\/]+)", getCelloBinary),
         (r"/getDatabase", application.GetDatabase),
-        (r"/", application.home),
         (r"/mols/(.*)", tornado.web.StaticFileHandler, {"path": "mols/"}),
         (r"/dist/(.*)", tornado.web.StaticFileHandler, {"path": "dist/"}),
         (r"/createMolImage/(?P<sId>[^\/]+)", application.CreateMolImage),
@@ -213,10 +212,10 @@ def make_app():
         (r"/addMicrotube/(?P<sTubeId>[^\/]+)/(?P<sBatchId>[^\/]+)/(?P<sVolume>[^\/]+)/(?P<sConc>[^\/]*)",
          application.AddMicrotube),
         (r"/verifyVial/(?P<sVial>[^\/]+)", application.verifyVial),
-        (r"/getCelloLauncher/Windows/", web.StaticFileHandler, {"path": "dist/launchers/Windows/"}),
         (r"/getCelloLauncher/Windows/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Windows/"}),
         (r"/getCelloLauncher/Linux/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Linux/"}),
         (r"/getCelloLauncher/Darwin/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Darwin/"}),
+        (r"/(.*)", web.StaticFileHandler,  {"path": "dist", "default_filename": "index.html"}),
         (r'.*', util.BaseHandler),
     ], **settings)
 
