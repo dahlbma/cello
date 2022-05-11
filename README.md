@@ -9,10 +9,14 @@ Currently only builds on `Python 3.8`, with required package versions listed in 
 With `frontend` as current directory, build the main Cello executable with:
 
     <pyinstaller> main.spec
+    py -3.8 -m PyInstaller main.spec
+
 which will build the main executable `ce`(.exe)
 </br>or
 
     <pyinstaller> launcher.spec
+    py -3.8 -m PyInstaller launcher.spec
+
 which will build the launcher executable `cello`(.exe).
 
 Substitute `<pyinstaller>` with your local appropriate PyInstaller module (possibly `py -3.8 -m PyInstaller` or just `python3 pyinstaller`, case sensitive module names).

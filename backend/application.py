@@ -36,6 +36,7 @@ def createPngFromMolfile(regno, molfile):
 
 class home(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
+        self.redirect('/vialdb/index.html')
         return
 
 def getNewLocId():
@@ -510,7 +511,8 @@ class GetPlate(tornado.web.RequestHandler):
         notebook_ref,
         c.form,
         c.conc,
-        c.volume
+        c.volume,
+        p.TYPE_ID
         FROM cool.config c, cool.plate p, cool.plating_sequence ps
         WHERE p.CONFIG_ID = c.CONFIG_ID
         and p.TYPE_ID = ps.TYPE_ID
@@ -883,6 +885,7 @@ def getBoxFromDb(sBox):
     return res_to_json(tRes, cur)#jRes
 
 def doPrint(sCmp, sBatch, sType, sDate, sVial):
+
     zplVial = """^XA
 ^MMT
 ^PW400
@@ -901,10 +904,12 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 ^FO300,120^FDVial: %s^FS
 
 ^FX Third section with barcode.
-^BY1,3,45
-^FO490,30^BCR^FD%s^FS
+^BY2,3,45
+^FO300,142^BCN^FD%s^FS
 ^XZ
 """ % (sCmp, sBatch, sType, sDate, sVial, sVial)
+
+
     f = open('/tmp/file.txt','w')
     f.write(zplVial)
     f.close()
@@ -1071,15 +1076,15 @@ def doPrintRack(sRack):
 ^PW400
 ^LL0064
 ^LS0
-^BY2,3,43^FT53,45^BCN,,Y,N
+^BY2,3,43^FT20,48^BCN,,Y,N
 ^FD>:P>{sRack}^FS
-^FT239,40^A0N,28,31^FH\^FD{sRack}^FS
+^FT270,48^A0N,28,31^FH\^FD{sRack}^FS
 ^PQ1,0,1,Y^XZ
 '''
     f = open('/tmp/file.txt','w')
     f.write(s)
     f.close()
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates /tmp/file.txt")
     
         
 @jwtauth
@@ -1295,15 +1300,15 @@ class PrintPlate(tornado.web.RequestHandler):
 ^PW400
 ^LL0064
 ^LS0
-^BY2,3,43^FT53,45^BCN,,Y,N
+^BY2,3,43^FT20,48^BCN,,Y,N
 ^FD>:P>{sPlate}^FS
-^FT239,40^A0N,28,31^FH\^FD{sPlate}^FS
+^FT270,48^A0N,28,31^FH\^FD{sPlate}^FS
 ^PQ1,0,1,Y^XZ
 '''
         f = open('/tmp/file.txt','w')
         f.write(s)
         f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
 
 
 @jwtauth
@@ -1323,6 +1328,7 @@ class printBox(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         sType = tRes[0][1]
         sDescription = tRes[0][0]
+
         zplVial = """^XA
 ^MMT
 ^PW400
@@ -1330,18 +1336,19 @@ class printBox(tornado.web.RequestHandler):
 ^LS210
 ^CFA,20
 ^A0,25,20
-^FO295,20^FDBox: %s^FS
+^FO300,20^FDBox: %s^FS
 ^A0,25,20
-^FO295,45^FDType: %s^FS
+^FO300,45^FDType: %s^FS
 ^A0,25,20
-^FO295,70^FD%s^FS
+^FO300,70^FD%s^FS
 ^A0,25,20
 
 ^FX Third section with barcode.
-^BY1,3,45
-^FO490,30^BCR^FD%s^FS
+^BY2,3,45
+^FO300,95^BCN^FD%s^FS
 ^XZ
 """ % (sBox.upper(), sType, sDescription, sBox.upper())
+
         f = open('/tmp/file.txt','w')
         f.write(zplVial)
         f.close()

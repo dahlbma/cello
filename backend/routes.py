@@ -158,7 +158,6 @@ def make_app():
         (r"/uploadVersionNo", application.UploadVersionNo),
         (r"/getCelloBinary/(?P<os_name>[^\/]+)", getCelloBinary),
         (r"/getDatabase", application.GetDatabase),
-        (r"/", application.home),
         (r"/mols/(.*)", tornado.web.StaticFileHandler, {"path": "mols/"}),
         (r"/dist/(.*)", tornado.web.StaticFileHandler, {"path": "dist/"}),
         (r"/createMolImage/(?P<sId>[^\/]+)", application.CreateMolImage),
@@ -189,8 +188,7 @@ def make_app():
         (r"/getFreeBoxes", application.GetFreeBoxes),
         (r"/createPlates/(?P<sPlateType>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sNumberOfPlates>[^\/]+)",
          application.CreatePlates),
-        (r"/createRacks/(?P<sNumberOfRacks>[^\/]+)",
-         application.CreateRacks),
+        (r"/createRacks/(?P<sNumberOfRacks>[^\/]+)", application.CreateRacks),
         (r"/uploadWellInformation", application.UploadWellInformation),
         (r"/mergePlates", application.MergePlates),
         (r"/getPlate/(?P<sPlate>[^\/]+)", application.GetPlate),
@@ -217,6 +215,7 @@ def make_app():
         (r"/getCelloLauncher/Windows/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Windows/"}),
         (r"/getCelloLauncher/Linux/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Linux/"}),
         (r"/getCelloLauncher/Darwin/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Darwin/"}),
+        (r"/(.*)", web.StaticFileHandler,  {"path": "dist", "default_filename": "index.html"}),
         (r'.*', util.BaseHandler),
     ], **settings)
 
