@@ -123,3 +123,44 @@ def getNextFreeRow(table, row, col, entireRowFree=False, fromSame=False):
                 return r, col
     return -1, -1
 
+def plate_to_html(data):
+    ret = lambda x: f"""<!DOCTYPE html><html><head><style>
+.red {"{"}
+  height: 12px;
+  width: 12px;
+  background-color: red;
+  border-radius: 50%;
+  display: inline-block;
+{"}"}
+.blue {"{"}
+  height: 6px;
+  width: 6px;
+  border: 3px solid blue;
+  border-radius: 50%;
+  display: inline-block;
+{"}"}
+</style></head><body><div style="text-align:center; line-height:11px; letter-spacing: -4px;">
+{x}
+</div></body></html>"""
+    scale = {'1':1, '16':2}[str(data[0]['TYPE_ID'])]
+    rows = 8*scale
+    cols = 12*scale
+
+    plate = [["blue"]*cols]*rows
+    for well in data:
+        info = well['well']
+        row = int(ord(info[0]) - ord('A'))
+        col = int(info[1:]) - 1
+        plate[row][col] = "red"
+
+    span = lambda x: f"<span class=\"{x}\"></span>"
+    html = ""
+    for i in range(rows):
+        for j in range(cols):
+            html += span(plate[i][j])
+            if j == 11:
+                html += "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
+        if i == 7:
+            html += "</br>"
+        html += "</br>"
+    return ret(html)
