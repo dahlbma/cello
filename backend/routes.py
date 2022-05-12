@@ -154,6 +154,7 @@ class getCelloBinary(tornado.web.RequestHandler):
 def make_app():
     return tornado.web.Application([
         (r"/login", login),
+        (r"/pingDB", application.PingDB),
         (r"/getVersionData", getVersionData),
         (r"/uploadVersionNo", application.UploadVersionNo),
         (r"/getCelloBinary/(?P<os_name>[^\/]+)", getCelloBinary),

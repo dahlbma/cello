@@ -97,6 +97,12 @@ def getNewRackId():
     return sRack
 
 
+class PingDB(tornado.web.RequestHandler):
+    def get(self):
+        sSql = "SELECT * FROM glass.box_sequence"
+        cur.execute(sSql)
+
+
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
     def put(self, sTubeId, sBatchId, sVolume, sConc):
