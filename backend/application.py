@@ -1076,6 +1076,12 @@ class EditVial(tornado.web.RequestHandler):
 
 
 def doPrintRack(sRack):
+    m = re.search("(\d\d\d\d)", sRack)
+    if m:
+        sNumbers = m.groups()[0]
+    else:
+        return
+    
     s = f'''
 ^XA
 ^MMT
@@ -1083,7 +1089,7 @@ def doPrintRack(sRack):
 ^LL0064
 ^LS0
 ^BY2,3,43^FT20,48^BCN,,Y,N
-^FD>:P>{sRack}^FS
+^FD>:MX>5{sNumbers}^FS
 ^FT270,48^A0N,28,31^FH\^FD{sRack}^FS
 ^PQ1,0,1,Y^XZ
 '''
