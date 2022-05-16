@@ -1,5 +1,6 @@
 import imp
 import sys, requests, json, os, subprocess, platform, shutil, datetime, traceback, logging, dbInterface
+from unittest import result
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMessageBox, QTableWidget, QTableWidgetItem
@@ -123,11 +124,11 @@ def getNextFreeRow(table, row, col, entireRowFree=False, fromSame=False):
                 return r, col
     return -1, -1
 
-def plate_to_html(data):
-    ret = lambda x: f"""<!DOCTYPE html><html><head><style>
+def plate_to_html(data, size1, resultdata, size2):
+    ret = lambda x, y: f"""<!DOCTYPE html><html><head><style>
 .red {"{"}
-  height: 12px;
-  width: 12px;
+  height: 10px;
+  width: 10px;
   background-color: red;
   border-radius: 50%;
   display: inline-block;
@@ -135,23 +136,27 @@ def plate_to_html(data):
 .blue {"{"}
   height: 6px;
   width: 6px;
-  border: 3px solid blue;
+  border: 2px solid blue;
   border-radius: 50%;
   display: inline-block;
 {"}"}
-</style></head><body><div style="text-align:center; line-height:11px; letter-spacing: -4px;">
+</style></head><body><div style="text-align:center; line-height:10px; letter-spacing: -4px;">
 {x}
+{y}
 </div></body></html>"""
-    scale = {'1':1, '16':2}[str(data[0]['TYPE_ID'])]
+    
+    scale = {'96':1, '384':2, '1536':4}[str(size1)]
     rows = 8*scale
     cols = 12*scale
 
-    plate = [["blue"]*cols]*rows
-    for well in data:
-        info = well['well']
-        row = int(ord(info[0]) - ord('A'))
-        col = int(info[1:]) - 1
-        plate[row][col] = "red"
+    plate = [["blue" for _ in range(cols)] for _ in range(rows)]
+
+    if data != None:
+        for well in data:
+            info = well['well']
+            row = int(ord(info[0]) - ord('A'))
+            col = int(info[1:]) - 1
+            plate[row][col] = "red"
 
     span = lambda x: f"<span class=\"{x}\"></span>"
     html = ""
@@ -163,4 +168,29 @@ def plate_to_html(data):
         if i == 7:
             html += "</br>"
         html += "</br>"
-    return ret(html)
+
+    optional = ""
+    if size2 != None:
+        resultscale = {'96':1, '384':2, '1536':4}[str(size2)]
+        resultrows = 8*resultscale
+        resultcols = 12*resultscale
+
+        resultplate = [["blue" for _ in range(resultcols)] for _ in range(resultrows)]
+        if resultdata != None:
+            for well in resultdata:
+                info = well['well']
+                row = int(ord(info[0]) - ord('A'))
+                col = int(info[1:]) - 1
+                resultplate[row][col] = "red"
+
+        optional = "</br></br>t&nbsp&nbsp&nbspo</br></br></br>"
+        for i in range(resultrows):
+            for j in range(resultcols):
+                optional += span(resultplate[i][j])
+                if j == 11:
+                    optional += "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
+            if i == 7:
+                optional += "</br>"
+            optional += "</br>"
+
+    return ret(html, optional)

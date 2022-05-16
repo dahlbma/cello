@@ -357,7 +357,7 @@ def getPlate(token, plate):
         res = r.content.decode()
     except:
         res = r.content
-    return res
+    return res, r.status_code
 
 def updatePlateName(token, plate, comment):
     r = requests.put(f'{baseUrl}updatePlateName/{plate}/{comment}',

@@ -4,6 +4,7 @@ from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QLineEdit
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QIntValidator, QIcon
+from PyQt5 import QtWebEngineWidgets
 
 from cellolib import *
 
@@ -36,6 +37,7 @@ class PlatesScreen(QMainWindow):
         self.new_plates_comment_eb.textChanged.connect(self.check_plates_input)
 
         self.plate_data = None
+        self.plate_search_dict = None
         self.plate_search_btn.clicked.connect(self.check_plate_search_input)
         self.plate_comment_btn.clicked.connect(self.editComment)
         self.plate_discard_btn.clicked.connect(self.discardPlate)
@@ -71,6 +73,8 @@ class PlatesScreen(QMainWindow):
         self.size_arr = [-1]*5
         self.ok_arr = [False]*5
 
+        self.merge_datas = [None]*5
+
         self.currentTexts = [""]*6 # i=0: result, i=1:q1, ..., i=5:volume_eb
 
         self.join_q1_eb.textChanged.connect(self.mod1)
@@ -96,16 +100,19 @@ class PlatesScreen(QMainWindow):
     def tabChanged(self):
         page_index = self.plates_tab_wg.currentIndex()
         self.structure_lab.clear()
+        self.plate_display.setHtml("")
         if page_index == 0:
             self.new_plates_comment_eb.setFocus()
         elif page_index == 1:
             self.plate_search_eb.setFocus()
             self.plate_moldisplay(self.plate_table.currentItem())
+            self.check_plate_search_input()
         elif page_index == 2:
             self.choose_file_btn.setFocus()
             self.upload_moldisplay(self.upload_plates_table.currentItem())
         elif page_index == 3:
             self.join_q1_eb.setFocus()
+            self.showMergePlates()
             #self.move_focus(0, self.ok_arr)
 
     def check_plates_input(self):
@@ -149,21 +156,31 @@ class PlatesScreen(QMainWindow):
         if len(plate) < 1:
             return
         logging.getLogger(self.mod_name).info(f"plate search {plate}")
-        res = dbInterface.getPlate(self.token, plate)
+        res, status = dbInterface.getPlate(self.token, plate)
         try:
             self.plate_data = json.loads(res)
-            if len(self.plate_data) < 1:
+            if (len(self.plate_data) < 1) or status != 200:
                 raise Exception
             logging.getLogger(self.mod_name).info(f"received data")
             self.plate_comment_eb.setEnabled(True)
             self.plate_comment_btn.setEnabled(True)
             self.plate_comment_eb.setText(self.plate_data[0]['description'])
             self.setPlateTableData(self.plate_data)
+            self.plate_table.setCurrentCell(0,0)
+            r, _ = dbInterface.verifyPlate(self.token, plate)
+            info = json.loads(r)
+            self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
             self.setDiscard(False)
             self.setDiscard(True)
             self.plate_print_btn.setEnabled(True)
         except:
-            logging.getLogger(self.mod_name).info(f"no data received")
+            if status == 200:
+                r, _ = dbInterface.verifyPlate(self.token, plate)
+                info = json.loads(r)
+                self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
+                logging.getLogger(self.mod_name).info(f"no data received")
+            else:
+                logging.getLogger(self.mod_name).info(f"search returned {res}")
             self.plate_data = None
             self.plate_comment_eb.setText("")
             self.plate_comment_eb.setEnabled(False)
@@ -384,12 +401,14 @@ class PlatesScreen(QMainWindow):
     def verify_merge_plate(self, plate_id, index):
         self.merge_status_lab.setText("")
         if plate_id == "":
+            self.merge_datas[index] = None
             return -1, False
 
         pattern1 = '^[pP]{1}[0-9]{6}$'
         pattern2 = '^[mM]{1}[xX]{1}[0-9]{4}$'
         if not (re.match(pattern1, plate_id) or\
                 re.match(pattern2, plate_id)):
+            self.merge_datas[index] = None
             return -1, False
             
         try:
@@ -398,8 +417,12 @@ class PlatesScreen(QMainWindow):
             if status == 0:
                 raise Exception
             self.plate_ids[index] = plate_id
+            data, _ = dbInterface.getPlate(self.token, plate_id)
+            #print(f"data: {data}")
+            self.merge_datas[index] = json.loads(data)
             return res[0]['wells'], True
         except:
+            self.merge_datas[index] = None
             return -1, False
 
     def check_merge_sizes(self):
@@ -532,6 +555,7 @@ class PlatesScreen(QMainWindow):
         self.currentTexts[5] = self.merge_volume_eb.text()
         self.merge_check(volume_was_modified=True)
 
+#TODO retranslate OK plates to html
     def merge_check(self, volume_was_modified=True):
         noEmptyEntriesOK = (self.join_result_eb.text() != "") and \
             ((self.join_q1_eb.text() != "") or \
@@ -577,7 +601,7 @@ class PlatesScreen(QMainWindow):
             (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
 
         volumeOK = (self.merge_volume_eb.text() != "")
-
+        
         if noEmptyEntriesOK and fieldsFilledOK and sizesMatchingOK and \
              targetSizeOK and volumeOK:
             self.nine6to384_btn.setEnabled(True)
@@ -587,6 +611,8 @@ class PlatesScreen(QMainWindow):
             self.nine6to384_btn.setEnabled(False)
             self.nine6to384_btn.setProperty("state", "mismatch")
             self.nine6to384_btn.style().polish(self.nine6to384_btn)
+        
+        self.showMergePlates()
 
     def nine6to384_merge(self):
         r = None
@@ -602,17 +628,16 @@ class PlatesScreen(QMainWindow):
             if not status:
                 raise Exception
             merged_plates = ",".join([id for id in self.plate_ids[1:] if id != -1])
+            
+            merge = self.join_result_eb.text()
+            self.join_result_eb.setText("")
+            self.join_result_eb.setText(merge)
+
             self.merge_status_lab.setText(f"Merged plates [{merged_plates}] into \
 {self.plate_ids[0]}.\nReturned message:\"{r}\"")
-            
-            self.join_result_eb.setText("")
-            self.join_q1_eb.setText("")
-            self.join_q2_eb.setText("")
-            self.join_q3_eb.setText("")
-            self.join_q4_eb.setText("")
 
-            QApplication.restoreOverrideCursor()  
-            return                                  
+            QApplication.restoreOverrideCursor()
+            return
         except:
             merged_plates = ",".join([id for id in self.plate_ids[1:] if id != -1])
             self.merge_status_lab.setText(f"Merging plates [{merged_plates}] into \
@@ -621,3 +646,43 @@ class PlatesScreen(QMainWindow):
             self.merge_check()
             QApplication.restoreOverrideCursor()
             return
+    
+    def showMergePlates(self):
+        def disp_tran(quad, data):
+            shiftAlpha = 0
+            shiftNum = 0
+            if quad == 1:
+                return data
+            elif quad == 2:
+                shiftNum = 12
+            elif quad == 3:
+                shiftAlpha = 8
+            elif quad == 4:
+                shiftAlpha = 8
+                shiftNum = 12
+            ret = []
+            for well in data:
+                new_well = well.copy()
+                info = new_well['well']
+                print(info[0] + " to " + f"{chr(ord(info[0]) + shiftAlpha)}")
+                print(info[1:] + " to " + f"{int(info[1:]) + shiftNum}")
+                row = chr(ord(info[0]) + shiftAlpha)
+                col = int(info[1:]) + shiftNum
+                new_well['well'] = f"{row}{col}"
+                ret.append(new_well)
+            return ret
+
+        resultdata = self.merge_datas[0]
+        data = []
+        for i in range(1, 5):
+            if self.merge_datas[i] != None:
+                data.extend(disp_tran(i, self.merge_datas[i]))
+        
+        if not (all(x == False for x in self.ok_arr)):
+            self.plate_display.setHtml(plate_to_html(data, 384, resultdata, 384))
+        return
+
+
+        
+    
+    
