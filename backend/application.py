@@ -363,7 +363,6 @@ class MergePlates(tornado.web.RequestHandler):
                     sConc = 'NULL'
                 dfTargetWell = quadrant.loc[quadrant[1] == sWell][2]
                 sTargetWell = list(dfTargetWell)[0]
-                sConfigId = 'config'
                 sSql = f"""
                 insert into cool.config
                 (config_id, well, compound_id, notebook_ref, form, conc, volume)
