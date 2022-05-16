@@ -97,6 +97,12 @@ def getNewRackId():
     return sRack
 
 
+class PingDB(tornado.web.RequestHandler):
+    def get(self):
+        sSql = "SELECT * FROM glass.box_sequence"
+        cur.execute(sSql)
+
+
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
     def put(self, sTubeId, sBatchId, sVolume, sConc):
@@ -503,6 +509,18 @@ class VerifyPlate(tornado.web.RequestHandler):
 @jwtauth
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
+        sSql = f"""select plate_id from cool.plate
+        where plate_id = '{sPlate}'
+        """
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) == 0:
+            sError = 'Plate not found'
+            self.set_status(400)
+            self.finish(sError)
+            logging.error(sError)
+            return
+
         sSql = f"""
         SELECT p.comments description,
         p.plate_id,
@@ -1070,14 +1088,19 @@ class EditVial(tornado.web.RequestHandler):
 
 
 def doPrintRack(sRack):
-    s = f'''
-^XA
+    m = re.search("(\d\d\d\d)", sRack)
+    if m:
+        sNumbers = m.groups()[0]
+    else:
+        return
+    
+    s = f'''^XA
 ^MMT
 ^PW400
 ^LL0064
 ^LS0
 ^BY2,3,43^FT20,48^BCN,,Y,N
-^FD>:P>{sRack}^FS
+^FD>:MX>5{sNumbers}^FS
 ^FT270,48^A0N,28,31^FH\^FD{sRack}^FS
 ^PQ1,0,1,Y^XZ
 '''
