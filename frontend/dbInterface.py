@@ -45,7 +45,7 @@ def getVersion():
     return r
 
 def uploadVersionNo(token, ver_no):
-    r = requests.post(f'{baseUrl}getVersionData',
+    r = requests.post(f'{baseUrl}uploadVersionNo',
                       data = {'ver_no':ver_no},
                       headers = {'token':token}) # get file version
     if r.status_code != 200:
