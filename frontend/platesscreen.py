@@ -664,8 +664,6 @@ class PlatesScreen(QMainWindow):
             for well in data:
                 new_well = well.copy()
                 info = new_well['well']
-                print(info[0] + " to " + f"{chr(ord(info[0]) + shiftAlpha)}")
-                print(info[1:] + " to " + f"{int(info[1:]) + shiftNum}")
                 row = chr(ord(info[0]) + shiftAlpha)
                 col = int(info[1:]) + shiftNum
                 new_well['well'] = f"{row}{col}"
