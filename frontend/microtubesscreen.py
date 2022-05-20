@@ -309,8 +309,7 @@ class MicrotubesScreen(QMainWindow):
             data_parts.append(part)
         
         # Get html
-        id_hdr = lambda x: "&nbsp&nbsp&nbsp".join(x) \
-                           + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
+        id_hdr = lambda x: f"<span class=\"normal\">{x}</span>"
 
         html = id_hdr(data_parts[0][0]['matrixId']) \
                + "</br>" \

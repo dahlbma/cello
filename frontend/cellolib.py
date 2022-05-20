@@ -128,8 +128,8 @@ def plate_to_html(data, size1, resultdata, size2):
     html = chart_html(data, size1)
     optional = ""
     if size2 != None:
-        optional = "</br></br>t&nbsp&nbsp&nbspo</br></br></br>"
-        optional = chart_html(resultdata, size2)
+        optional = "<span class=\"normal\"></br></br>to</br></br></br></span>" \
+                   + chart_html(resultdata, size2)
     return chart_lambda()(html, optional)
 
 def chart_html(data, size):
@@ -173,6 +173,9 @@ def chart_lambda():
   border: 2px solid blue;
   border-radius: 50%;
   display: inline-block;
+{"}"}
+.normal {"{"}
+  letter-spacing: normal;
 {"}"}
 </style></head><body><div style="text-align:center; line-height:10px; letter-spacing: -4px;">
 {x}
