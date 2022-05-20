@@ -283,6 +283,7 @@ class CreatePlates(tornado.web.RequestHandler):
             now())"""
             cur.execute(sSql)
             plateKeys.append(sPlateId)
+            doPrintPlate(sPlateId)
             plateValues.append(sNewplateName)
         for i in range(len(plateKeys)):
             saNewPlates[plateKeys[i]] = plateValues[i]
@@ -363,7 +364,6 @@ class MergePlates(tornado.web.RequestHandler):
                     sConc = 'NULL'
                 dfTargetWell = quadrant.loc[quadrant[1] == sWell][2]
                 sTargetWell = list(dfTargetWell)[0]
-                sConfigId = 'config'
                 sSql = f"""
                 insert into cool.config
                 (config_id, well, compound_id, notebook_ref, form, conc, volume)
@@ -1087,6 +1087,24 @@ class EditVial(tornado.web.RequestHandler):
         self.finish(json.dumps(res_to_json(tRes, cur)))
 
 
+def doPrintPlate(sPlate):
+    s = f'''
+^XA
+^MMT
+^PW400
+^LL0064
+^LS0
+^BY2,3,43^FT20,48^BCN,,Y,N
+^FD>:P>{sPlate}^FS
+^FT270,48^A0N,28,31^FH\^FD{sPlate}^FS
+^PQ1,0,1,Y^XZ
+'''
+    f = open('/tmp/file.txt','w')
+    f.write(s)
+    f.close()
+    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
+
+
 def doPrintRack(sRack):
     m = re.search("(\d\d\d\d)", sRack)
     if m:
@@ -1113,8 +1131,9 @@ def doPrintRack(sRack):
 @jwtauth
 class PrintRack(tornado.web.RequestHandler):
     def get(self, sRack):
-        logging.info("Printing label for " + sRack)
+        logging.info("Printing label for rack " + sRack)
         doPrintRack(sRack)
+
 
 @jwtauth
 class printVial(tornado.web.RequestHandler):
@@ -1317,21 +1336,8 @@ class UpdateVialPosition(tornado.web.RequestHandler):
 @jwtauth
 class PrintPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
-        s = f'''
-^XA
-^MMT
-^PW400
-^LL0064
-^LS0
-^BY2,3,43^FT20,48^BCN,,Y,N
-^FD>:P>{sPlate}^FS
-^FT270,48^A0N,28,31^FH\^FD{sPlate}^FS
-^PQ1,0,1,Y^XZ
-'''
-        f = open('/tmp/file.txt','w')
-        f.write(s)
-        f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
+        logging.info("Printing label for plate " + sPlate)
+        doPrintPlate(sPlate)
 
 
 @jwtauth
