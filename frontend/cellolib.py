@@ -125,7 +125,41 @@ def getNextFreeRow(table, row, col, entireRowFree=False, fromSame=False):
     return -1, -1
 
 def plate_to_html(data, size1, resultdata, size2):
-    ret = lambda x, y: f"""<!DOCTYPE html><html><head><style>
+    html = chart_html(data, size1)
+    optional = ""
+    if size2 != None:
+        optional = "</br></br>t&nbsp&nbsp&nbspo</br></br></br>"
+        optional = chart_html(resultdata, size2)
+    return chart_lambda()(html, optional)
+
+def chart_html(data, size):
+    scale = {'96':1, '384':2, '1536':4}[str(size)]
+    rows = 8*scale
+    cols = 12*scale
+
+    chart = [["blue" for _ in range(cols)] for _ in range(rows)]
+
+    if data != None:
+        for well in data:
+            info = well['well']
+            row = int(ord(info[0]) - ord('A'))
+            col = int(info[1:]) - 1
+            chart[row][col] = "red"
+
+    span = lambda x: f"<span class=\"{x}\"></span>"
+    html = ""
+    for i in range(rows):
+        for j in range(cols):
+            html += span(chart[i][j])
+            if j == 11:
+                html += "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
+        if i == 7:
+            html += "</br>"
+        html += "</br>"
+    return html
+
+def chart_lambda():
+    return lambda x, y: f"""<!DOCTYPE html><html><head><style>
 .red {"{"}
   height: 10px;
   width: 10px;
@@ -144,53 +178,3 @@ def plate_to_html(data, size1, resultdata, size2):
 {x}
 {y}
 </div></body></html>"""
-    
-    scale = {'96':1, '384':2, '1536':4}[str(size1)]
-    rows = 8*scale
-    cols = 12*scale
-
-    plate = [["blue" for _ in range(cols)] for _ in range(rows)]
-
-    if data != None:
-        for well in data:
-            info = well['well']
-            row = int(ord(info[0]) - ord('A'))
-            col = int(info[1:]) - 1
-            plate[row][col] = "red"
-
-    span = lambda x: f"<span class=\"{x}\"></span>"
-    html = ""
-    for i in range(rows):
-        for j in range(cols):
-            html += span(plate[i][j])
-            if j == 11:
-                html += "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
-        if i == 7:
-            html += "</br>"
-        html += "</br>"
-
-    optional = ""
-    if size2 != None:
-        resultscale = {'96':1, '384':2, '1536':4}[str(size2)]
-        resultrows = 8*resultscale
-        resultcols = 12*resultscale
-
-        resultplate = [["blue" for _ in range(resultcols)] for _ in range(resultrows)]
-        if resultdata != None:
-            for well in resultdata:
-                info = well['well']
-                row = int(ord(info[0]) - ord('A'))
-                col = int(info[1:]) - 1
-                resultplate[row][col] = "red"
-
-        optional = "</br></br>t&nbsp&nbsp&nbspo</br></br></br>"
-        for i in range(resultrows):
-            for j in range(resultcols):
-                optional += span(resultplate[i][j])
-                if j == 11:
-                    optional += "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
-            if i == 7:
-                optional += "</br>"
-            optional += "</br>"
-
-    return ret(html, optional)
