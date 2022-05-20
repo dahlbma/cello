@@ -152,7 +152,7 @@ def chart_html(data, size):
         for j in range(cols):
             html += span(chart[i][j])
             if j == 11:
-                html += "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
+                html += "<span class=\"normal\"> </span>" #"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
         if i == 7:
             html += "</br>"
         html += "</br>"
