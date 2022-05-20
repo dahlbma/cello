@@ -1645,7 +1645,7 @@ QLineEdit[state=&quot;mismatch&quot;] {
        </widget>
       </item>
       <item>
-       <widget class="QWebEngineView" name="plate_display">
+       <widget class="QWebEngineView" name="plate_display" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -1655,19 +1655,19 @@ QLineEdit[state=&quot;mismatch&quot;] {
         <property name="minimumSize">
          <size>
           <width>300</width>
-          <height>300</height>
+          <height>430</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>300</width>
-          <height>300</height>
+          <height>430</height>
          </size>
         </property>
         <property name="styleSheet">
          <string notr="true">background:transparent</string>
         </property>
-        <property name="url">
+        <property name="url" stdset="0">
          <url>
           <string>about:blank</string>
          </url>

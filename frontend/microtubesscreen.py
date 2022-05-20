@@ -76,11 +76,13 @@ class MicrotubesScreen(QMainWindow):
     def tabChanged(self):
         page_index = self.microtubes_tab_wg.currentIndex()
         self.structure_lab.clear()
+        self.rack_display.setHtml("")
         if page_index == 0:
             self.tubes_batch_eb.setFocus()
             self.showMicrotubeMol(self.tubes_batches_table.currentItem())
         elif page_index == 1:
             self.rack_search_eb.setFocus()
+            self.search_rack()
             self.rack_moldisplay(self.rack_table.currentItem())
         elif page_index == 2:
             self.choose_file_btn.setFocus()
@@ -210,7 +212,9 @@ class MicrotubesScreen(QMainWindow):
         self.rack_export_btn.setEnabled(True)
         if len(self.rack_data) == 0:
             self.check_print("empty")
-
+            self.rack_display.setHtml("")
+        else:
+            self.show_racks(self.rack_data)
 
     def setRackTableData(self, data):
         self.rack_table.setRowCount(0)
@@ -284,6 +288,40 @@ class MicrotubesScreen(QMainWindow):
                 displayMolfile(self, compoundId)
             else:
                 self.structure_lab.clear()
+    
+    def show_racks(self, data):
+        # make copy
+        data_copy = list(data)
+
+        # separate data
+        data_parts = []
+        part = []
+        current_rack = None
+        for w in data:
+            if w['matrixId'] != current_rack:
+                if len(part) > 0:
+                    data_parts.append(part)
+                    part = []
+                current_rack = w['matrixId']
+            p = {'tubeId':w.pop('tubeId'), 'well':w.pop('position'), 'matrixId':w.pop('matrixId')}
+            part.append(p)
+        if len(part) > 0:
+            data_parts.append(part)
+        
+        # Get html
+        id_hdr = lambda x: "&nbsp&nbsp&nbsp".join(x) \
+                           + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
+
+        html = id_hdr(data_parts[0][0]['matrixId']) \
+               + "</br>" \
+               + chart_html(data_parts[0], 96)
+        for p in data_parts[1:]:
+            html += id_hdr(p[0]['matrixId']) \
+                    + "</br>" \
+                    + chart_html(p, 96)
+        
+        # Show html
+        self.rack_display.setHtml(chart_lambda()(html, ""))
 
     def print_rack(self):
         rack = self.currentRack
