@@ -170,6 +170,7 @@ class PlatesScreen(QMainWindow):
                                                             name,
                                                             nr_o_ps)
             if not status:
+                self.label_to_plates_res_lab.setText(res)
                 raise Exception
             self.label_to_plates_res_lab.setText(res)
             self.label_to_plates_type_cb.setCurrentText(' ')
