@@ -350,6 +350,14 @@ def createPlates(token, type, name, nr_o_ps):
     else:
         return r.content.decode(), True
 
+def createPlatesFromLabel(token, sStartPlate, type, name, nr_o_ps):
+    r = requests.put(f'{baseUrl}createPlatesFromLabel/{sStartPlate}/{type}/{name}/{nr_o_ps}',
+                      headers={'token':token})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
+
 def getPlate(token, plate):
     r = requests.get(f'{baseUrl}getPlate/{plate}',
                       headers={'token': token})

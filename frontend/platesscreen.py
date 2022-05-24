@@ -36,6 +36,13 @@ class PlatesScreen(QMainWindow):
         self.new_plates_type_cb.currentTextChanged.connect(self.check_plates_input)
         self.new_plates_comment_eb.textChanged.connect(self.check_plates_input)
 
+        self.label_to_plates_save_btn.clicked.connect(self.createPlatesFromLabel)
+        self.label_to_plates_save_btn.setEnabled(False)
+        self.label_to_plates_type_cb.addItems(types)
+        self.label_to_plates_type_cb.currentTextChanged.connect(self.label_check_plates_input)
+        self.label_to_plates_comment_eb.textChanged.connect(self.label_check_plates_input)
+        self.label_to_plate_id_eb.textChanged.connect(self.label_check_plates_input)
+
         self.plate_data = None
         self.plate_search_dict = None
         self.plate_search_btn.clicked.connect(self.check_plate_search_input)
@@ -122,6 +129,20 @@ class PlatesScreen(QMainWindow):
         else:
             self.new_plates_save_btn.setEnabled(False)
 
+    def label_check_plates_input(self):
+        sPlateId = self.label_to_plate_id_eb.text()
+        pattern = '^[pP]{1}[0-9]{6}$'
+        t = re.sub("[^0-9a-zA-Z]+", " ", sPlateId)
+        lValidPlate = False
+        if re.match(pattern, t):
+            lValidPlate = True
+            
+        if (lValidPlate and self.label_to_plates_type_cb.currentText() != ' ') and \
+            (self.label_to_plates_comment_eb.text() != ""):
+            self.label_to_plates_save_btn.setEnabled(True)
+        else:
+            self.label_to_plates_save_btn.setEnabled(False)
+
     def createPlates(self):
         type = self.new_plates_type_cb.currentText()
         name = self.new_plates_comment_eb.text()
@@ -136,6 +157,27 @@ class PlatesScreen(QMainWindow):
             self.new_n_plates_sb.setValue(1)
         except:
             logging.getLogger(self.mod_name).info(f"create plates [{type}:{name}:{nr_o_ps}] failed:\n{res}")
+
+    def createPlatesFromLabel(self):
+        type = self.label_to_plates_type_cb.currentText()
+        name = self.label_to_plates_comment_eb.text()
+        nr_o_ps = self.label_to_n_plates_sb.value()
+        sStartPlate = self.label_to_plate_id_eb.text()
+        try:
+            res, status = dbInterface.createPlatesFromLabel(self.token,
+                                                            sStartPlate,
+                                                            type,
+                                                            name,
+                                                            nr_o_ps)
+            if not status:
+                raise Exception
+            self.label_to_plates_res_lab.setText(res)
+            self.label_to_plates_type_cb.setCurrentText(' ')
+            self.label_to_plates_comment_eb.setText("")
+            self.label_to_plate_id_eb.setText("")
+            self.label_to_n_plates_sb.setValue(1)
+        except:
+            logging.getLogger(self.mod_name).info(f"create plates from label [{type}:{name}:{nr_o_ps}] failed:\n{res}")
 
     def check_plate_search_input(self):
         pattern = '^[pP]{1}[0-9]{6}$'
