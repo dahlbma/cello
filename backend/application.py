@@ -247,6 +247,89 @@ class CreateRacks(tornado.web.RequestHandler):
 
 
 @jwtauth
+class CreatePlatesFromLabel(tornado.web.RequestHandler):
+    
+    def put(self, sStartPlate, sPlateType, sPlateName, sNumberOfPlates):
+
+        def checkIfPlatesAreFree(iStart, iNumberOfPlates):
+            lRetVal = True
+            for i in range(iStart,iStart + iNumberOfPlates):
+                sSql = f'''
+                select plate_id from cool.plate where plate_id = 'p{str(i).zfill(6)}'
+                '''
+                sSlask = cur.execute(sSql)
+                tRes = cur.fetchall()
+                if len(tRes) > 0:
+                    lRetVal = False
+                    break
+            return lRetVal
+
+        
+        saNewPlates = dict()
+        plateKeys = []
+        plateValues = []
+        iNumberOfPlates = int(sNumberOfPlates)
+
+        pattern = '([0-9]{6})$'
+        m = re.search(pattern, sStartPlate)
+        if m:
+            iStart = int(m.groups()[0])
+        else:
+            sError = f'Error in plate format {sStartPlate}'
+            self.set_status(400)
+            self.finish(sError)
+            logging.error(sError)
+            return
+
+        if checkIfPlatesAreFree(iStart, iNumberOfPlates):
+            pass
+        else:
+            sError = f'Error plate already registered'
+            self.set_status(400)
+            self.finish(sError)
+            logging.error(sError)
+            return
+
+        if sPlateType == "96":
+            # This is the type_id in the db for 96 well plates
+            iPlateType = 1
+        elif sPlateType == "384":
+            # This is the type_id in the db for 384 well plates
+            iPlateType = 16
+        elif sPlateType == "1536":
+            # This is the type_id in the db for 1536 well plates
+            iPlateType = 47
+        for i in range(iNumberOfPlates):
+            ii = str(i + 1)
+            iii = ii.zfill(3)
+            sNewplateName = f"{iii}: {sPlateName}"
+            sPlateId = f"P{str(iStart + i).zfill(6)}"
+            sSql = f"""
+            insert into cool.plate (plate_id,
+            config_id,
+            type_id,
+            comments,
+            created_date,
+            updated_date)
+            values (
+            '{sPlateId}',
+            '{sPlateId}',
+            {iPlateType},
+            '{sNewplateName}',
+            now(),
+            now())"""
+            cur.execute(sSql)
+            plateKeys.append(sPlateId)
+            #doPrintPlate(sPlateId)
+            plateValues.append(sNewplateName)
+        for i in range(len(plateKeys)):
+            saNewPlates[plateKeys[i]] = plateValues[i]
+        res = json.dumps(saNewPlates, indent = 4)
+        self.write(res)
+
+
+
+@jwtauth
 class CreatePlates(tornado.web.RequestHandler):
     def put(self, sPlateType, sPlateName, sNumberOfPlates):
         saNewPlates = dict()

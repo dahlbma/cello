@@ -189,6 +189,8 @@ def make_app():
         (r"/getFreeBoxes", application.GetFreeBoxes),
         (r"/createPlates/(?P<sPlateType>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sNumberOfPlates>[^\/]+)",
          application.CreatePlates),
+        (r"/createPlatesFromLabel/(?P<sStartPlate>[^\/]+)/(?P<sPlateType>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sNumberOfPlates>[^\/]+)",
+         application.CreatePlatesFromLabel),
         (r"/createRacks/(?P<sNumberOfRacks>[^\/]+)", application.CreateRacks),
         (r"/uploadWellInformation", application.UploadWellInformation),
         (r"/mergePlates", application.MergePlates),
