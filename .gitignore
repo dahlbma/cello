@@ -9,6 +9,7 @@ dist/
 *.mol
 error_msg.txt
 *.csv
+log_cello.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
