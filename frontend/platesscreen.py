@@ -204,6 +204,7 @@ class PlatesScreen(QMainWindow):
             self.plate_data = json.loads(res)
             if (len(self.plate_data) < 1) or status != 200:
                 raise Exception
+            self.platesearch_error_lab.setText("")
             logging.getLogger(self.mod_name).info(f"received data")
             self.plate_comment_eb.setEnabled(True)
             self.plate_comment_btn.setEnabled(True)
@@ -212,6 +213,7 @@ class PlatesScreen(QMainWindow):
             self.plate_table.setCurrentCell(0,0)
             r, _ = dbInterface.verifyPlate(self.token, plate)
             info = json.loads(r)
+            self.platesearch_error_lab.setText(f"Plate size: {info[0]['wells']}")
             self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
             self.setDiscard(False)
             self.setDiscard(True)
@@ -220,9 +222,12 @@ class PlatesScreen(QMainWindow):
             if status == 200:
                 r, _ = dbInterface.verifyPlate(self.token, plate)
                 info = json.loads(r)
+                self.platesearch_error_lab.setText(f"Plate size: {info[0]['wells']}")
                 self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
-                logging.getLogger(self.mod_name).info(f"no data received")
+                logging.getLogger(self.mod_name).info(f"empty plate, no data received")
             else:
+                self.plate_display.setHtml("")
+                self.platesearch_error_lab.setText(res)
                 logging.getLogger(self.mod_name).info(f"search returned {res}")
             self.plate_data = None
             self.plate_comment_eb.setText("")
@@ -461,7 +466,6 @@ class PlatesScreen(QMainWindow):
                 raise Exception
             self.plate_ids[index] = plate_id
             data, _ = dbInterface.getPlate(self.token, plate_id)
-            #print(f"data: {data}")
             self.merge_datas[index] = json.loads(data)
             return res[0]['wells'], True
         except:

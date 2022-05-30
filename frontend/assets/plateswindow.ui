@@ -77,7 +77,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -696,6 +696,13 @@ Plates</string>
              <widget class="QLineEdit" name="plate_comment_eb">
               <property name="placeholderText">
                <string>Comment</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="platesearch_error_lab">
+              <property name="styleSheet">
+               <string notr="true">color: red</string>
               </property>
              </widget>
             </item>
