@@ -567,7 +567,7 @@
             </column>
             <column>
              <property name="text">
-              <string>Box Desc.</string>
+              <string>Box Id</string>
              </property>
             </column>
             <column>
@@ -577,7 +577,7 @@
             </column>
             <column>
              <property name="text">
-              <string>Path</string>
+              <string>Box Name</string>
              </property>
             </column>
             <column>
@@ -694,7 +694,7 @@ Weight</string>
             </column>
             <column>
              <property name="text">
-              <string>Box Desc.</string>
+              <string>Box Id</string>
              </property>
             </column>
             <column>
@@ -704,7 +704,7 @@ Weight</string>
             </column>
             <column>
              <property name="text">
-              <string>Path</string>
+              <string>Box Name</string>
              </property>
             </column>
             <column>
