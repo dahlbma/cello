@@ -21,35 +21,30 @@ class QCustomTableWidgetItem (QTableWidgetItem):
 def gotoSearch(self):
     resize_window(self)
     self.window().setCurrentIndex(1)
-    #self.window().widget(1).search_tab_wg.setCurrentIndex(0)
     self.window().widget(1).vial_search_eb.setFocus()
     return
 
 def gotoVials(self):
     resize_window(self)
     self.window().setCurrentIndex(2)
-    #self.window().widget(2).vials_tab_wg.setCurrentIndex(0)
     self.window().widget(2).edit_vial_id_eb.setFocus()
     return
 
 def gotoBoxes(self):
     resize_window(self)
     self.window().setCurrentIndex(3)
-    #self.window().widget(3).boxes_tab_wg.setCurrentIndex(0)
     self.window().widget(3).add_description_eb.setFocus()
     return
 
 def gotoMicrotubes(self):
     resize_window(self)
     self.window().setCurrentIndex(4)
-    #self.window().widget(4).microtubes_tab_wg.setCurrentIndex(0)
     self.window().widget(4).tubes_batch_eb.setFocus()
     return
 
 def gotoPlates(self):
     resize_window(self)
     self.window().setCurrentIndex(5)
-    #self.window().widget(5).plates_tab_wg.setCurrentIndex(0)
     self.window().widget(5).new_n_plates_sb.setFocus()
     return
 
@@ -61,14 +56,14 @@ def send_msg(title, text, icon=QMessageBox.Information, e=None):
     msg.setText(text)
     clipboard = QApplication.clipboard()
     if e is not None:
-        # add clipboard btn
+        #add clipboard btn
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Save)
         buttonS = msg.button(QMessageBox.Save)
         buttonS.setText('Save to clipboard')
     msg.exec_()
     if e is not None:
         if msg.clickedButton() == buttonS:
-            # copy to clipboard if clipboard button was clicked
+            #copy to clipboard if clipboard button was clicked
             clipboard.setText(text)
             cb_msg = QMessageBox()
             cb_msg.setText(clipboard.text()+" \n\ncopied to clipboard!")
@@ -152,7 +147,7 @@ def chart_html(data, size):
         for j in range(cols):
             html += span(chart[i][j])
             if j == 11:
-                html += "<span class=\"normal\"> </span>" #"&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
+                html += "<span class=\"normal\"> </span>"
         if i == 7:
             html += "</br>"
         html += "</br>"

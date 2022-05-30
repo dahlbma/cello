@@ -54,19 +54,19 @@ class LoginScreen(QMainWindow):
         self.startApp()
 
     def startApp(self):
-        # init
+        #init
         search = SearchScreen(self.jwt_token)
         vials = VialsScreen(self.jwt_token)
         boxes = BoxesScreen(self.jwt_token)
         microtubes = MicrotubesScreen(self.jwt_token)
         plates = PlatesScreen(self.jwt_token)
 
-        # add screens to stackedwidget
+        #add screens to stackedwidget
         self.window().addWidget(search)
         self.window().addWidget(vials)
         self.window().addWidget(boxes)
         self.window().addWidget(microtubes)
         self.window().addWidget(plates)
 
-        # first screen
+        #first screen
         gotoSearch(self)

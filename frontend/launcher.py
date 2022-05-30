@@ -27,7 +27,7 @@ class LauncherScreen(QDialog):
         self.run_cello_btn.setDefault(True)
         self.run_cello_btn.setAutoDefault(True)
 
-        if self.ver_check() == 1: # outdated
+        if self.ver_check() == 1: #outdated
             self.status_lab.setText("""Cello is outdated!<br>
             Please <b>'Update Cello'</b> or<br>
             <b>'Run Cello'</b> to Update.""")
@@ -40,10 +40,10 @@ class LauncherScreen(QDialog):
             self.updatefunction()
 
     def ver_check(self):
-        # return true if cello is outdated
+        #return true if cello is outdated
         try:
             r = dbInterface.getVersion()
-            # turn it into a dict
+            #turn it into a dict
             info = json.loads(r.content)
             logger.info(f"recieved {info}")
         except Exception as e:
@@ -58,27 +58,27 @@ class LauncherScreen(QDialog):
                 info_dict = json.load(f)
         except Exception as e:
             logger.error(str(e))
-            # create version file
+            #create version file
             return 1, {"version":"-1"}
-        # check if versions match
+        #check if versions match
         ok = 0 if info['version'] == info_dict['version'] else 1
-        # ok is 0 if versions match, 1 if update is needed, 2 if no connection
+        #ok is 0 if versions match, 1 if update is needed, 2 if no connection
         return ok, info
 
 
     def updatefunction(self):
         os_name = platform.system()
         exec_path = f"{os.getcwd()}/{ex_paths[os_name]}"
-        # check if versions match
+        #check if versions match
         match, info = self.ver_check()
         if self.frc_update_chb.isChecked() or not os.path.isfile(exec_path):
             logging.getLogger(self.mod_name).info("Force update")
             match = 1
         if match == 2:
-            # no connection to server
+            #no connection to server
             return -1
         elif match == 1:
-            # update needed
+            #update needed
             
             try: 
                 bin_r = dbInterface.getCelloBinary(os_name)
@@ -93,10 +93,10 @@ class LauncherScreen(QDialog):
                 self.status_lab.setText("ERROR ")
                 logging.getLogger(self.mod_name).info(str(e))
                 return -1
-        # all is well
+        #all is well
         try:
             r = dbInterface.getVersion()
-            # turn it into a dict
+            #turn it into a dict
             info = json.loads(r.content)
             logging.getLogger(self.mod_name).info(f"recieved {info}")
         except Exception as e:
@@ -127,17 +127,17 @@ class LauncherScreen(QDialog):
 #base settings for logging
 level=logging.INFO
 
-# init root logger
+#init root logger
 logger = logging.getLogger()
 logger.setLevel(level)
 
-# console logging
+#console logging
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 formatter = logging.Formatter('%(name)s:%(filename)s:%(lineno)d:%(message)s')
 ch.setFormatter(formatter)
 
-# file logging
+#file logging
 file=os.path.join(".","cello_launcher.log")
 fh = logging.FileHandler(file)
 fh.setLevel(level)
@@ -149,7 +149,7 @@ logger.addHandler(ch)
 logger.addHandler(fh)
 
 
-# base app settings
+#base app settings
 os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
 app = QApplication(['Cello Launcher'])
 clipboard = app.clipboard()
@@ -158,7 +158,7 @@ launch = LauncherScreen()
 widget = QtWidgets.QStackedWidget()
 widget.addWidget(launch)
 
-# window sizing stuff
+#window sizing stuff
 desktop = QApplication.desktop()
 windowHeight = 340
 windowWidth = 508

@@ -37,17 +37,17 @@ def uploadBinary(token, os_name, file):
 
 def getCelloBinary(os_name):
     r = requests.get(f'{baseUrl}getCelloBinary/{os_name}',
-                     stream=True) # fetch cello dist
+                     stream=True) #fetch cello dist
     return r
 
 def getVersion():
-    r = requests.get(f'{baseUrl}getVersionData') # get file version
+    r = requests.get(f'{baseUrl}getVersionData') #get file version
     return r
 
 def uploadVersionNo(token, ver_no):
     r = requests.post(f'{baseUrl}uploadVersionNo',
                       data = {'ver_no':ver_no},
-                      headers = {'token':token}) # get file version
+                      headers = {'token':token}) #get file version
     if r.status_code != 200:
         return r.content.decode(), False
     else:

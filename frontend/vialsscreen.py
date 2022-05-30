@@ -150,7 +150,7 @@ class VialsScreen(QMainWindow):
                 self.file_status_lab.setText("")
                 self.file_status_lab.setToolTip(None)
         except:
-            print(f"addTare failed with response: {r}")
+            logging.getLogger(self.mod_name).error(f"addTare failed with response: {r}")
 
         self.upload_btn.setEnabled(False)
         self.upload_copy_log_btn.setEnabled(True)

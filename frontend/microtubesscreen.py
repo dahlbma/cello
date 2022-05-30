@@ -271,7 +271,6 @@ class MicrotubesScreen(QMainWindow):
     def check_print(self, item):
         if item == "empty":
             l = self.rack_search_eb.text().split(" ")
-            print(l)
             self.currentRack = l[0]
             self.rack_print_label_btn.setEnabled(True)
         elif (self.rack_table.rowCount() > 0) and (item is not None):
@@ -290,10 +289,10 @@ class MicrotubesScreen(QMainWindow):
                 self.structure_lab.clear()
     
     def show_racks(self, data):
-        # make copy
+        #make copy
         data_copy = list(data)
 
-        # separate data
+        #separate data
         data_parts = []
         part = []
         current_rack = None
@@ -308,7 +307,7 @@ class MicrotubesScreen(QMainWindow):
         if len(part) > 0:
             data_parts.append(part)
         
-        # Get html
+        #Get html
         id_hdr = lambda x: f"<span class=\"normal\">{x}</span>"
 
         html = id_hdr(data_parts[0][0]['matrixId']) \
@@ -319,7 +318,7 @@ class MicrotubesScreen(QMainWindow):
                     + "</br>" \
                     + chart_html(p, 96)
         
-        # Show html
+        #Show html
         self.rack_display.setHtml(chart_lambda()(html, ""))
 
     def print_rack(self):
@@ -370,13 +369,8 @@ class MicrotubesScreen(QMainWindow):
     Failed tubes: {res['FailedTubes']}
     Nr of ok tubes: {res['iOk']}
     Nr of failed tubes: {res['iError']}\n\n'''
-                    #self.upload_result_lab.setText(f'''Rack updated: {res['sRack']}
-    #Failed tubes: {res['FailedTubes']}
-    #Nr of ok tubes: {res['iOk']}
-    #Nr of failed tubes: {res['iError']}''')
-                #self.update_box_eb.setEnabled(False)
             except:
-                print(f"readScannedRack failed with response: {r}")
+                logging.getLogger(self.mod_name).error(f"readScannedRack failed with response: {r}")
 
         self.update_box_eb.setEnabled(False)
         self.upload_copy_log_btn.setEnabled(True)
@@ -460,7 +454,7 @@ class MicrotubesScreen(QMainWindow):
                 else:
                     errors.append([tubeId, compBatch, volume, conc, None])
                     continue
-            # try sending it
+            #try sending it
             res, status = dbInterface.addMicrotube(self.token,
                                                    tubeId,
                                                    compBatch,
@@ -474,10 +468,10 @@ class MicrotubesScreen(QMainWindow):
                 #success
                 success += 1
 
-        # flush table
+        #flush table
         self.create_microtubes_table.setRowCount(0)
         
-        # add error rows back
+        #add error rows back
         self.create_microtubes_table.setRowCount(len(errors))
         for row in range(len(errors)):
             for i in range(0, 4):
@@ -547,7 +541,7 @@ class MicrotubesScreen(QMainWindow):
     
     def moveRackStep2(self):
         pattern = '^[a-zA-Z]{2}[0-9]{5}$'
-        rack_id = self.move_rack_id_eb.text() # should be OK
+        rack_id = self.move_rack_id_eb.text() #should be OK
         box_id = self.move_box_id_eb.text()
         self.move_status_lab.clear()
         if re.match(pattern, box_id):
@@ -559,7 +553,7 @@ class MicrotubesScreen(QMainWindow):
                 logging.getLogger(self.mod_name).error(f"Rack move failed: {rack_id}>{box_id}: {r}")
                 self.move_status_lab.setText(f"\nRack move failed: {rack_id}>{box_id}: {r}")
                 return
-            # all ok
+            #all ok
             logging.getLogger(self.mod_name).info(f"Move successful: {rack_id}>{box_id}")
             self.move_status_lab.setText("Move Successful.")
             self.move_rack_id_eb.clear()

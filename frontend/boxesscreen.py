@@ -107,7 +107,7 @@ class BoxesScreen(QMainWindow):
         return [js['NAME'], js['type'], js['LOC_ID']]
 
     def init_boxes_tree(self):
-        # get top level nodes
+        #get top level nodes
         r = dbInterface.getLocationChildren(self.token, "root")
         try:
             root_items = json.loads(r)
@@ -252,7 +252,6 @@ class BoxesScreen(QMainWindow):
             self.boxes_tree.collapseItem(self.boxes_tree.currentItem())
             self.boxes_tree.expandItem(self.boxes_tree.currentItem())
         else:
-            #TODO send received error message
             err = f"addBox failed with [{sBoxName}, {sBoxSize}, {sParent}]"
             send_msg("Error Adding Box", f"Error Message:\n{err}", icon=QMessageBox.Warning, e=err)
             logging.getLogger(self.mod_name).error(err)
@@ -293,7 +292,7 @@ class BoxesScreen(QMainWindow):
         target = f"{self.delete_location_lab.text()}/{self.add_location_barcode}"
         logging.getLogger(self.mod_name).info(f"delete {target}!")
         
-        # send delete request
+        #send delete request
         r, ret = dbInterface.deleteLocation(self.token, self.add_location_barcode)
         if ret is False:
             self.delete_location_error_lab.setText(r.content.decode())
@@ -341,7 +340,7 @@ class BoxesScreen(QMainWindow):
         if re.match(pattern, t):
             self.search_for_box(t)
         else:
-            # no match
+            #no match
             self.box_search = None
             self.box_table.setRowCount(0)
 
@@ -361,7 +360,7 @@ class BoxesScreen(QMainWindow):
         self.path_js = json.loads(path_res)
 
         if (len(self.path_js) == 0) or (len(self.box_data) == 0) or (self.box_data is None):
-            # bad results
+            #bad results
             self.box_data = None
             self.path_js = None
             self.update_print_btn.setEnabled(False)
@@ -372,7 +371,7 @@ class BoxesScreen(QMainWindow):
             self.update_name_lab.setText("Box not found!")
             self.update_name_lab.setStyleSheet("background-color: red")
             return
-        # not bad results
+        #not bad results
         self.update_name_lab.setText(f"{self.path_js[0]['path']}")
         self.update_name_lab.setStyleSheet("")
         self.setBoxTableData(self.box_data, box)
@@ -446,7 +445,6 @@ class BoxesScreen(QMainWindow):
 
     def box_moldisplay(self, item):
         if (item is not None) and (len(self.box_table.selectedItems()) == 1):
-            #blank
             vialId = self.box_table.item(item.row(), 0).text()
             if len(vialId) > 0:
                 displayMolfile(self, vialId)
