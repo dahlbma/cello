@@ -75,6 +75,6 @@ if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
 
 #show app
 widget.show()
-app.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
-widget.setWindowIcon(QtGui.QIcon('assets/cello.ico'))
+app.setWindowIcon(QtGui.QIcon(resource_path('assets/cello.ico')))
+widget.setWindowIcon(QtGui.QIcon(resource_path('assets/cello.ico')))
 sys.exit(app.exec_())
