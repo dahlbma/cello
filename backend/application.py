@@ -181,18 +181,21 @@ class getMicroTubes(tornado.web.RequestHandler):
 
         jRes = list()
         for sId in saBatches:
-            sSql = """select
-                      t.notebook_ref as batchId, t.tube_id as tubeId,
-                      t.volume*1000000 as volume, m.matrix_id as matrixId,
-                      mt.position as position, m.location as location
-                      from microtube.tube t,
-                           microtube.v_matrix_tube mt,
-                           microtube.v_matrix m
-                      where
-                      t.tube_id = mt.tube_id and
-                      m.matrix_id = mt.matrix_id and
-                      t.notebook_ref = '%s'
-               """ % sId
+            sSql = """
+SELECT 
+ t.notebook_ref AS batchId,
+ t.tube_id AS tubeId,
+ t.volume * 1000000 AS volume,
+ m.matrix_id AS matrixId,
+ mt.position AS position,
+ m.location AS location
+FROM
+ microtube.tube t
+ left join microtube.v_matrix_tube mt on t.tube_id = mt.tube_id
+ left join microtube.v_matrix m on m.matrix_id = mt.matrix_id
+where
+t.notebook_ref = '%s'
+            """ % sId
             try:
                 sSlask = cur.execute(sSql)
                 tRes = cur.fetchall()
@@ -1344,17 +1347,6 @@ class GetBoxLocation(tornado.web.RequestHandler):
         self.write(json.dumps(res_to_json(tRes, cur)))
 
 
-def updateVialType(sBoxId, sVialId):
-    sSql = """ SELECT vial_type FROM vialdb.box where box_id = %s """ % (sBoxId)
-    sSlask = cur.execute(sSql)
-    tType = cur.fetchall()
-    sSql = """update vialdb.vial set
-              vial_type = %s
-              where vial_id = %s
-           """ % (tType[0][0], sVialId)
-    sSlask = cur.execute(sSql)
-
-
 @jwtauth
 class TransitVials(tornado.web.RequestHandler):
     def put(self, sVials):
@@ -1467,38 +1459,6 @@ class printBox(tornado.web.RequestHandler):
         os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
         self.finish("Printed")
 
-
-@jwtauth
-class getBoxOfType(tornado.web.RequestHandler):
-    def get(self, sBoxType):
-        sSlask = cur.execute("""select distinct(p.box_id)
-                           from vialdb.box_positions p, vialdb.box b
-                           where p.box_id = b.box_id and
-                           vial_type = '%s'""" % (sBoxType))
-        tRes = cur.fetchall()
-        #saRes = []
-        #for saItem in tRes:
-        #    saRes.append(saItem.box_id)
-        self.write(json.dumps(res_to_json(tRes, cur)))
-
-
-@jwtauth
-class updateBox(tornado.web.RequestHandler):
-    def get(self, sBox):
-        self.set_header("Content-Type", "application/json")
-        sSlask = cur.execute("""select box_id, box_description, vial_type_desc
-                                from vialdb.box b, vialdb.vial_type t
-                                where b.vial_type = t.vial_type and box_id = '%s'
-               """ % (sBox))
-        tRes = cur.fetchall()
-        jRes = getBoxFromDb(sBox)
-        try:
-            jResult = [{'message':'Box type:' + tRes[0][2] + ', Description:' + tRes[0][1],
-                        'data':jRes}]
-            self.write(json.dumps(jResult))
-        except:
-            self.set_status(400)
-            self.finish(json.dumps("Box not found"))
 
 @jwtauth
 class GetBox(tornado.web.RequestHandler):
