@@ -25,9 +25,9 @@ def getDatabase(parent):
     jsonData = json.loads(data)
     database = jsonData['database']
     if database == 'Live':
-        return 'glass', 'cool', 'microtube'
+        return 'glass', 'cool', 'microtube', 'loctree'
     else:
-        return 'glass_test', 'cool_test', 'microtube_test'
+        return 'glass_test', 'cool_test', 'microtube_test', 'loctree_test'
 
 def res_to_json(response, cursor):
     columns = cursor.description()
@@ -48,11 +48,11 @@ class home(tornado.web.RequestHandler):
         self.redirect('/vialdb/index.html')
         return
 
-def getNewLocId():
-    sSql = f"select pkey from loctree.location_id_sequence"
+def getNewLocId(loctreeDB):
+    sSql = f"select pkey from {loctreeDB}.location_id_sequence"
     cur.execute(sSql)
     pkey = cur.fetchall()[0][0] +1
-    sSql = f"update loctree.location_id_sequence set pkey={pkey}"
+    sSql = f"update {loctreeDB}.location_id_sequence set pkey={pkey}"
     cur.execute(sSql)
     return 'SL' + str(pkey)
 
@@ -115,7 +115,7 @@ class PingDB(tornado.web.RequestHandler):
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
     def put(self, sTubeId, sBatchId, sVolume, sConc):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         volume = -1
         try:
             conc = float(sConc)/1000
@@ -164,7 +164,7 @@ class AddMicrotube(tornado.web.RequestHandler):
 @jwtauth
 class getMicroTubes(tornado.web.RequestHandler):
     def get(self, sBatches):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if len(sBatches) < 1:
             logging.error("no batch")
             self.write(json.dumps({}))
@@ -240,7 +240,7 @@ t.notebook_ref = '%s'
 @jwtauth
 class CreateRacks(tornado.web.RequestHandler):
     def put(self, sNumberOfRacks):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         saNewRacks = []
         #rackKeys = []
         #rackValues = []
@@ -265,7 +265,7 @@ class CreateRacks(tornado.web.RequestHandler):
 class CreatePlatesFromLabel(tornado.web.RequestHandler):
     
     def put(self, sStartPlate, sPlateType, sPlateName, sNumberOfPlates):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
 
         def checkIfPlatesAreFree(iStart, iNumberOfPlates):
             lRetVal = True
@@ -348,7 +348,7 @@ class CreatePlatesFromLabel(tornado.web.RequestHandler):
 @jwtauth
 class CreatePlates(tornado.web.RequestHandler):
     def put(self, sPlateType, sPlateName, sNumberOfPlates):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         saNewPlates = dict()
         plateKeys = []
         plateValues = []
@@ -394,7 +394,7 @@ class CreatePlates(tornado.web.RequestHandler):
 @jwtauth
 class UpdatePlateName(tornado.web.RequestHandler):
     def put(self, sPlate, sPlateName):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""
         update {coolDB}.plate set comments = '{sPlateName}'
         where plate_id = '{sPlate}'
@@ -405,7 +405,7 @@ class UpdatePlateName(tornado.web.RequestHandler):
 @jwtauth
 class MergePlates(tornado.web.RequestHandler):
     def post(self):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
 
         def getQuadrant(quadrant):
             sSql = f"""
@@ -522,7 +522,7 @@ class MergePlates(tornado.web.RequestHandler):
 @jwtauth
 class SetPlateType(tornado.web.RequestHandler):
     def put(self, sPlate, sPlateType):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if sPlateType == "96":
             # This is the type_id in the db for 96 well plates
             iPlateType = 1
@@ -560,7 +560,7 @@ class SetPlateType(tornado.web.RequestHandler):
 @jwtauth
 class UploadWellInformation(tornado.web.RequestHandler):
     def post(self):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sPlate = self.get_argument("plate_id")
         sWell = self.get_argument("well")
         sCompound = self.get_argument("compound_id")
@@ -584,7 +584,7 @@ class UploadWellInformation(tornado.web.RequestHandler):
 @jwtauth
 class VerifyPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if re.match("^[pP]{1}[0-9]{6}$", sPlate):
             sSql = f"""
             select wells, comments from {coolDB}.plate, {coolDB}.plate_type
@@ -615,7 +615,7 @@ class VerifyPlate(tornado.web.RequestHandler):
 @jwtauth
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""select plate_id from {coolDB}.plate
         where plate_id = '{sPlate}'
         """
@@ -651,7 +651,7 @@ class GetPlate(tornado.web.RequestHandler):
 @jwtauth
 class UpdateRackLocation(tornado.web.RequestHandler):
     def put(self, sRack, sLocation):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""
         update {microtubeDB}.matrix set location = '{sLocation}'
         where matrix_id = '{sRack}'
@@ -667,9 +667,9 @@ class UpdateRackLocation(tornado.web.RequestHandler):
 @jwtauth
 class MoveBox(tornado.web.RequestHandler):
     def put(self, sBox, sLocation):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""
-        update loctree.locations set parent = '{sLocation}'
+        update {loctreeDB}.locations set parent = '{sLocation}'
         where loc_id = '{sBox}'
         """
         try:
@@ -683,7 +683,7 @@ class MoveBox(tornado.web.RequestHandler):
 @jwtauth
 class ReadScannedRack(tornado.web.RequestHandler):
     def post(self):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         try:
             sLocation = self.get_argument("location")
             file1 = self.request.files['file'][0]
@@ -767,7 +767,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
 @jwtauth
 class getRack(tornado.web.RequestHandler):
     def get(self, sRacks):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         logging.info(sRacks)
         jResTot = list()
 
@@ -898,7 +898,7 @@ class UploadLauncher(tornado.web.RequestHandler):
 @jwtauth
 class UploadTaredVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         try:
             # self.request.files['file'][0]:
             # {'body': 'Label Automator ___', 'content_type': u'text/plain', 'filename': u'k.txt'}
@@ -962,10 +962,10 @@ def logVialChange(glassDB, sVialId, sLogMessage, sNewPos=None):
     except Exception as e:
         logging.error("Vial_log error {str(e)}")
 
-def getVialPosition(sVialId, glassDB):
+def getVialPosition(sVialId, glassDB, loctreeDB):
     sSql = f"""select IFNULL(v.location, '') location, l.name, IFNULL(v.pos, '') coordinate
                from {glassDB}.vial v
-               left join loctree.locations l on v.location = l.loc_id
+               left join {loctreeDB}.locations l on v.location = l.loc_id
                where v.vial_id='{sVialId}'"""
     
     sSlask = cur.execute(sSql)
@@ -975,11 +975,11 @@ def getVialPosition(sVialId, glassDB):
         return '', '', ''
     return str(tRes[0][0]).upper(), str(tRes[0][1]), tRes[0][2]
 
-def getBoxFromDb(sBox, glassDB):
+def getBoxFromDb(sBox, glassDB, loctreeDB):
     positions = 0
-    sSql = f"""select subpos from loctree.locations, loctree.location_type
-    where loctree.locations.loc_id = '{sBox}'
-    and loctree.locations.type_id = loctree.location_type.type_id"""
+    sSql = f"""select subpos from {loctreeDB}.locations, {loctreeDB}.location_type
+    where {loctreeDB}.locations.loc_id = '{sBox}'
+    and {loctreeDB}.locations.type_id = {loctreeDB}.location_type.type_id"""
     sSlask = cur.execute(sSql)
     tRes = cur.fetchall()
     if len(tRes) != 1:
@@ -1049,7 +1049,7 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 @jwtauth
 class verifyVial(tornado.web.RequestHandler):
     def get(self, sVial):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""SELECT notebook_ref batch_id, type_id vial_type
                   from {glassDB}.vial
                   where vial_id='{sVial}'"""
@@ -1104,7 +1104,7 @@ class verifyVial(tornado.web.RequestHandler):
 @jwtauth
 class batchInfo(tornado.web.RequestHandler):
     def get(self, sBatch):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSlask = cur.execute("""SELECT b.batch_id,
                            b.compound_id, batch_formula_weight
                            from ddd.batch b
@@ -1124,7 +1124,7 @@ class batchInfo(tornado.web.RequestHandler):
 @jwtauth
 class EditVial(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sVial = self.get_argument("sVial")
         sBatch = self.get_argument("batch_id")
         conc = self.get_argument("conc")
@@ -1253,7 +1253,7 @@ class PrintRack(tornado.web.RequestHandler):
 @jwtauth
 class printVial(tornado.web.RequestHandler):
     def get(self, sVial):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         logging.info("Printing label for " + sVial)
         sSql = f"""
         select v.notebook_ref batch_id, b.compound_id, IFNULL(v.conc, 'Solid')
@@ -1293,7 +1293,7 @@ def getNextVialId(glassDB):
 @jwtauth
 class CreateEmptyVials(tornado.web.RequestHandler):
     def put(self, sNrOfVials):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         iNrOfVials = int(sNrOfVials)
         saResultingVials = []
         for i in range(iNrOfVials):
@@ -1322,7 +1322,7 @@ class CreateEmptyVials(tornado.web.RequestHandler):
 @jwtauth
 class DiscardPlate(tornado.web.RequestHandler):
     def put(self, sPlate):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""update {coolDB}.plate set discarded = 1 where plate_id = '{sPlate}'"""
         sSlask = cur.execute(sSql)
         self.finish()
@@ -1331,7 +1331,7 @@ class DiscardPlate(tornado.web.RequestHandler):
 @jwtauth
 class DiscardVial(tornado.web.RequestHandler):
     def put(self, sVial):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sNull = 'NULL'
         sSql = f"""update {glassDB}.vial set location = 'SL11008', pos = {sNull}
         where vial_id = '{sVial}'"""
@@ -1343,7 +1343,7 @@ class DiscardVial(tornado.web.RequestHandler):
 @jwtauth
 class vialInfo(tornado.web.RequestHandler):
     def get(self, sVial):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""SELECT notebook_ref batch_id from {glassDB}.vial where vial_id='%s'""" % sVial
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
@@ -1362,7 +1362,7 @@ class vialInfo(tornado.web.RequestHandler):
                    path box_id
                from {glassDB}.vial v
                   left join bcpvs.batch c ON v.notebook_ref = c.notebook_ref
-                  left join loctree.v_all_locations l on v.location = l.loc_id
+                  left join {loctreeDB}.v_all_locations l on v.location = l.loc_id
                where vial_id ='{sVial}'"""
         
         sSlask = cur.execute(sSql)
@@ -1373,9 +1373,9 @@ class vialInfo(tornado.web.RequestHandler):
 @jwtauth
 class GetBoxLocation(tornado.web.RequestHandler):
     def get(self, sBox):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSlask = cur.execute(f"""SELECT name, path
-                               FROM loctree.v_all_locations
+                               FROM {loctreeDB}.v_all_locations
                                where loc_id = '{sBox}'""")
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
@@ -1384,10 +1384,10 @@ class GetBoxLocation(tornado.web.RequestHandler):
 @jwtauth
 class TransitVials(tornado.web.RequestHandler):
     def put(self, sVials):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sIds = set(sVials.split())
         for sVialId in sIds:
-            sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId, glassDB)
+            sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId, glassDB, loctreeDB)
             sLogString = f"""location from {sOldBox} {sOldName}:{sOldCoordinate}\
  to Compound collection"""
             logVialChange(glassDB, sVialId, sLogString)
@@ -1402,12 +1402,12 @@ class TransitVials(tornado.web.RequestHandler):
 @jwtauth
 class UpdateVialPosition(tornado.web.RequestHandler):
     def put(self, sVialId, sBoxId, sPos):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sMessage = 'All ok'
         sBoxId = sBoxId.upper()
         if not re.search('v\d\d\d\d\d(\d|\d\d)', sVialId, re.IGNORECASE):
             self.set_status(400)
-            jRes = getBoxFromDb(sBoxId, glassDB)
+            jRes = getBoxFromDb(sBoxId, glassDB, loctreeDB)
             logging.error('Not a vial ' + sVialId)
             sMessage = 'Not a vial'
             jResult = [{'message':sMessage, 'data':jRes}]
@@ -1427,11 +1427,11 @@ class UpdateVialPosition(tornado.web.RequestHandler):
             jResult = [{'message':sMessage}]
             self.finish(json.dumps(jResult))
             return
-        sSql = f"""select name from loctree.locations where loc_id = '{sBoxId}'"""
+        sSql = f"""select name from {loctreeDB}.locations where loc_id = '{sBoxId}'"""
         sSlask = cur.execute(sSql)
         tLoc = cur.fetchall()
         
-        sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId, glassDB)
+        sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId, glassDB, loctreeDB)
         sLogString = f"""location from {sOldBox} {sOldName}:{sOldCoordinate}\
  to {sBoxId} {tLoc[0][0]}:{sPos}"""
 
@@ -1454,10 +1454,10 @@ class PrintPlate(tornado.web.RequestHandler):
 @jwtauth
 class printBox(tornado.web.RequestHandler):
     def get(self, sBox):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
 
         sSql = f"""select v.name box_description, l.name vial_type_desc
-        from loctree.v_all_locations v, loctree.location_type l
+        from {loctreeDB}.v_all_locations v, {loctreeDB}.location_type l
         where v.type_id = l.type_id and
         v.loc_id = '{sBox}'
         """
@@ -1500,8 +1500,8 @@ class printBox(tornado.web.RequestHandler):
 @jwtauth
 class GetBox(tornado.web.RequestHandler):
     def get(self, sBox):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
-        jRes = getBoxFromDb(sBox, glassDB)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
+        jRes = getBoxFromDb(sBox, glassDB, loctreeDB)
         try:
             #jResult = [{'message':'Box type:' + tRes[0][2] + ', Description:' + tRes[0][1],
             #            'data':jRes}]
@@ -1516,7 +1516,7 @@ class GetBox(tornado.web.RequestHandler):
 @jwtauth
 class searchVials(tornado.web.RequestHandler):
     def get(self, sVials):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sIds = set(sVials.split())
         tmpIds = ""
         jRes = []
@@ -1536,7 +1536,7 @@ class searchVials(tornado.web.RequestHandler):
             FROM
 	    {glassDB}.vial v
             left join bcpvs.batch c ON v.notebook_ref = c.notebook_ref
-            LEFT OUTER JOIN loctree.v_all_locations l on v.location = l.loc_id
+            LEFT OUTER JOIN {loctreeDB}.v_all_locations l on v.location = l.loc_id
             WHERE v.vial_id = '{sId}'
             """
 
@@ -1578,9 +1578,9 @@ class searchVials(tornado.web.RequestHandler):
 @jwtauth
 class VerifyLocation(tornado.web.RequestHandler):
     def get(self, sLocation):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""
-        select * from loctree.locations where loc_id = '{sLocation}'
+        select * from {loctreeDB}.locations where loc_id = '{sLocation}'
         """
         cur.execute(sSql)
         tRes = cur.fetchall()
@@ -1594,7 +1594,7 @@ class VerifyLocation(tornado.web.RequestHandler):
 @jwtauth
 class searchBatches(tornado.web.RequestHandler):
     def get(self, sBatches):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sIds = list(set(sBatches.split()))
         jRes = []
 
@@ -1614,7 +1614,7 @@ class searchBatches(tornado.web.RequestHandler):
             c.biological_mw as batchMolWeight
             FROM {glassDB}.vial v,
             bcpvs.batch c,
-            loctree.v_all_locations l
+            {loctreeDB}.v_all_locations l
             where
 	    v.notebook_ref = c.notebook_ref and
             l.loc_id = v.location and
@@ -1632,7 +1632,7 @@ class searchBatches(tornado.web.RequestHandler):
             c.biological_mw as batchMolWeight
             FROM {glassDB}.vial v,
             bcpvs.batch c,
-            loctree.v_all_locations l
+            {loctreeDB}.v_all_locations l
             where
 	    v.notebook_ref = c.notebook_ref and
             l.loc_id = v.location and
@@ -1668,9 +1668,9 @@ class searchBatches(tornado.web.RequestHandler):
 @jwtauth
 class DeleteLocation(tornado.web.RequestHandler):
     def put(self, sLocation):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSlask = cur.execute(f"""
-        select * from loctree.locations where parent = '{sLocation}'
+        select * from {loctreeDB}.locations where parent = '{sLocation}'
         """)
         tRes = cur.fetchall()
         if len(tRes) != 0:
@@ -1697,14 +1697,14 @@ class DeleteLocation(tornado.web.RequestHandler):
             return
 
         sSlask = cur.execute(f"""
-        delete from loctree.locations where loc_id = '{sLocation}'
+        delete from {loctreeDB}.locations where loc_id = '{sLocation}'
         """)
 
 
 @jwtauth
 class GetFreeBoxes(tornado.web.RequestHandler):
     def get(self):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""
         select ll.loc_id location,
         FORMAT(ll.subpos - IFNULL(v_count, 0), 0) free_positions,
@@ -1714,7 +1714,7 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         from {glassDB}.vial group by location) v
         right outer join
         (select l.loc_id, t.subpos, l.name, l.path, t.name loc_type
-        from loctree.v_all_locations l, loctree.location_type t
+        from {loctreeDB}.v_all_locations l, {loctreeDB}.location_type t
         where l.type_id = t.type_id
         and t.subpos is not null and t.subpos < 300) ll
         on v.location = ll.loc_id  order by path, free_positions
@@ -1728,7 +1728,7 @@ class GetFreeBoxes(tornado.web.RequestHandler):
 @jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
     def get(self, sId):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if exists(f'mols/{sId}.png'):
             self.finish()
             return
@@ -1776,13 +1776,13 @@ class GetDatabase(tornado.web.RequestHandler):
 @jwtauth
 class GetLocationByStorage(tornado.web.RequestHandler):
     def get(self, sStorage):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if sStorage == 'Freezer':
-            sSql = f"""select loc_id, path from loctree.v_all_locations
+            sSql = f"""select loc_id, path from {loctreeDB}.v_all_locations
             where type_id in (29, 31, 69, 6, 8, 24, 25, 27) order by type_id, path
             """
         else:
-            sSql = f"""select loc_id, path from loctree.v_all_locations
+            sSql = f"""select loc_id, path from {loctreeDB}.v_all_locations
             where type_id in (7, 9) order by type_id, path"""
 
         cur.execute(sSql)
@@ -1793,10 +1793,10 @@ class GetLocationByStorage(tornado.web.RequestHandler):
 @jwtauth
 class GetLocationPath(tornado.web.RequestHandler):
     def get(self, sLocation):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f'''
         select l.loc_id, l.path
-        from loctree.v_all_locations l
+        from {loctreeDB}.v_all_locations l
         where
         l.loc_id = '{sLocation}'
         or l.name = '{sLocation}'
@@ -1809,17 +1809,17 @@ class GetLocationPath(tornado.web.RequestHandler):
 @jwtauth
 class GetLocationChildren(tornado.web.RequestHandler):
     def get(self, sLocation):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if sLocation == 'root':
             sSql = f'''
             select l.loc_id, l.name, l.path, t.name type, t.use_subpos has_children
-            from loctree.v_all_locations l, loctree.location_type t
+            from {loctreeDB}.v_all_locations l, {loctreeDB}.location_type t
             where l.type_id = t.type_id and
             l.parent is null'''        
         else:
             sSql = f'''
             select l.loc_id, l.name, l.path, t.name type, t.use_subpos has_children
-            from loctree.v_all_locations l, loctree.location_type t
+            from {loctreeDB}.v_all_locations l, {loctreeDB}.location_type t
             where l.type_id = t.type_id and
             l.parent = '{sLocation}'
             '''
@@ -1831,8 +1831,8 @@ class GetLocationChildren(tornado.web.RequestHandler):
 @jwtauth
 class AddBox(tornado.web.RequestHandler):
     def put(self, sParent, sBoxName, sBoxSize):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
-        sNewLocId = getNewLocId()
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
+        sNewLocId = getNewLocId(loctreeDB)
         if sBoxSize == '200':
             loc_type = 10
         elif sBoxSize == '50':
@@ -1843,7 +1843,7 @@ class AddBox(tornado.web.RequestHandler):
             loc_type = 7
 
         sSql = f'''
-        insert into loctree.locations (loc_id, parent, type_id, created_date, name)
+        insert into {loctreeDB}.locations (loc_id, parent, type_id, created_date, name)
         values 
         ('{sNewLocId}', '{sParent}', '{loc_type}', now(), '{sBoxName}')
         '''
@@ -1853,8 +1853,8 @@ class AddBox(tornado.web.RequestHandler):
 @jwtauth
 class AddLocation(tornado.web.RequestHandler):
     def put(self, sParent, sLocationName, sLocationType):
-        glassDB, coolDB, microtubeDB = getDatabase(self)
-        sNewLocId = getNewLocId()
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
+        sNewLocId = getNewLocId(loctreeDB)
         if sLocationType == 'Room':
             loc_type = 3
         elif sLocationType == 'Fridge-Freezer':
@@ -1863,7 +1863,7 @@ class AddLocation(tornado.web.RequestHandler):
             loc_type = 7
             
         sSql = f'''
-        insert into loctree.locations (loc_id, parent, type_id, created_date, name)
+        insert into {loctreeDB}.locations (loc_id, parent, type_id, created_date, name)
         values 
         ('{sNewLocId}', '{sParent}', '{loc_type}', now(), '{sLocationName}')
         '''
