@@ -1203,13 +1203,14 @@ class EditVial(tornado.web.RequestHandler):
 
 
 def doPrintPlate(sPlate):
+    sPlate = sPlate.upper()
     s = f'''
 ^XA
 ^MMT
 ^PW400
 ^LL0064
 ^LS0
-^BY2,3,43^FT32,48^BCN,,Y,N
+^BY2,3,43^FT37,48^BCN,,Y,N
 ^FD>:P>{sPlate}^FS
 ^FT270,48^A0N,22,25^FH\^FD{sPlate}^FS
 ^PQ1,0,1,Y^XZ
@@ -1232,9 +1233,9 @@ def doPrintRack(sRack):
 ^PW400
 ^LL0064
 ^LS0
-^BY2,3,43^FT20,48^BCN,,Y,N
+^BY2,3,43^FT37,48^BCN,,Y,N
 ^FD>:MX>5{sNumbers}^FS
-^FT270,48^A0N,28,31^FH\^FD{sRack}^FS
+^FT250,48^A0N,28,31^FH\^FD{sRack}^FS
 ^PQ1,0,1,Y^XZ
 '''
     f = open('/tmp/file.txt','w')
