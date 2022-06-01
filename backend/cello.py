@@ -70,6 +70,7 @@ class login(tornado.web.RequestHandler):
         jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
         self.write({'token': jwt_token,
                     'database': database})
+        logging.info(f'Loging in: {username} Database: {database}')
 
     def get(self):
         pass
@@ -175,7 +176,6 @@ def make_app():
          application.AddLocation),
         (r"/moveBox/(?P<sBox>[^\/]+)/(?P<sLocation>[^\/]+)", application.MoveBox),
         (r"/getBox/(?P<sBox>[^\/]+)", application.GetBox),
-        (r"/getBoxOfType/(?P<sBoxType>[^\/]+)", application.getBoxOfType),
         (r"/getBoxLocation/(?P<sBox>[^\/]+)", application.GetBoxLocation),
         (r"/printBox/(?P<sBox>[^\/]+)", application.printBox),
         (r"/printPlate/(?P<sPlate>[^\/]+)", application.PrintPlate),
@@ -185,7 +185,6 @@ def make_app():
         (r"/updateRackLocation/(?P<sRack>[^\/]+)/(?P<sLocation>[^\/]+)",
          application.UpdateRackLocation),
         (r"/readScannedRack", application.ReadScannedRack),
-        (r"/updateBox/(?P<sBox>[^\/]+)", application.updateBox),
         (r"/getFreeBoxes", application.GetFreeBoxes),
         (r"/createPlates/(?P<sPlateType>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sNumberOfPlates>[^\/]+)",
          application.CreatePlates),
@@ -224,7 +223,7 @@ def make_app():
 
 if __name__ == "__main__":
     app = make_app()
-    app.listen(8082, max_buffer_size=150000000)
+    app.listen(8082, max_buffer_size=200000000)
     tornado.autoreload.start()
     
     for dir, _, files in os.walk('static'):
