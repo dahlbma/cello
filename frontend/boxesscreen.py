@@ -9,13 +9,15 @@ from cellolib import *
 
 class BoxesScreen(QMainWindow):
     from cellolib import gotoSearch, gotoVials, gotoMicrotubes, gotoPlates
-    def __init__(self, token):
+    def __init__(self, token, test):
         super(BoxesScreen, self).__init__()
         self.token = token
         self.mod_name = "boxes"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/boxeswindow.ui"), self)
-        self.window().setWindowTitle("Boxes")
+        #self.window().setWindowTitle("Boxes")
+
+        self.centralwidget.setProperty("test", test)
 
         self.goto_search_btn.clicked.connect(self.gotoSearch)
         self.goto_vials_btn.clicked.connect(self.gotoVials)

@@ -31,10 +31,10 @@ class LoginScreen(QMainWindow):
             self.loginfunction()
     
     def loginfunction(self):
+        
         user = self.usernamefield.text()
         password = self.passwordfield.text()
         database = self.server_cb.currentText()
-
         if len(user) == 0 or len(password) == 0:
             self.errorlabel.setText("Please input all fields")
         else:
@@ -51,15 +51,24 @@ class LoginScreen(QMainWindow):
             self.errorlabel.setText("Wrong username/password")
             return
         self.jwt_token = r.content
-        self.startApp()
+        self.startApp(database)
 
-    def startApp(self):
+    def startApp(self, db):
+        test = 'false'
+        if db != 'Live':
+            test = 'true'
+
+        app = QtCore.QCoreApplication.instance()
+        #QtCore.QCoreApplication.setApplicationName(f"{app.applicationName()} {db}")
+        #app.setApplicationName(f"{app.applicationName()} {db}")
+        self.window().setWindowTitle(f"{app.applicationName()} {db}")
+
         #init
-        search = SearchScreen(self.jwt_token)
-        vials = VialsScreen(self.jwt_token)
-        boxes = BoxesScreen(self.jwt_token)
-        microtubes = MicrotubesScreen(self.jwt_token)
-        plates = PlatesScreen(self.jwt_token)
+        search = SearchScreen(self.jwt_token, test)
+        vials = VialsScreen(self.jwt_token, test)
+        boxes = BoxesScreen(self.jwt_token, test)
+        microtubes = MicrotubesScreen(self.jwt_token, test)
+        plates = PlatesScreen(self.jwt_token, test)
 
         #add screens to stackedwidget
         self.window().addWidget(search)

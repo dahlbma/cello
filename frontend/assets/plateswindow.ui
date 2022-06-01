@@ -14,6 +14,12 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string notr="true">QWidget#centralwidget[test=&quot;true&quot;]{background-color: rgb(249, 193, 193);}</string>
+   </property>
+   <property name="test" stdset="0">
+    <bool>false</bool>
+   </property>
    <layout class="QGridLayout" name="gridLayout_7">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_6">

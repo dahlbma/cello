@@ -50,7 +50,18 @@ logger.addHandler(fh)
 os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
 app = QApplication(['Cello'])
 clipboard = app.clipboard()
-app.setApplicationName("Cello")
+
+v_path = os.path.join(".", "ver.dat")
+version = ""
+if os.path.exists(v_path):
+    with open(v_path) as f:
+        try:
+            js = json.load(f)
+            version = js['version']
+        except:
+            logging.getLogger().error(f"bad json in ./ver.dat")
+
+app.setApplicationName(f"Cello {version}")
 welcome = LoginScreen()
 widget = QtWidgets.QStackedWidget()
 widget.addWidget(welcome)

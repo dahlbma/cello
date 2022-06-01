@@ -8,13 +8,15 @@ from cellolib import *
 
 class VialsScreen(QMainWindow):
     from cellolib import gotoSearch, gotoBoxes, gotoMicrotubes, gotoPlates
-    def __init__(self, token):
+    def __init__(self, token, test):
         super(VialsScreen, self).__init__()
         self.token = token
         self.mod_name = "vials"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/vialswindow.ui"), self)
-        self.window().setWindowTitle("Vials")
+        #self.window().setWindowTitle("Vials")
+
+        self.centralwidget.setProperty("test", test)
 
         self.goto_search_btn.clicked.connect(self.gotoSearch)
         self.goto_boxes_btn.clicked.connect(self.gotoBoxes)

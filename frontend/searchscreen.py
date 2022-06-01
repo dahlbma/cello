@@ -6,13 +6,15 @@ from cellolib import *
 
 class SearchScreen(QMainWindow):
     from cellolib import gotoVials, gotoBoxes, gotoMicrotubes, gotoPlates
-    def __init__(self, token):
+    def __init__(self, token, test):
         super(SearchScreen, self).__init__()
         self.token = token
         self.mod_name = "search"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/searchwindow.ui"), self)
-        self.window().setWindowTitle("Search")
+        #self.window().setWindowTitle("Search")
+
+        self.centralwidget.setProperty("test", test)
 
         self.goto_vials_btn.clicked.connect(self.gotoVials)
         self.goto_boxes_btn.clicked.connect(self.gotoBoxes)  

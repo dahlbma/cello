@@ -10,13 +10,15 @@ from cellolib import *
 
 class PlatesScreen(QMainWindow):
     from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoMicrotubes
-    def __init__(self, token):
+    def __init__(self, token, test):
         super(PlatesScreen, self).__init__()
         self.token = token
         self.mod_name = "plates"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/plateswindow.ui"), self)
-        self.window().setWindowTitle("Plates")
+        #self.window().setWindowTitle("Plates")
+
+        self.centralwidget.setProperty("test", test)
         
         self.nine6to384_btn.setIcon(QIcon(resource_path("assets/arrow.png")))
 
@@ -99,7 +101,7 @@ class PlatesScreen(QMainWindow):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.plates_tab_wg.currentIndex() == 0:
                 return
-            elif self.plates_tab_wg.currentIndex() == 1:
+            elif self.plates_tab_wg.currentIndex() == 2:
                 self.check_plate_search_input()
             else:
                 return
@@ -111,13 +113,15 @@ class PlatesScreen(QMainWindow):
         if page_index == 0:
             self.new_plates_comment_eb.setFocus()
         elif page_index == 1:
+            self.label_to_plate_id_eb.setFocus()
+        elif page_index == 2:
             self.plate_search_eb.setFocus()
             self.plate_moldisplay(self.plate_table.currentItem())
             self.check_plate_search_input()
-        elif page_index == 2:
+        elif page_index == 3:
             self.choose_file_btn.setFocus()
             self.upload_moldisplay(self.upload_plates_table.currentItem())
-        elif page_index == 3:
+        elif page_index == 4:
             self.join_q1_eb.setFocus()
             self.showMergePlates()
             #self.move_focus(0, self.ok_arr)

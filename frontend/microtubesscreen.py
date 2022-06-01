@@ -9,13 +9,15 @@ from cellolib import *
 
 class MicrotubesScreen(QMainWindow):
     from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoPlates
-    def __init__(self, token):
+    def __init__(self, token, test):
         super(MicrotubesScreen, self).__init__()
         self.token = token
         self.mod_name = "microtubes"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/microtubeswindow.ui"), self)
-        self.window().setWindowTitle("Microtubes")
+        #self.window().setWindowTitle("Microtubes")
+
+        self.centralwidget.setProperty("test", test)
 
         self.goto_search_btn.clicked.connect(self.gotoSearch)
         self.goto_vials_btn.clicked.connect(self.gotoVials)
