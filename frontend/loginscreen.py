@@ -59,8 +59,6 @@ class LoginScreen(QMainWindow):
             test = 'true'
 
         app = QtCore.QCoreApplication.instance()
-        #QtCore.QCoreApplication.setApplicationName(f"{app.applicationName()} {db}")
-        #app.setApplicationName(f"{app.applicationName()} {db}")
         self.window().setWindowTitle(f"{app.applicationName()} {db}")
 
         #init
