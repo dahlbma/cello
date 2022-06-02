@@ -70,7 +70,7 @@ class login(tornado.web.RequestHandler):
         jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
         self.write({'token': jwt_token,
                     'database': database})
-        logging.info(f'Loging in: {username} Database: {database}')
+        logging.info(f'Login: {username} Database: {database}')
 
     def get(self):
         pass
