@@ -217,7 +217,10 @@ class PlatesScreen(QMainWindow):
             self.plate_table.setCurrentCell(0,0)
             r, _ = dbInterface.verifyPlate(self.token, plate)
             info = json.loads(r)
-            self.platesearch_error_lab.setText(f"Plate size: {info[0]['wells']}")
+            if info[0]['discarded'] == '1':
+                self.platesearch_error_lab.setText(f"DISCARDED")
+            else:
+                self.platesearch_error_lab.setText(f"Plate size: {info[0]['wells']}")
             self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
             self.setDiscard(False)
             self.setDiscard(True)
