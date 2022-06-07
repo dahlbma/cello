@@ -587,12 +587,14 @@ class VerifyPlate(tornado.web.RequestHandler):
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if re.match("^[pP]{1}[0-9]{6}$", sPlate):
             sSql = f"""
-            select wells, comments from {coolDB}.plate, {coolDB}.plate_type
+            select wells, comments, IFNULL(discarded, 0) discarded
+            from {coolDB}.plate, {coolDB}.plate_type
             where plate.type_id = plate_type.type_id
             and plate.plate_id ='{sPlate}'
             """
         elif re.match("^[mM][xX]{1}[0-9]{4}$", sPlate):
-            sSql = f"""select 96 wells, comments from {microtubeDB}.matrix
+            sSql = f"""select 96 wells, comments, discarded '0'
+            from {microtubeDB}.matrix
             where matrix_id = '{sPlate}'
             """
         else:
