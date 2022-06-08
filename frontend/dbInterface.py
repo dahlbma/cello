@@ -280,7 +280,11 @@ def getRack(token, rack):
         res = r.content.decode()
     except:
         res = r.content
-    return res
+
+    if r.status_code != 200:
+        return res, False
+    else:
+        return res, True
 
 def printRack(token, rack):
     r = requests.get(f'{baseUrl}printRack/{rack}',

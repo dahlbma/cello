@@ -192,12 +192,16 @@ class MicrotubesScreen(QMainWindow):
 
 
     def search_rack(self):
+        self.rack_display.setHtml("")
+        self.rack_not_found_lab.setText('')
         rack = self.rack_search_eb.text()
         if len(rack) < 6:
             self.check_print(None)
             return
         logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}]")
-        res = dbInterface.getRack(self.token, rack)
+        res, b = dbInterface.getRack(self.token, rack)
+        if b == False:
+            self.rack_not_found_lab.setText(res)
         self.rack_data = None
         try:
             self.rack_data = json.loads(res)
