@@ -721,6 +721,20 @@ class ReadScannedRack(tornado.web.RequestHandler):
                 sTube = m.groups()[1]
             else:
                 continue
+
+            # Reset any tube that was in the position we are about to update
+            sSql = f"""select tube_id from {microtubeDB}.matrix_tube
+            where matrix_id = '{sRackId}' and position = '{sPosition}'
+            """
+            sSlask = cur.execute(sSql)
+            tRes = cur.fetchall()
+            if len(tRes) > 0:
+                # Reset position and rack for old tube here
+                sSql = f"""update {microtubeDB}.matrix_tube
+                set matrix_id = NULL, position = NULL
+                where tube_id = '{tRes[0][0]}'"""
+                sSlask = cur.execute(sSql)
+            
             sSql = f"""select matrix_id from {microtubeDB}.matrix_tube
             where tube_id = '%s'
             """ % sTube
@@ -801,6 +815,17 @@ class getRack(tornado.web.RequestHandler):
 
         jRes = list()
         saRacks = set(sRacks.split())
+        for sRack in saRacks:
+            sSql = f"""select
+            matrix_id from {microtubeDB}.matrix where matrix_id = '{sRack}';
+            """
+            sSlask = cur.execute(sSql)
+            tRes = cur.fetchall()
+            if len(tRes) == 0:
+                self.set_status(400)
+                self.finish(f'Rack not found {sRack}')
+                return
+
         for sRack in saRacks:
             sSql = f"""select
             t.notebook_ref as batchId, t.tube_id as tubeId, t.volume*1000000 as volume,
