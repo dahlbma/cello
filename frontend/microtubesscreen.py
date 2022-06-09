@@ -375,6 +375,15 @@ class MicrotubesScreen(QMainWindow):
     Failed tubes: {res['FailedTubes']}
     Nr of ok tubes: {res['iOk']}
     Nr of failed tubes: {res['iError']}\n\n'''
+                    f.close()
+                    try:
+                        os.mkdir('uploads')
+                    except:
+                        pass
+                    try:
+                        os.rename(file_name, f'uploads/{os.path.basename(file_name)}')
+                    except Exception as e:
+                        logging.getLogger(self.mod_name).error(f"Move rack failed: {str(e)}")
             except:
                 logging.getLogger(self.mod_name).error(f"readScannedRack failed with response: {r}")
 
