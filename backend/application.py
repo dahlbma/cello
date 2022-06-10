@@ -685,7 +685,24 @@ class MoveBox(tornado.web.RequestHandler):
 @jwtauth
 class ReadScannedRack(tornado.web.RequestHandler):
     def post(self):
+        
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
+        
+        def createRackIfNotFound(sRack):
+            sSql = f"""
+            select matrix_id from {microtubeDB}.matrix where matrix_id = '{sRack}'
+            """
+            sSlask = cur.execute(sSql)
+            tRes = cur.fetchall()
+            if len(tRes) == 0:
+                sSql = f"""
+                insert into {microtubeDB}.matrix
+                (matrix_id, created_date)
+                values
+                ('{sRack}', now())
+                """
+                cur.execute(sSql)
+        
         try:
             sLocation = self.get_argument("location")
             file1 = self.request.files['file'][0]
@@ -714,6 +731,9 @@ class ReadScannedRack(tornado.web.RequestHandler):
         iOk = 0
         iError = 0
         saError = []
+
+        createRackIfNotFound(sRackId)
+        
         for sLine in saFile:
             m = re.search("\s+(\w\d\d);\s+(\d+)", sLine)
             if m:
@@ -1108,8 +1128,9 @@ class verifyVial(tornado.web.RequestHandler):
         IFNULL(v.gross, '') gross,
         FORMAT(FLOOR(v.conc), 0) conc,
         IFNULL(ROUND((((v.net*1000)/b.BIOLOGICAL_MW)/conc)*1000000), '') dilution_factor
-        from {glassDB}.vial v, bcpvs.batch b
-        where v.notebook_ref = b.notebook_ref and v.vial_id = '{sVial}'
+        from {glassDB}.vial v
+        left join bcpvs.batch b ON v.notebook_ref = b.notebook_ref
+        where v.vial_id = '{sVial}'
         """
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
