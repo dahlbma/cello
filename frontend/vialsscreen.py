@@ -94,7 +94,10 @@ class VialsScreen(QMainWindow):
         self.v_search = True
         self.edit_update_btn.setEnabled(True)
         self.errorlabel.setText('')
-        self.edit_batch_id_eb.setText(f"{self.vial_data[0]['batch_id']}")
+        sBatch = ''
+        if self.vial_data[0]['batch_id'] != None:
+            sBatch = self.vial_data[0]['batch_id']
+        self.edit_batch_id_eb.setText(f"{sBatch}")
         self.edit_compound_id_eb.setText(f"{self.vial_data[0]['compound_id']}")
         self.edit_form_weight_eb.setText(f"{self.vial_data[0]['batch_formula_weight']}")
         self.edit_tare_eb.setText(f"{self.vial_data[0]['tare']}")
@@ -102,6 +105,7 @@ class VialsScreen(QMainWindow):
         self.edit_gross_weight_eb.setText(f"{self.vial_data[0]['gross']}")
         self.edit_net_weight_eb.setText(f"{self.vial_data[0]['net']}")
         self.edit_dilution_eb.setText(f"{self.vial_data[0]['dilution_factor']}")
+        self.edit_batch_id_eb.setFocus()
         displayMolfile(self, vialId)
 
     def updateVial(self):
