@@ -1186,6 +1186,9 @@ class EditVial(tornado.web.RequestHandler):
             sNetWeight = 'NULL'
         if sGross in ('', 'None'):
             sGross = 'NULL'
+
+        if sTare != 'NULL' and sGross != 'NULL':
+            sNetWeight = float(sGross) - float(sTare)
         
         sSql = f"""
         select notebook_ref from {glassDB}.vial
