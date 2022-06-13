@@ -46,10 +46,6 @@ fh.setFormatter(formatter)
 logger.addHandler(ch)
 logger.addHandler(fh)
 
-#base app settings
-os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
-app = QApplication(['Cello'])
-clipboard = app.clipboard()
 
 v_path = os.path.join(".", "ver.dat")
 version = ""
@@ -61,8 +57,13 @@ if os.path.exists(v_path):
         except:
             logging.getLogger().error(f"bad json in ./ver.dat")
 
-app.setApplicationName(f"Cello {version}")
-welcome = LoginScreen()
+#base app settings
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
+app = QApplication(['Cello'])
+clipboard = app.clipboard()
+
+app.setApplicationName(f"Cello")
+welcome = LoginScreen(f'Cello {version}')
 widget = QtWidgets.QStackedWidget()
 widget.addWidget(welcome)
 

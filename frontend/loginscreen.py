@@ -12,9 +12,10 @@ from microtubesscreen import MicrotubesScreen
 from platesscreen import PlatesScreen
 
 class LoginScreen(QMainWindow):
-    def __init__(self):
+    def __init__(self, appName):
         super(LoginScreen, self).__init__()
         self.mod_name = "login"
+        self.appName = appName
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/welcomescreen.ui"), self)
         self.login.clicked.connect(self.loginfunction)
@@ -22,7 +23,9 @@ class LoginScreen(QMainWindow):
         try:
             saDatabases = dbInterface.getDatabase()
         except Exception as e:
-            send_msg("Connection Error", f"Cello has encountered a fatal error:\n\n{str(e)}\n\nPlease restart Cello.", icon=QMessageBox.Critical, e=e)
+            send_msg("Connection Error",
+                     f"Cello has encountered a fatal error:\n\n{str(e)}\n\nPlease restart Cello.",
+                     icon=QMessageBox.Critical, e=e)
             sys.exit()
         self.server_cb.addItems(saDatabases)
     
@@ -59,7 +62,7 @@ class LoginScreen(QMainWindow):
             test = 'true'
 
         app = QtCore.QCoreApplication.instance()
-        self.window().setWindowTitle(f"{app.applicationName()} {db}")
+        self.window().setWindowTitle(f"{self.appName} {db}")
 
         #init
         search = SearchScreen(self.jwt_token, test)
