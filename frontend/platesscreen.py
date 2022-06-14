@@ -461,23 +461,33 @@ class PlatesScreen(QMainWindow):
 
         pattern1 = '^[pP]{1}[0-9]{6}$'
         pattern2 = '^[mM]{1}[xX]{1}[0-9]{4}$'
-        if not (re.match(pattern1, plate_id) or\
-                re.match(pattern2, plate_id)):
-            self.merge_datas[index] = None
-            return -1, False
-            
+
+        if not re.match(pattern1, plate_id):
+            if not re.match(pattern2, plate_id):
+                self.merge_datas[index] = None
+                return -1, False
+            else:
+                plateType = 'MX'
+        else:
+            plateType = 'plate'
+
         try:
             r, status = dbInterface.verifyPlate(self.token, plate_id)
             res = json.loads(r)
             if status == 0:
                 raise Exception
             self.plate_ids[index] = plate_id
-            data, _ = dbInterface.getPlate(self.token, plate_id)
+            if plateType == 'plate':
+                data, b = dbInterface.getPlate(self.token, plate_id)
+            else:
+                data, b = dbInterface.getRack(self.token, plate_id)
+                
             self.merge_datas[index] = json.loads(data)
             return res[0]['wells'], True
         except:
             self.merge_datas[index] = None
             return -1, False
+
 
     def check_merge_sizes(self):
         self.sizes_dict = {}
@@ -715,12 +725,18 @@ class PlatesScreen(QMainWindow):
                 shiftAlpha = 8
                 shiftNum = 12
             ret = []
+            wellColName = 'well'
+            try:
+                if data[0]['well'] == data[0]['well']:
+                    wellColName = 'well'
+            except:
+                wellColName = 'position'
             for well in data:
                 new_well = well.copy()
-                info = new_well['well']
+                info = new_well[wellColName]
                 row = chr(ord(info[0]) + shiftAlpha)
                 col = int(info[1:]) + shiftNum
-                new_well['well'] = f"{row}{col}"
+                new_well[wellColName] = f"{row}{col}"
                 ret.append(new_well)
             return ret
 
@@ -733,8 +749,3 @@ class PlatesScreen(QMainWindow):
         if not (all(x == False for x in self.ok_arr)):
             self.plate_display.setHtml(plate_to_html(data, 384, resultdata, 384))
         return
-
-
-        
-    
-    

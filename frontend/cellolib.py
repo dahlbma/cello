@@ -136,7 +136,10 @@ def chart_html(data, size):
 
     if data != None:
         for well in data:
-            info = well['well']
+            try:
+                info = well['well']
+            except:
+                info = well['position']
             row = int(ord(info[0]) - ord('A'))
             col = int(info[1:]) - 1
             chart[row][col] = "red"
