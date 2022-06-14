@@ -593,7 +593,7 @@ class VerifyPlate(tornado.web.RequestHandler):
             and plate.plate_id ='{sPlate}'
             """
         elif re.match("^[mM][xX]{1}[0-9]{4}$", sPlate):
-            sSql = f"""select 96 wells, comments, discarded '0'
+            sSql = f"""select 96 wells, comments, '0' discarded
             from {microtubeDB}.matrix
             where matrix_id = '{sPlate}'
             """
