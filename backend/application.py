@@ -175,6 +175,7 @@ class getMicroTubes(tornado.web.RequestHandler):
         jResTot = list()
 
         def makeJson(tData, jRes, sId):
+            logging.info(len(tData))
             if len(tData) == 0:
                 return jRes
             for row in tData:
@@ -188,7 +189,7 @@ class getMicroTubes(tornado.web.RequestHandler):
                     })
                 except:
                     logging.error('Failed at appending ' + sId)
-                return jRes
+            return jRes
 
         jRes = list()
         for sId in saBatches:
@@ -202,11 +203,14 @@ SELECT
  m.location AS location
 FROM
  {microtubeDB}.tube t
+ join bcpvs.batch b on t.notebook_ref = b.notebook_ref
  left join {microtubeDB}.v_matrix_tube mt on t.tube_id = mt.tube_id
  left join {microtubeDB}.v_matrix m on m.matrix_id = mt.matrix_id
 where
-t.notebook_ref = '%s'
-            """ % sId
+t.notebook_ref = '{sId}'
+or b.compound_id = '{sId}'
+            """
+            #logging.info(sSql)
             try:
                 sSlask = cur.execute(sSql)
                 tRes = cur.fetchall()
