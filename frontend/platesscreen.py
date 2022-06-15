@@ -226,9 +226,11 @@ class PlatesScreen(QMainWindow):
             self.setDiscard(True)
             self.plate_print_btn.setEnabled(True)
         except:
+            self.plate_comment_eb.setText("")
             if status == 200:
                 r, _ = dbInterface.verifyPlate(self.token, plate)
                 info = json.loads(r)
+                self.plate_comment_eb.setText(info[0]['comments'])
                 self.platesearch_error_lab.setText(f"Plate size: {info[0]['wells']}")
                 self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
                 logging.getLogger(self.mod_name).info(f"empty plate, no data received")
@@ -237,7 +239,6 @@ class PlatesScreen(QMainWindow):
                 self.platesearch_error_lab.setText(res)
                 logging.getLogger(self.mod_name).info(f"search returned {res}")
             self.plate_data = None
-            self.plate_comment_eb.setText("")
             self.plate_comment_eb.setEnabled(False)
             self.plate_comment_btn.setEnabled(False)
             self.plate_table.setRowCount(0)
