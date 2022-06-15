@@ -80,7 +80,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="microtubes_tab_wg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tubes_tab">
          <attribute name="title">
@@ -100,7 +100,7 @@
                  </size>
                 </property>
                 <property name="placeholderText">
-                 <string>Batches or Tubes (E51867002, 1476787458)</string>
+                 <string>CmpIds, Batches or Tubes (CBK009151, E51867002, 1476787458)</string>
                 </property>
                </widget>
               </item>
@@ -722,8 +722,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>398</width>
-                 <height>546</height>
+                 <width>81</width>
+                 <height>31</height>
                 </rect>
                </property>
                <layout class="QGridLayout" name="gridLayout_13">
