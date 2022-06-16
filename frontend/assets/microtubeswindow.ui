@@ -265,6 +265,11 @@
               </column>
               <column>
                <property name="text">
+                <string>Compound Id</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
                 <string>Tube Id</string>
                </property>
               </column>
