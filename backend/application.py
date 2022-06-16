@@ -169,13 +169,11 @@ class getMicroTubes(tornado.web.RequestHandler):
             logging.error("no batch")
             self.write(json.dumps({}))
             return
-        saBatches = sBatches.split()
-        saBatches = list(set(saBatches))
+        saBatches = list(sBatches.split())
         logging.info(saBatches)
         jResTot = list()
 
         def makeJson(tData, jRes, sId):
-            logging.info(len(tData))
             if len(tData) == 0:
                 return jRes
             for row in tData:
@@ -185,7 +183,8 @@ class getMicroTubes(tornado.web.RequestHandler):
                                  "volume": row[2],
                                  "matrixId": row[3],
                                  "position": str(row[4]),
-                                 "location": str(row[5])
+                                 "location": str(row[5]),
+                                 "compoundId": str(row[6])
                     })
                 except:
                     logging.error('Failed at appending ' + sId)
@@ -200,7 +199,8 @@ SELECT
  t.volume * 1000000 AS volume,
  m.matrix_id AS matrixId,
  mt.position AS position,
- m.location AS location
+ m.location AS location,
+ b.compound_id as compoundId
 FROM
  {microtubeDB}.tube t
  join bcpvs.batch b on t.notebook_ref = b.notebook_ref
@@ -210,7 +210,7 @@ where
 t.notebook_ref = '{sId}'
 or b.compound_id = '{sId}'
             """
-            #logging.info(sSql)
+
             try:
                 sSlask = cur.execute(sSql)
                 tRes = cur.fetchall()
@@ -219,13 +219,19 @@ or b.compound_id = '{sId}'
                 return
             if len(tRes) == 0:
                 sSql = f"""select
-                t.notebook_ref as batchId, t.tube_id as tubeId,
-                t.volume*1000000 as volume, m.matrix_id as matrixId,
-                mt.position as position, m.location as location
+                t.notebook_ref as batchId,
+                t.tube_id as tubeId,
+                t.volume*1000000 as volume,
+                m.matrix_id as matrixId,
+                mt.position as position,
+                m.location as location,
+                b.compound_id as compoundId
                 from {microtubeDB}.tube t,
                 {microtubeDB}.v_matrix_tube mt,
-                {microtubeDB}.v_matrix m
+                {microtubeDB}.v_matrix m,
+                bcpvs.batch b                
                 where
+                b.notebook_ref = t.notebook_ref and
                 t.tube_id = mt.tube_id and
                 m.matrix_id = mt.matrix_id and
                 t.tube_id = '{sId}'
