@@ -1373,7 +1373,7 @@ class CreateEmptyVials(tornado.web.RequestHandler):
             """
             try:
                 sSlask = cur.execute(sSql)
-                logVialChange(sVial, '', 'Created')
+                logVialChange(glassDB, sVial, '', 'Created')
             except:
                 sError = 'Vial already in database'
             doPrint(sCmp, sBatch, '', sDate, sVial)
@@ -1398,7 +1398,7 @@ class DiscardVial(tornado.web.RequestHandler):
         sSql = f"""update {glassDB}.vial set location = 'SL11008', pos = {sNull}
         where vial_id = '{sVial}'"""
         sSlask = cur.execute(sSql)
-        logVialChange(sVial, 'Discarding vial', 'Discarded')
+        logVialChange(glassDB, sVial, 'Discarding vial', 'Discarded')
         self.finish()
 
 

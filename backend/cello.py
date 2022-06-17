@@ -27,7 +27,7 @@ settings = {
 
 JWT_SECRET = config.secret_key
 JWT_ALGORITHM = 'HS256'
-JWT_EXP_DELTA_SECONDS = 99999
+JWT_EXP_DELTA_SECONDS = 999999
 
 class BaseHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
