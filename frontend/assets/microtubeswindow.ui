@@ -99,6 +99,9 @@
                   <height>16777215</height>
                  </size>
                 </property>
+                <property name="maxLength">
+                 <number>200000</number>
+                </property>
                 <property name="placeholderText">
                  <string>CmpIds, Batches or Tubes (CBK009151, E51867002, 1476787458)</string>
                 </property>
@@ -727,8 +730,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>81</width>
-                 <height>31</height>
+                 <width>398</width>
+                 <height>546</height>
                 </rect>
                </property>
                <layout class="QGridLayout" name="gridLayout_13">
