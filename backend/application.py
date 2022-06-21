@@ -162,6 +162,94 @@ class AddMicrotube(tornado.web.RequestHandler):
 
 
 @jwtauth
+class GetMicroTubesFromFile(tornado.web.RequestHandler):
+    def post(self):
+        glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
+                
+        try:
+            file1 = self.request.files['file'][0]
+            sIds = tornado.escape.xhtml_unescape(file1.body)
+        except:
+            logging.error("Error cant find file1 in the argument list")
+            return
+        saBatches = list(sIds.split())
+        jResTot = list()
+
+        def makeJson(tData, jRes, sId):
+            if len(tData) == 0:
+                return jRes
+            for row in tData:
+                try:
+                    jRes.append({"batchId":row[0],
+                                 "tubeId":row[1],
+                                 "volume": row[2],
+                                 "matrixId": row[3],
+                                 "position": str(row[4]),
+                                 "location": str(row[5]),
+                                 "compoundId": str(row[6])
+                    })
+                except:
+                    logging.error('Failed at appending ' + sId)
+            return jRes
+
+        jRes = list()
+        for sId in saBatches:
+            sSql = f"""
+SELECT 
+ t.notebook_ref AS batchId,
+ t.tube_id AS tubeId,
+ t.volume * 1000000 AS volume,
+ m.matrix_id AS matrixId,
+ mt.position AS position,
+ m.location AS location,
+ b.compound_id as compoundId
+FROM
+ {microtubeDB}.tube t
+ join bcpvs.batch b on t.notebook_ref = b.notebook_ref
+ left join {microtubeDB}.v_matrix_tube mt on t.tube_id = mt.tube_id
+ left join {microtubeDB}.v_matrix m on m.matrix_id = mt.matrix_id
+where
+t.notebook_ref = '{sId}'
+or b.compound_id = '{sId}'
+            """
+
+            try:
+                sSlask = cur.execute(sSql)
+                tRes = cur.fetchall()
+            except Exception as e:
+                logging.error("Error: " + str(e) + ' problem with batch:' + sId)
+                return
+            if len(tRes) == 0:
+                sSql = f"""select
+                t.notebook_ref as batchId,
+                t.tube_id as tubeId,
+                t.volume*1000000 as volume,
+                m.matrix_id as matrixId,
+                mt.position as position,
+                m.location as location,
+                b.compound_id as compoundId
+                from {microtubeDB}.tube t,
+                {microtubeDB}.v_matrix_tube mt,
+                {microtubeDB}.v_matrix m,
+                bcpvs.batch b                
+                where
+                b.notebook_ref = t.notebook_ref and
+                t.tube_id = mt.tube_id and
+                m.matrix_id = mt.matrix_id and
+                t.tube_id = '{sId}'
+                """
+                try:
+                    sSlask = cur.execute(sSql)
+                    tRes = cur.fetchall()
+                except Exception as e:
+                    logging.error("Error: " + str(e) + ' problem with batch:' + sId)
+                    return
+
+            jRes = makeJson(tRes, jRes, sId)
+        self.write(json.dumps(jRes, indent=4))
+
+        
+@jwtauth
 class getMicroTubes(tornado.web.RequestHandler):
     def get(self, sBatches):
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)

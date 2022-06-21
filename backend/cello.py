@@ -180,6 +180,7 @@ def make_app():
         (r"/printBox/(?P<sBox>[^\/]+)", application.printBox),
         (r"/printPlate/(?P<sPlate>[^\/]+)", application.PrintPlate),
         (r"/getMicroTubes/(?P<sBatches>[^\/]+)", application.getMicroTubes),
+        (r"/getMicroTubesFromFile", application.GetMicroTubesFromFile),
         (r"/getRack/(?P<sRacks>[^\/]+)", application.getRack),
         (r"/printRack/(?P<sRack>[^\/]+)", application.PrintRack),
         (r"/updateRackLocation/(?P<sRack>[^\/]+)/(?P<sLocation>[^\/]+)",
@@ -223,7 +224,7 @@ def make_app():
 
 if __name__ == "__main__":
     app = make_app()
-    app.listen(8082, max_buffer_size=200000000)
+    app.listen(8082, max_buffer_size=200000000, max_body_size=200000, max_header_size=200000)
     tornado.autoreload.start()
     
     for dir, _, files in os.walk('static'):
