@@ -99,45 +99,47 @@ class MicrotubesScreen(QMainWindow):
             self.move_rack_id_eb.setFocus()
 
     def search_microtubes(self):
+        self.tubes_batches_table.setRowCount(0);
+        self.tubes_batches_table.update()
         batches = self.tubes_batch_eb.text()
         batches = re.sub("[^0-9a-zA-Z]+", " ", batches)
         if len(batches) < 1:
             return
         logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}]")
-        with open("batches.txt", "w") as f:
-            f.write(batches)
-            f.close()
-        with open("batches.txt", "r") as f:
-            res = dbInterface.getMicroTubesFromFile(self.token, f)
-            f.close()
-            
+        saBatches = list(batches.split())
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        for sBatch in saBatches:
+            if len(sBatch) > 4:
+                res = dbInterface.getMicroTubes(self.token, sBatch)
+                try:
+                    self.batches_data = json.loads(res)
+                except Exception as e:
+                    QApplication.restoreOverrideCursor()
+                    logging.info(str(e))
+                    self.batches_data = None
+                    self.tubes_export_btn.setEnabled(False)
+                    self.tubes_batches_table.setRowCount(0)
+                    self.structure_lab.clear()
+                    return
+                self.appendTubesBatchesTableData(self.batches_data)
+
         self.batches_data = None
-        try:
-            self.batches_data = json.loads(res)
-        except Exception as e:
-            logging.info(str(e))
-            self.batches_data = None
-            self.tubes_export_btn.setEnabled(False)
-            self.tubes_batches_table.setRowCount(0)
-            self.structure_lab.clear()
-            logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}] returned: {res}")
-            return
-        logging.getLogger(self.mod_name).info(f"receieved {len(self.batches_data)} responses")
-        self.setTubesBatchesTableData(self.batches_data)
         self.tubes_batches_table.setCurrentCell(0,0)
         self.tubes_export_btn.setEnabled(True)
+        QApplication.restoreOverrideCursor()
 
-    def setTubesBatchesTableData(self, data):
-        self.tubes_batches_table.setRowCount(0)
-        self.tubes_batches_table.setRowCount(len(self.batches_data))
+    def appendTubesBatchesTableData(self, data):
+        rowPosition = self.tubes_batches_table.rowCount()
+        self.tubes_batches_table.insertRow(rowPosition)
         self.tubes_batches_table.setSortingEnabled(False)
-        for n in range(len(data)):
+        for resLen in range(len(data)):
+            n = rowPosition + resLen
             try:
-                if f"{data[n]['batchId']}" == "Not found":
-                    newItem = QTableWidgetItem(f"{data[n]['batchId']}")
+                if f"{data[resLen]['batchId']}" == "Not found":
+                    newItem = QTableWidgetItem(f"{data[resLen]['batchId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.tubes_batches_table.setItem(n, 0, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['tubeId']}")
+                    newItem = QTableWidgetItem(f"{data[resLen]['tubeId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.tubes_batches_table.setItem(n, 1, newItem)
                     for i in range(2, 6):
@@ -145,32 +147,33 @@ class MicrotubesScreen(QMainWindow):
                         newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                         self.tubes_batches_table.setItem(n, i, newItem)
                 else:
-                    newItem = QTableWidgetItem(f"{data[n]['batchId']}")
+                    newItem = QTableWidgetItem(f"{data[resLen]['batchId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.tubes_batches_table.setItem(n, 0, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['compoundId']}")
+                    newItem = QTableWidgetItem(f"{data[resLen]['compoundId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.tubes_batches_table.setItem(n, 1, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['tubeId']}")
+                    newItem = QTableWidgetItem(f"{data[resLen]['tubeId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.tubes_batches_table.setItem(n, 2, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['volume']}")
+                    newItem = QTableWidgetItem(f"{data[resLen]['volume']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.tubes_batches_table.setItem(n, 3, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['matrixId']}")
+                    newItem = QTableWidgetItem(f"{data[resLen]['matrixId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.tubes_batches_table.setItem(n, 4, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['position']}")
+                    newItem = QTableWidgetItem(f"{data[resLen]['position']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.tubes_batches_table.setItem(n, 5, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['location']}")
-                    newItem.setToolTip(f"{data[n]['location']}")
+                    newItem = QTableWidgetItem(f"{data[resLen]['location']}")
+                    newItem.setToolTip(f"{data[resLen]['location']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.tubes_batches_table.setItem(n, 6, newItem)
-            except:
-                logging.error(f"search for {data[n]['batchId']} returned bad response: {data[n]}")
+            except Exception as e:
+                logging.error(str(e))
         self.tubes_batches_table.setSortingEnabled(True)
         return
+        
 
     def showMicrotubeMol(self, item):
         if item is not None:
