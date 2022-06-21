@@ -273,6 +273,18 @@ def getMicroTubes(token, batches):
         res = r.content
     return res
 
+
+def getMicroTubesFromFile(token, file):
+    r = requests.post(f'{baseUrl}getMicroTubesFromFile',
+                     headers={'token': token},
+                     files={'file':file})
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    return res
+
+
 def getRack(token, rack):
     r = requests.get(f'{baseUrl}getRack/{rack}',
                       headers={'token': token})

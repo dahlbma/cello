@@ -104,11 +104,18 @@ class MicrotubesScreen(QMainWindow):
         if len(batches) < 1:
             return
         logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}]")
-        res = dbInterface.getMicroTubes(self.token, batches)
+        with open("batches.txt", "w") as f:
+            f.write(batches)
+            f.close()
+        with open("batches.txt", "r") as f:
+            res = dbInterface.getMicroTubesFromFile(self.token, f)
+            f.close()
+            
         self.batches_data = None
         try:
             self.batches_data = json.loads(res)
-        except:
+        except Exception as e:
+            logging.info(str(e))
             self.batches_data = None
             self.tubes_export_btn.setEnabled(False)
             self.tubes_batches_table.setRowCount(0)
