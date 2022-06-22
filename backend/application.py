@@ -258,7 +258,6 @@ class getMicroTubes(tornado.web.RequestHandler):
             self.write(json.dumps({}))
             return
         saBatches = list(sBatches.split())
-        logging.info(saBatches)
         jResTot = list()
 
         def makeJson(tData, jRes, sId):
