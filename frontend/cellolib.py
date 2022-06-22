@@ -3,7 +3,45 @@ import sys, requests, json, os, subprocess, platform, shutil, datetime, tracebac
 from unittest import result
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QMessageBox, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication, QMessageBox, QTableWidget, QTableWidgetItem, QWidget
+from PyQt5.QtWidgets import QProgressBar, QVBoxLayout
+from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
+
+class Worker(QObject):
+    finished = pyqtSignal()
+    intReady = pyqtSignal(int)
+
+    @pyqtSlot()
+    def proc_counter(self, i = 1):
+        if i < 100:
+            self.intReady.emit(i)
+        else:
+            self.finished.emit()
+
+class PopUpProgress(QWidget):
+
+    def __init__(self, sHeader = ""):
+        super().__init__()
+        self.pbar = QProgressBar(self)
+        self.pbar.setGeometry(30, 40, 500, 75)
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.pbar)
+        self.setLayout(self.layout)
+        self.setGeometry(300, 300, 550, 100)
+        self.setWindowTitle(sHeader)
+        self.pbar.show()
+
+        self.thread = QtCore.QThread()
+        self.obj = Worker()
+        self.obj.intReady.connect(self.on_count_changed)
+        self.obj.moveToThread(self.thread)
+        self.obj.finished.connect(self.thread.quit)
+        self.thread.started.connect(self.obj.proc_counter)
+        self.thread.start()
+
+    def on_count_changed(self, value):
+        self.pbar.setValue(value)
+            
 
 class QCustomTableWidgetItem (QTableWidgetItem):
     def __init__ (self, value):

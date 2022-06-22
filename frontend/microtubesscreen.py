@@ -1,11 +1,12 @@
 import sys, os, logging, re, csv
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QFileDialog
-from PyQt5.QtWidgets import QTreeWidgetItem, QAbstractItemView
+from PyQt5.QtWidgets import QTreeWidgetItem, QAbstractItemView, QProgressBar
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
 from cellolib import *
+
 
 class MicrotubesScreen(QMainWindow):
     from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoPlates
@@ -108,7 +109,24 @@ class MicrotubesScreen(QMainWindow):
         logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}]")
         saBatches = list(batches.split())
         QApplication.setOverrideCursor(Qt.WaitCursor)
+
+        iTickInterval = 1
+        if len(saBatches) > 100:
+            iTickInterval = int(len(saBatches) / 100)
+        
+        self.popup = PopUpProgress(f'Searching for {len(saBatches)} IDs')
+        self.popup.show()
+        iTick = 0
+        iLocalTick = 0
         for sBatch in saBatches:
+            iLocalTick += 1
+            if iLocalTick == iTickInterval:
+                iLocalTick = 0
+                iTick += 1
+                
+            QApplication.processEvents()
+            self.popup.obj.proc_counter(iTick)
+
             if len(sBatch) > 4:
                 res = dbInterface.getMicroTubes(self.token, sBatch)
                 try:
@@ -127,6 +145,9 @@ class MicrotubesScreen(QMainWindow):
         self.tubes_batches_table.setCurrentCell(0,0)
         self.tubes_export_btn.setEnabled(True)
         QApplication.restoreOverrideCursor()
+        self.popup.obj.proc_counter(100)
+        self.popup.close()
+
 
     def appendTubesBatchesTableData(self, data):
         rowPosition = self.tubes_batches_table.rowCount()
