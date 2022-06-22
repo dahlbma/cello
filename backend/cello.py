@@ -224,7 +224,7 @@ def make_app():
 
 if __name__ == "__main__":
     app = make_app()
-    app.listen(8082, max_buffer_size=200000000, max_body_size=200000, max_header_size=200000)
+    app.listen(8082, max_buffer_size=200000000)
     tornado.autoreload.start()
     
     for dir, _, files in os.walk('static'):
