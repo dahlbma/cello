@@ -110,7 +110,13 @@ class PingDB(tornado.web.RequestHandler):
     def get(self):
         sSql = "SELECT * FROM glass.box_sequence"
         cur.execute(sSql)
-
+        
+    def head(self):
+        sSql = "SELECT * FROM glass.box_sequence"
+        cur.execute(sSql)
+        res = cur.fetchall()
+        self.finish()
+        
 
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
