@@ -163,7 +163,11 @@ def plate_to_html(data, size1, resultdata, size2):
     if size2 != None:
         optional = "<span class=\"normal\"></br></br>to</br></br></br></span>" \
                    + chart_html(resultdata, size2)
-    return chart_lambda()(html, optional)
+    
+    blob_size = {'96':10, '384':10, '1536':2}[str(size1)]
+    if size2 != None:
+        blob_size = {'96':10, '384':10, '1536':2}[str(size2)]
+    return chart_lambda()(html, optional, size=blob_size)
 
 def chart_html(data, size):
     scale = {'96':1, '384':2, '1536':4}[str(size)]
@@ -195,17 +199,17 @@ def chart_html(data, size):
     return html
 
 def chart_lambda():
-    return lambda x, y: f"""<!DOCTYPE html><html><head><style>
+    return lambda x, y, size: f"""<!DOCTYPE html><html><head><style>
 .red {"{"}
-  height: 10px;
-  width: 10px;
+  height: {size}px;
+  width: {size}px;
   background-color: red;
   border-radius: 50%;
   display: inline-block;
 {"}"}
 .blue {"{"}
-  height: 6px;
-  width: 6px;
+  height: {size - 4}px;
+  width: {size - 4}px;
   border: 2px solid blue;
   border-radius: 50%;
   display: inline-block;
