@@ -152,10 +152,10 @@ class MicrotubesScreen(QMainWindow):
 
     def appendTubesBatchesTableData(self, data):
         rowPosition = self.tubes_batches_table.rowCount()
-        self.tubes_batches_table.insertRow(rowPosition)
         self.tubes_batches_table.setSortingEnabled(False)
         for resLen in range(len(data)):
             n = rowPosition + resLen
+            self.tubes_batches_table.insertRow(n)
             try:
                 if f"{data[resLen]['batchId']}" == "Not found":
                     newItem = QTableWidgetItem(f"{data[resLen]['batchId']}")
