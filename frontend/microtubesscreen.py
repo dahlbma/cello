@@ -139,7 +139,8 @@ class MicrotubesScreen(QMainWindow):
                     self.tubes_batches_table.setRowCount(0)
                     self.structure_lab.clear()
                     return
-                self.appendTubesBatchesTableData(self.batches_data)
+                if len(self.batches_data) > 0:
+                    self.appendTubesBatchesTableData(self.batches_data)
 
         self.batches_data = None
         self.tubes_batches_table.setCurrentCell(0,0)
