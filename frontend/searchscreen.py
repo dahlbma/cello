@@ -290,12 +290,14 @@ class SearchScreen(QMainWindow):
     def open_batchids_file(self):
         self.pool_ids_fname = QFileDialog.getOpenFileName(self, 'Choose File', 
                                                 '.', "")
+        self.pool_scheme_tb.setPlainText("")
+        self.pool_status_lab.setText("")
         if self.pool_ids_fname[0] == '':
-            self.pool_file_status_lab.setText("")
+            self.pool_file_lab.setText("")
             self.pool_gen_btn.setEnabled(False)
             return
         
-        self.pool_file_status_lab.setText(self.pool_ids_fname[0])
+        self.pool_file_lab.setText(self.pool_ids_fname[0])
         self.pool_gen_btn.setEnabled(True)
         self.pool_gen_btn.setFocus()
 
@@ -303,6 +305,25 @@ class SearchScreen(QMainWindow):
         with open(self.pool_ids_fname[0], 'r') as f:
             batch_ids = f.readlines()
             batch_ids = (' '.join([batch_ids[i].strip() for i in range(len(batch_ids))])).split()
+
+            #check duplicates
+            singles = []
+            duplicates = []
+            for b in batch_ids:
+                if b in singles:
+                    duplicates.append(b)
+                else:
+                    singles.append(b)
+
+            if len(duplicates) > 0:
+                # There are duplicates
+                uniques = '\n'.join(list(set(duplicates)))
+                self.pool_status_lab.setText("Input file contains duplicates!\nThese batch ids have duplicates:")
+                self.pool_scheme_tb.setPlainText(uniques)
+                self.pool_gen_btn.setEnabled(False)
+                return
+
+
             b_map = {i:batch_ids[i].strip() for i in range(len(batch_ids))}
 
             QApplication.setOverrideCursor(Qt.WaitCursor)
