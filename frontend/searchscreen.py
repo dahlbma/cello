@@ -1,6 +1,12 @@
 import re, sys, os, logging
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
+from PyQt5.QtCore import Qt
+
+import math
+import numpy as np
+from numpy import random as rng
+import networkx as nx
 
 from cellolib import *
 
@@ -42,6 +48,10 @@ class SearchScreen(QMainWindow):
         self.print_label_btn.clicked.connect(self.printLabel)
         self.discard_vial_btn.setEnabled(False)
         self.print_label_btn.setEnabled(False)
+
+        self.pool_input_btn.clicked.connect(self.open_batchids_file)
+        self.pool_gen_btn.clicked.connect(self.generate_pool_scheme)
+        self.pool_gen_btn.setEnabled(False)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
@@ -275,3 +285,186 @@ class SearchScreen(QMainWindow):
 
     def export_batch_table(self):
         export_table(self.batch_table)
+
+
+    def open_batchids_file(self):
+        self.pool_ids_fname = QFileDialog.getOpenFileName(self, 'Choose File', 
+                                                '.', "")
+        if self.pool_ids_fname[0] == '':
+            self.pool_file_status_lab.setText("")
+            self.pool_gen_btn.setEnabled(False)
+            return
+        
+        self.pool_file_status_lab.setText(self.pool_ids_fname[0])
+        self.pool_gen_btn.setEnabled(True)
+        self.pool_gen_btn.setFocus()
+
+    def generate_pool_scheme(self):
+        with open(self.pool_ids_fname[0], 'r') as f:
+            batch_ids = f.readlines()
+            batch_ids = (' '.join([batch_ids[i].strip() for i in range(len(batch_ids))])).split()
+            b_map = {i:batch_ids[i].strip() for i in range(len(batch_ids))}
+
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+
+            # set spin threshold
+            n=len(batch_ids)
+            m=self.pool_m_sb.value()
+            k=self.pool_k_sb.value()
+            threshold = 100
+
+            subs = np.empty(n, dtype=object)
+            #init ids, occs left
+            for id in range(n):
+                subs[id] = [id, k]
+
+            # init return list and nieghbor graph
+            wells = []
+            G = nx.Graph()
+            G.add_nodes_from([sub[0] for sub in subs])
+
+            # INIT PBAR # pbar = tqdm(total=int((k/m)*n))
+            iTickInterval = 1
+            if n > 100:
+                iTickInterval = int(n / 100)
+            self.popup = PopUpProgress(f'Generating pooling scheme for {n} batch IDs')
+            self.popup.show()
+            iTick = 0
+            iLocalTick = 0
+
+            subcount = 0
+            spins = 0
+            th_hit = 0
+            reshuffles = 0 #
+            # run until empty
+            while subs.size > 0:
+                iLocalTick += 1
+                if iLocalTick == iTickInterval:
+                    iLocalTick = 0
+                    iTick += 1
+                    
+                QApplication.processEvents()
+                self.popup.obj.proc_counter(iTick)
+
+                w = []
+                del_list = []
+                loops = 0
+                # randomly select substances and check if they can be put in current well
+                for m_i in range(min(m, len(subs))):
+                    subcount += 1
+                    found = False # get sub
+                    while not found:
+                        spins += 1
+                        if (loops > threshold):
+                            #print(f"hit threshold, subs left: {subs.size}")
+                            th_hit += 1
+                            found = True
+                            continue
+                        if subs.size == 0:
+                            found = True
+                            continue
+                        index = rng.choice(np.arange(subs.size)) # choose index
+                        loops += 1
+                        s = subs[index] # get tuple
+                        id = s[0]
+                        num = s[1]
+                        if self.put_ok(G, w, s[0]) and (s[1] > 0): # check if chosen tup has no edges to subs already "in well"
+                            # also check if it should occur again
+                            w.append((s[0])) # append id and desc in a tuple to w
+                            num = num - 1 # decrement
+                            subs[index][1] = num # put value
+                            if num == 0: # should be deleted
+                                del_list.append(index)
+                            found = True
+                    loops = 0
+                
+
+                wells.append(w) # commit well
+                for i in range(len(w) - 1):
+                    for j in range(i + 1, len(w)):
+                        G.add_edge(w[i], w[j])
+                
+                subs = np.delete(subs, del_list)
+
+                # UPDATE PBAR # pbar.update()
+                QApplication.processEvents()
+
+                if len(wells) > int(math.ceil((k/m)*n)) or \
+                    (len(wells) > k and (len(wells[-1]) < m and len(wells[-2]) < m)):
+                    reshuffles += 1
+                    #print(f"reshuffle #: {reshuffles}")
+                    extra = len(wells) - int(math.ceil((k/m)*n))
+                    # redo extra + m*reshuffles finished wells
+                    put_back = wells[-(extra + (m*reshuffles)):]
+                    wells = wells[:-(extra + (m*reshuffles))]
+                    for well in put_back:
+                        for i in range(len(well) - 1):
+                            for j in range(i + 1, len(well)):
+                                G.remove_edge(well[i], well[j])
+                        subs = self.add_to_subs(subs, well)
+                    self.popup.obj.proc_counter(iTick)
+                
+
+            # CLOSE PBAR # pbar.close()
+            QApplication.restoreOverrideCursor()
+            self.popup.obj.proc_counter(100)
+            self.popup.close()
+
+            #to csv
+            out = self.divider(wells, lambda x: b_map[x])
+            self.pool_scheme = (''.join(out)).strip()
+            self.pool_scheme_tb.setPlainText(self.pool_scheme)
+
+    def put_ok(self, G, w, id):
+        ids = [sub for sub in w]#[sub[0] for sub in w]
+        if all(id not in G[i] for i in ids) and (id not in ids):
+            return True
+        else:
+            return False
+
+    def add_to_subs(self, subs, well):
+        add = []
+        for well_sub in well:
+            index = -1
+            if len(subs) > 0:
+                for i in range(len(subs)):
+                    sub = subs[i]
+                    if sub[0] == well_sub:
+                        index = i
+            if index != -1:
+                subs[index][1] = subs[index][1] + 1
+            else: # re-add substance
+                add.append([well_sub, 1])
+        
+        for s in add:
+            subs = np.append(subs, np.empty(1, dtype=object))
+            subs[-1] = s
+        return subs
+
+    def i_to_coord(self, index):
+        return f"{chr(ord('A') + (index // 22))}{str((index % 22) + 1).zfill(2)}"
+
+    def to_csv(self, num, wells, map):
+        tl = map
+        if map == None:
+            tl = str
+        ret = []
+        for w_i in range(len(wells)):
+            w = wells[w_i]
+            w_s = ",".join([tl(i) for i in w])
+            ret.append(f"{num},{self.i_to_coord(w_i)},{w_s}\n")
+        return ret
+
+    #returns csv string of 
+    def divider(self, wells, id_map):
+        out = []
+        plate = 1
+        while len(wells) > 0:
+            buf = wells[:352]
+            if len(wells) > 352:
+                wells = wells[352:]
+            else:
+                wells = []
+            out.extend(self.to_csv(plate, buf, id_map))
+            plate += 1
+        return out
