@@ -663,9 +663,16 @@ class SetPlateType(tornado.web.RequestHandler):
 @jwtauth
 class UploadWellInformation(tornado.web.RequestHandler):
     def post(self):
+        def zfillWell(sWell):
+            alphabet = sWell.rstrip('0123456789')
+            numbers = sWell[len(alphabet):]
+            numbers = str(numbers).zfill(2)
+            return alphabet + numbers
+        
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sPlate = self.get_argument("plate_id")
         sWell = self.get_argument("well")
+        sWell = zfillWell(sWell)
         sCompound = self.get_argument("compound_id")
         sBatch = self.get_argument("batch")
         sForm = self.get_argument("form")
