@@ -219,7 +219,7 @@ class PlatesScreen(QMainWindow):
             self.platesearch_error_lab.setText("")
             logging.getLogger(self.mod_name).info(f"received data")
             self.plate_comment_eb.setEnabled(True)
-            self.plate_comment_btn.setEnabled()
+            self.plate_comment_btn.setEnabled(True)
             self.plate_comment_eb.setText(self.plate_data[0]['description'])
             self.setPlateTableData(self.plate_data)
             self.plate_table.setCurrentCell(0,0)
@@ -233,7 +233,7 @@ class PlatesScreen(QMainWindow):
             self.setDiscard(False)
             self.setDiscard(True)
             self.plate_print_btn.setEnabled(True)
-        except:
+        except Exception as e:
             self.plate_comment_eb.setText("")
             if status == 200:
                 r, _ = dbInterface.verifyPlate(self.token, plate)
