@@ -42,6 +42,7 @@ class PlatesScreen(QMainWindow):
 
         locations = ['Compound Center', "CC Freezer", "Sent to User"]
         self.plate_location_cb.addItems(locations)
+        locations.append('')
         self.update_plate_location_cb.addItems(locations)
         
         self.label_to_plates_save_btn.clicked.connect(self.createPlatesFromLabel)
