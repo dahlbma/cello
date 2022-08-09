@@ -19,7 +19,7 @@ class PlatesScreen(QMainWindow):
         #self.window().setWindowTitle("Plates")
 
         self.centralwidget.setProperty("test", test)
-        
+      
         self.nine6to384_btn.setIcon(QIcon(resource_path("assets/arrow.png")))
 
         self.goto_search_btn.clicked.connect(self.gotoSearch)
@@ -33,11 +33,17 @@ class PlatesScreen(QMainWindow):
 
         self.new_plates_save_btn.clicked.connect(self.createPlates)
         self.new_plates_save_btn.setEnabled(False)
+
         types = [' ', "96", "384", "1536"]
         self.new_plates_type_cb.addItems(types)
         self.new_plates_type_cb.currentTextChanged.connect(self.check_plates_input)
+        
         self.new_plates_comment_eb.textChanged.connect(self.check_plates_input)
 
+        locations = ['Compound Center', "CC Freezer", "Sent to User"]
+        self.plate_location_cb.addItems(locations)
+        self.update_plate_location_cb.addItems(locations)
+        
         self.label_to_plates_save_btn.clicked.connect(self.createPlatesFromLabel)
         self.label_to_plates_save_btn.setEnabled(False)
         self.label_to_plates_type_cb.addItems(types)
@@ -48,7 +54,7 @@ class PlatesScreen(QMainWindow):
         self.plate_data = None
         self.plate_search_dict = None
         self.plate_search_btn.clicked.connect(self.check_plate_search_input)
-        self.plate_comment_btn.clicked.connect(self.editComment)
+        self.plate_comment_btn.clicked.connect(self.updatePlate)
         self.plate_discard_btn.clicked.connect(self.discardPlate)
         self.setDiscard(False)
         self.plate_discard_chk.stateChanged.connect(self.readyDiscard)
@@ -149,10 +155,11 @@ class PlatesScreen(QMainWindow):
 
     def createPlates(self):
         type = self.new_plates_type_cb.currentText()
+        location = self.plate_location_cb.currentText()
         name = self.new_plates_comment_eb.text()
         nr_o_ps = self.new_n_plates_sb.value()
         try:
-            res, status = dbInterface.createPlates(self.token, type, name, nr_o_ps)
+            res, status = dbInterface.createPlates(self.token, type, name, nr_o_ps, location)
             if not status:
                 raise Exception
             self.new_plates_res_lab.setText(res)
@@ -211,7 +218,7 @@ class PlatesScreen(QMainWindow):
             self.platesearch_error_lab.setText("")
             logging.getLogger(self.mod_name).info(f"received data")
             self.plate_comment_eb.setEnabled(True)
-            self.plate_comment_btn.setEnabled(True)
+            self.plate_comment_btn.setEnabled()
             self.plate_comment_eb.setText(self.plate_data[0]['description'])
             self.setPlateTableData(self.plate_data)
             self.plate_table.setCurrentCell(0,0)
@@ -231,16 +238,19 @@ class PlatesScreen(QMainWindow):
                 r, _ = dbInterface.verifyPlate(self.token, plate)
                 info = json.loads(r)
                 self.plate_comment_eb.setText(info[0]['comments'])
+                self.update_plate_location_cb.setCurrentText(info[0]['loc_id'])
                 self.platesearch_error_lab.setText(f"Plate size: {info[0]['wells']}")
                 self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
+                self.plate_comment_eb.setEnabled(True)
+                self.plate_comment_btn.setEnabled(True)
                 logging.getLogger(self.mod_name).info(f"empty plate, no data received")
             else:
                 self.plate_display.setHtml("")
                 self.platesearch_error_lab.setText(res)
+                self.plate_comment_eb.setEnabled(False)
+                self.plate_comment_btn.setEnabled(False)
                 logging.getLogger(self.mod_name).info(f"search returned {res}")
             self.plate_data = None
-            self.plate_comment_eb.setEnabled(False)
-            self.plate_comment_btn.setEnabled(False)
             self.plate_table.setRowCount(0)
             self.plate_print_btn.setEnabled(False)        
     
@@ -270,11 +280,12 @@ class PlatesScreen(QMainWindow):
             except:
                 logging.error(f"plate search failed with data row: {data[n]}")
 
-    def editComment(self):
+    def updatePlate(self):
         new_comment = self.plate_comment_eb.text()
+        new_location = self.update_plate_location_cb.currentText()
         plate = self.plate_search_eb.text()
         try:
-            _, status = dbInterface.updatePlateName(self.token, plate, new_comment)
+            _, status = dbInterface.updatePlateName(self.token, plate, new_comment, new_location)
             if status is False:
                 raise Exception
         except:

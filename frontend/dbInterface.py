@@ -358,8 +358,8 @@ def verifyPlate(token, plate):
         return r.content.decode(), 1
 
 
-def createPlates(token, type, name, nr_o_ps):
-    r = requests.put(f'{baseUrl}createPlates/{type}/{name}/{nr_o_ps}',
+def createPlates(token, type, name, nr_o_ps, location):
+    r = requests.put(f'{baseUrl}createPlates/{type}/{name}/{nr_o_ps}/{location}',
                       headers={'token':token})
     if r.status_code != 200:
         return r.content.decode(), False
@@ -383,8 +383,8 @@ def getPlate(token, plate):
         res = r.content
     return res, r.status_code
 
-def updatePlateName(token, plate, comment):
-    r = requests.put(f'{baseUrl}updatePlateName/{plate}/{comment}',
+def updatePlateName(token, plate, comment, location):
+    r = requests.put(f'{baseUrl}updatePlateName/{plate}/{comment}/{location}',
                       headers={'token':token})
     if r.status_code != 200:
         return r.content.decode(), False
