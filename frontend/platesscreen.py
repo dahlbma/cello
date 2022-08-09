@@ -42,7 +42,7 @@ class PlatesScreen(QMainWindow):
 
         locations = ['Compound Center', "CC Freezer", "Sent to User"]
         self.plate_location_cb.addItems(locations)
-        locations.append('')
+        locations.append(' ')
         self.update_plate_location_cb.addItems(locations)
         
         self.label_to_plates_save_btn.clicked.connect(self.createPlatesFromLabel)
@@ -225,6 +225,7 @@ class PlatesScreen(QMainWindow):
             self.plate_table.setCurrentCell(0,0)
             r, _ = dbInterface.verifyPlate(self.token, plate)
             info = json.loads(r)
+            self.update_plate_location_cb.setCurrentText(info[0]['loc_id'])
             if info[0]['discarded'] == '1':
                 self.platesearch_error_lab.setText(f"DISCARDED")
             else:
@@ -235,6 +236,7 @@ class PlatesScreen(QMainWindow):
             self.plate_print_btn.setEnabled(True)
         except Exception as e:
             self.plate_comment_eb.setText("")
+            self.update_plate_location_cb.setCurrentText("")
             if status == 200:
                 r, _ = dbInterface.verifyPlate(self.token, plate)
                 info = json.loads(r)
