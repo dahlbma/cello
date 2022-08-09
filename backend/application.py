@@ -450,7 +450,7 @@ class CreatePlatesFromLabel(tornado.web.RequestHandler):
 
 @jwtauth
 class CreatePlates(tornado.web.RequestHandler):
-    def put(self, sPlateType, sPlateName, sNumberOfPlates):
+    def put(self, sPlateType, sPlateName, sNumberOfPlates, sLocation):
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         saNewPlates = dict()
         plateKeys = []
@@ -476,14 +476,16 @@ class CreatePlates(tornado.web.RequestHandler):
             type_id,
             comments,
             created_date,
-            updated_date)
+            updated_date,
+            loc_id)
             values (
             '{sPlateId}',
             '{sPlateId}',
             {iPlateType},
             '{sNewplateName}',
             now(),
-            now())"""
+            now(),
+            '{sLocation}')"""
             cur.execute(sSql)
             plateKeys.append(sPlateId)
             doPrintPlate(sPlateId)
@@ -496,10 +498,11 @@ class CreatePlates(tornado.web.RequestHandler):
 
 @jwtauth
 class UpdatePlateName(tornado.web.RequestHandler):
-    def put(self, sPlate, sPlateName):
+    def put(self, sPlate, sPlateName, sPlateLocation):
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""
-        update {coolDB}.plate set comments = '{sPlateName}'
+        update {coolDB}.plate set comments = '{sPlateName}',
+        loc_id = '{sPlateLocation}'
         where plate_id = '{sPlate}'
         """
         cur.execute(sSql)
@@ -697,7 +700,7 @@ class VerifyPlate(tornado.web.RequestHandler):
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if re.match("^[pP]{1}[0-9]{6}$", sPlate):
             sSql = f"""
-            select wells, comments, IFNULL(discarded, 0) discarded
+            select wells, comments, loc_id, IFNULL(discarded, 0) discarded
             from {coolDB}.plate, {coolDB}.plate_type
             where plate.type_id = plate_type.type_id
             and plate.plate_id ='{sPlate}'
@@ -749,7 +752,8 @@ class GetPlate(tornado.web.RequestHandler):
         c.form,
         c.conc,
         c.volume,
-        p.TYPE_ID
+        p.TYPE_ID,
+        p.loc_id
         FROM {coolDB}.config c, {coolDB}.plate p, {coolDB}.plating_sequence ps
         WHERE p.CONFIG_ID = c.CONFIG_ID
         and p.TYPE_ID = ps.TYPE_ID
