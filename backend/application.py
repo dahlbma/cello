@@ -161,7 +161,6 @@ class AddMicrotube(tornado.web.RequestHandler):
             cur.execute(sSql)
         except Exception as e:
             sError = str(e)
-            #logging.error(sError)
             self.set_status(400)
             self.finish(sError)
             return
@@ -700,7 +699,7 @@ class VerifyPlate(tornado.web.RequestHandler):
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if re.match("^[pP]{1}[0-9]{6}$", sPlate):
             sSql = f"""
-            select wells, comments, loc_id, IFNULL(discarded, 0) discarded
+            select wells, comments, IFNULL(loc_id, " ") loc_id, IFNULL(discarded, 0) discarded
             from {coolDB}.plate, {coolDB}.plate_type
             where plate.type_id = plate_type.type_id
             and plate.plate_id ='{sPlate}'
@@ -752,8 +751,7 @@ class GetPlate(tornado.web.RequestHandler):
         c.form,
         c.conc,
         c.volume,
-        p.TYPE_ID,
-        p.loc_id
+        p.TYPE_ID
         FROM {coolDB}.config c, {coolDB}.plate p, {coolDB}.plating_sequence ps
         WHERE p.CONFIG_ID = c.CONFIG_ID
         and p.TYPE_ID = ps.TYPE_ID
