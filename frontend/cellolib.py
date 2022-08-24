@@ -1,5 +1,5 @@
 import imp
-import sys, requests, json, os, subprocess, platform, shutil, datetime, traceback, logging, dbInterface
+import sys, requests, json, os, subprocess, platform, shutil, datetime, traceback, logging, dbInterface, re
 from unittest import result
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5 import QtWidgets, QtCore
@@ -182,9 +182,19 @@ def chart_html(data, size):
                 info = well['well']
             except:
                 info = well['position']
-            row = int(ord(info[0]) - ord('A'))
-            col = int(info[1:]) - 1
-            chart[row][col] = "red"
+            if scale < 4:
+                row = int(ord(info[0]) - ord('A'))
+                col = int(info[1:]) - 1
+                chart[row][col] = "red"
+            else:
+                parts = re.split('(\d+)', info)
+                row_c = parts[0]
+                if len(row_c) == 1:
+                    row = int(ord(info[0]) - ord('A'))
+                elif len(row_c) == 2:
+                    row = int(ord(info[0]) - ord('A')) + 25
+                col = int(parts[1]) - 1
+                chart[row][col] = "red"
 
     span = lambda x: f"<span class=\"{x}\"></span>"
     html = ""
@@ -201,25 +211,33 @@ def chart_html(data, size):
     return html
 
 def chart_lambda(blob_size):
+    l_h = blob_size
+    if blob_size == 10:
+        red = 10
+        blue = 6
+    elif blob_size == 2:
+        red = 4
+        blue = 0
+    
     return lambda x, y, size: f"""<!DOCTYPE html><html><head><style>
-.red {"{"}
-  height: {size}px;
-  width: {size}px;
-  background-color: red;
-  border-radius: 50%;
-  display: inline-block;
-{"}"}
-.blue {"{"}
-  height: {size - 4}px;
-  width: {size - 4}px;
-  border: 2px solid blue;
-  border-radius: 50%;
-  display: inline-block;
-{"}"}
-.normal {"{"}
-  letter-spacing: normal;
-{"}"}
-</style></head><body><div style="text-align:center; line-height:{size}px; letter-spacing: -4px;">
-{x}
-{y}
-</div></body></html>"""
+    .red {"{"}
+    height: {red}px;
+    width: {red}px;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .blue {"{"}
+    height: {blue}px;
+    width: {blue}px;
+    border: 2px solid blue;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .normal {"{"}
+    letter-spacing: normal;
+    {"}"}
+    </style></head><body><div style="text-align:center; line-height:{l_h}px; letter-spacing: -4px;">
+    {x}
+    {y}
+    </div></body></html>"""
