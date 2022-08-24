@@ -210,6 +210,7 @@ class PlatesScreen(QMainWindow):
     def plateSearch(self, plate):
         if len(plate) < 1:
             return
+        QApplication.setOverrideCursor(Qt.WaitCursor)
         logging.getLogger(self.mod_name).info(f"plate search {plate}")
         res, status = dbInterface.getPlate(self.token, plate)
         try:
@@ -255,7 +256,8 @@ class PlatesScreen(QMainWindow):
                 logging.getLogger(self.mod_name).info(f"search returned {res}")
             self.plate_data = None
             self.plate_table.setRowCount(0)
-            self.plate_print_btn.setEnabled(False)        
+            self.plate_print_btn.setEnabled(False)
+        QApplication.restoreOverrideCursor()
     
     def setPlateTableData(self, data):
         self.plate_table.setRowCount(0)
@@ -358,6 +360,7 @@ class PlatesScreen(QMainWindow):
                 data = list(reader)
                 if has_header:
                     data.pop(0)
+                self.upload_plates_data = data
                 self.populate_upload_table(data)
         except:
             self.upload_plates_data = None
