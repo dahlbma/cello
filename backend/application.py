@@ -696,6 +696,7 @@ class UploadWellInformation(tornado.web.RequestHandler):
 @jwtauth
 class VerifyPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
+        sPlate = sPlate.rstrip()
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         if re.match("^[pP]{1}[0-9]{6}$", sPlate):
             sSql = f"""
@@ -729,6 +730,7 @@ class VerifyPlate(tornado.web.RequestHandler):
 @jwtauth
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
+        sPlate = sPlate.rstrip()
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""select plate_id from {coolDB}.plate
         where plate_id = '{sPlate}'
@@ -915,6 +917,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
 @jwtauth
 class getRack(tornado.web.RequestHandler):
     def get(self, sRacks):
+        sRacks = sRacks.rstrip()
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         logging.info(sRacks)
         jResTot = list()
@@ -1208,6 +1211,7 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 @jwtauth
 class verifyVial(tornado.web.RequestHandler):
     def get(self, sVial):
+        sVial = sVial.rstrip()
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""SELECT notebook_ref batch_id, type_id vial_type
                   from {glassDB}.vial
@@ -1264,6 +1268,7 @@ class verifyVial(tornado.web.RequestHandler):
 @jwtauth
 class batchInfo(tornado.web.RequestHandler):
     def get(self, sBatch):
+        sBatch = sBatch.rstrip()
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSlask = cur.execute("""SELECT b.batch_id,
                            b.compound_id, batch_formula_weight
@@ -1507,6 +1512,7 @@ class DiscardVial(tornado.web.RequestHandler):
 @jwtauth
 class vialInfo(tornado.web.RequestHandler):
     def get(self, sVial):
+        sVial = sVial.rstrip()
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sSql = f"""SELECT notebook_ref batch_id from {glassDB}.vial where vial_id='%s'""" % sVial
         sSlask = cur.execute(sSql)
