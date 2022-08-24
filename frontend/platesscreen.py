@@ -40,7 +40,7 @@ class PlatesScreen(QMainWindow):
         
         self.new_plates_comment_eb.textChanged.connect(self.check_plates_input)
 
-        locations = ['Compound Center', "CC Freezer", "Sent to User"]
+        locations = ['Compound Center', "CC Freezer A", "CC Freezer B", "Sent to User"]
         self.plate_location_cb.addItems(locations)
         locations.append(' ')
         self.update_plate_location_cb.addItems(locations)
