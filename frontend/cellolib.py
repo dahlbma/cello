@@ -211,25 +211,18 @@ def chart_html(data, size):
     return html
 
 def chart_lambda(blob_size):
-    l_h = blob_size
-    if blob_size == 10:
-        red = 10
-        blue = 6
-    elif blob_size == 2:
-        red = 4
-        blue = 0
     
     return lambda x, y, size: f"""<!DOCTYPE html><html><head><style>
     .red {"{"}
-    height: {red}px;
-    width: {red}px;
+    height: {blob_size}px;
+    width: {blob_size}px;
     background-color: red;
     border-radius: 50%;
     display: inline-block;
     {"}"}
     .blue {"{"}
-    height: {blue}px;
-    width: {blue}px;
+    height: {blob_size - 4}px;
+    width: {blob_size - 4}px;
     border: 2px solid blue;
     border-radius: 50%;
     display: inline-block;
@@ -237,7 +230,7 @@ def chart_lambda(blob_size):
     .normal {"{"}
     letter-spacing: normal;
     {"}"}
-    </style></head><body><div style="text-align:center; line-height:{l_h}px; letter-spacing: -4px;">
+    </style></head><body><div style="text-align:center; line-height:{blob_size}px; letter-spacing: -4px;">
     {x}
     {y}
     </div></body></html>"""
