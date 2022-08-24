@@ -82,6 +82,7 @@ class SearchScreen(QMainWindow):
     def check_vial_search_input(self):
         pattern = '^[vV][0-9]{6}$'
         t = self.vial_search_eb.text()
+        t = t.rstrip()
         if re.match(pattern, t):
             self.searchVial(t)
         else:
