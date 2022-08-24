@@ -164,9 +164,9 @@ def plate_to_html(data, size1, resultdata, size2):
         optional = "<span class=\"normal\"></br></br>to</br></br></br></span>" \
                    + chart_html(resultdata, size2)
     
-    blob_size = {'96':10, '384':10, '1536':2}[str(size1)]
+    blob_size = {'96':8, '384':8, '1536':2}[str(size1)]
     if size2 != None:
-        blob_size = {'96':10, '384':10, '1536':2}[str(size2)]
+        blob_size = {'96':8, '384':8, '1536':2}[str(size2)]
     return chart_lambda(blob_size)(html, optional, size=blob_size)
 
 def chart_html(data, size):
@@ -205,8 +205,6 @@ def chart_html(data, size):
                 html += "<span class=\"normal\"> </span>"
         if scale > 1 and i == ((rows / 2) - 1):
             html += "</br>"
-            if scale == 4:
-                html += "</br>"
         html += "</br>"
     return html
 
@@ -214,15 +212,15 @@ def chart_lambda(blob_size):
     
     return lambda x, y, size: f"""<!DOCTYPE html><html><head><style>
     .red {"{"}
-    height: {blob_size}px;
-    width: {blob_size}px;
+    height: {blob_size + 2}px;
+    width: {blob_size + 2}px;
     background-color: red;
     border-radius: 50%;
     display: inline-block;
     {"}"}
     .blue {"{"}
-    height: {blob_size - 4}px;
-    width: {blob_size - 4}px;
+    height: {blob_size - 2}px;
+    width: {blob_size - 2}px;
     border: 2px solid blue;
     border-radius: 50%;
     display: inline-block;
@@ -230,7 +228,7 @@ def chart_lambda(blob_size):
     .normal {"{"}
     letter-spacing: normal;
     {"}"}
-    </style></head><body><div style="text-align:center; line-height:{blob_size}px; letter-spacing: -4px;">
+    </style></head><body><div style="text-align:center; line-height:{blob_size + 2}px; letter-spacing: -4px;">
     {x}
     {y}
     </div></body></html>"""
