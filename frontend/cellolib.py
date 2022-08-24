@@ -167,7 +167,7 @@ def plate_to_html(data, size1, resultdata, size2):
     blob_size = {'96':10, '384':10, '1536':2}[str(size1)]
     if size2 != None:
         blob_size = {'96':10, '384':10, '1536':2}[str(size2)]
-    return chart_lambda()(html, optional, size=blob_size)
+    return chart_lambda(blob_size)(html, optional, size=blob_size)
 
 def chart_html(data, size):
     scale = {'96':1, '384':2, '1536':4}[str(size)]
@@ -191,14 +191,16 @@ def chart_html(data, size):
     for i in range(rows):
         for j in range(cols):
             html += span(chart[i][j])
-            if j == 11:
+            if scale > 1 and j == ((cols / 2) - 1):
                 html += "<span class=\"normal\"> </span>"
-        if i == 7:
+        if scale > 1 and i == ((rows / 2) - 1):
             html += "</br>"
+            if scale == 4:
+                html += "</br>"
         html += "</br>"
     return html
 
-def chart_lambda():
+def chart_lambda(blob_size):
     return lambda x, y, size: f"""<!DOCTYPE html><html><head><style>
 .red {"{"}
   height: {size}px;
@@ -217,7 +219,7 @@ def chart_lambda():
 .normal {"{"}
   letter-spacing: normal;
 {"}"}
-</style></head><body><div style="text-align:center; line-height:10px; letter-spacing: -4px;">
+</style></head><body><div style="text-align:center; line-height:{size}px; letter-spacing: -4px;">
 {x}
 {y}
 </div></body></html>"""
