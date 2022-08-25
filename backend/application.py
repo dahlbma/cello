@@ -1378,7 +1378,7 @@ def doPrintPlate(sPlate):
 ^PW400
 ^LL0064
 ^LS0
-^BY2,3,43^FT37,48^BCN,,Y,N
+^BY2,3,43^FT42,48^BCN,,Y,N
 ^FD>:P>{sPlate}^FS
 ^FT270,48^A0N,22,25^FH\^FD{sPlate}^FS
 ^PQ1,0,1,Y^XZ
