@@ -214,7 +214,7 @@ class MicrotubesScreen(QMainWindow):
         for item in selectedItems:
             if item.row() not in selectedRows:
                 selectedRows.append(item.row())
-                exportIds.append(self.tubes_batches_table.item(item.row(), 1).text())
+                exportIds.append(self.tubes_batches_table.item(item.row(), 2).text())
         exportString = "\n".join(exportIds)
         
 

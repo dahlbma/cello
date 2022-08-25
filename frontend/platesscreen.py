@@ -142,6 +142,7 @@ class PlatesScreen(QMainWindow):
 
     def label_check_plates_input(self):
         sPlateId = self.label_to_plate_id_eb.text()
+        sPlateId = sPlateId.rstrip()
         pattern = '^[pP]{1}[0-9]{6}$'
         t = re.sub("[^0-9a-zA-Z]+", " ", sPlateId)
         lValidPlate = False
@@ -194,7 +195,10 @@ class PlatesScreen(QMainWindow):
 
     def check_plate_search_input(self):
         pattern = '^[pP]{1}[0-9]{6}$'
-        t = re.sub("[^0-9a-zA-Z]+", " ", self.plate_search_eb.text())
+        sPlateId = self.plate_search_eb.text()
+        sPlateId = sPlateId.rstrip()
+        self.plate_search_eb.setText(sPlateId)
+        t = re.sub("[^0-9a-zA-Z]+", " ", sPlateId)
         if re.match(pattern, t):
             self.plateSearch(t)
         else:
