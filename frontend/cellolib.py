@@ -163,16 +163,21 @@ def plate_to_html(data, size1, resultdata, size2):
     if size2 != None:
         optional = "<span class=\"normal\"></br></br>to</br></br></br></span>" \
                    + chart_html(resultdata, size2)
-    
-    blob_size = {'96':8, '384':8, '1536':2}[str(size1)]
+    try:
+        blob_size = {'96':8, '384':8, '1536':2}[str(size1)]
+    except:
+        return ""
     if size2 != None:
         blob_size = {'96':8, '384':8, '1536':2}[str(size2)]
     return chart_lambda(blob_size)(html, optional, size=blob_size)
 
 def chart_html(data, size):
-    scale = {'96':1, '384':2, '1536':4}[str(size)]
-    rows = 8*scale
-    cols = 12*scale
+    try:
+        scale = {'96':1, '384':2, '1536':4}[str(size)]
+        rows = 8*scale
+        cols = 12*scale
+    except:
+        return ""
 
     chart = [["blue" for _ in range(cols)] for _ in range(rows)]
 
