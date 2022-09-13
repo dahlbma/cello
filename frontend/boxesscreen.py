@@ -27,7 +27,7 @@ class BoxesScreen(QMainWindow):
         self.boxes_tab_wg.setCurrentIndex(0)
         self.boxes_tab_wg.currentChanged.connect(self.tabChanged)
 
-        types = [' ', "200", "64", "50", 'Matrix',]
+        types = [' ', "200", "64", "49", 'Matrix',]
         self.add_box_type_cb.addItems(types)
         self.add_box_btn.clicked.connect(self.addBox)
         self.add_box_btn.setEnabled(False)
