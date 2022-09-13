@@ -2005,7 +2005,7 @@ class AddBox(tornado.web.RequestHandler):
         sNewLocId = getNewLocId(loctreeDB)
         if sBoxSize == '200':
             loc_type = 10
-        elif sBoxSize == '50':
+        elif sBoxSize == '49':
             loc_type = 18
         elif sBoxSize == '64':
             loc_type = 32
