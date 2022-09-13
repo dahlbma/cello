@@ -83,7 +83,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">

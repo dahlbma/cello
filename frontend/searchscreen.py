@@ -53,6 +53,9 @@ class SearchScreen(QMainWindow):
         self.pool_gen_btn.clicked.connect(self.generate_pool_scheme)
         self.pool_gen_btn.setEnabled(False)
 
+        self.pool_scheme_to_cb_btn.clicked.connect(self.scheme_to_clipboard)
+        self.pool_scheme_to_file_btn.clicked.connect(self.scheme_to_file)
+
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.search_tab_wg.currentIndex() == 1:
@@ -296,6 +299,8 @@ class SearchScreen(QMainWindow):
         if self.pool_ids_fname[0] == '':
             self.pool_file_lab.setText("")
             self.pool_gen_btn.setEnabled(False)
+            self.pool_scheme_to_cb_btn.setEnabled(False)
+            self.pool_scheme_to_file_btn.setEnabled(False)
             return
         
         self.pool_file_lab.setText(self.pool_ids_fname[0])
@@ -432,10 +437,14 @@ class SearchScreen(QMainWindow):
             self.popup.obj.proc_counter(100)
             self.popup.close()
 
-            #to csv
+            # to csv
             out = self.divider(wells, lambda x: b_map[x])
             self.pool_scheme = (''.join(out)).strip()
             self.pool_scheme_tb.setPlainText(self.pool_scheme)
+
+            # set save buttons
+            self.pool_scheme_to_cb_btn.setEnabled(True)
+            self.pool_scheme_to_file_btn.setEnabled(True)
 
     def put_ok(self, G, w, id):
         ids = [sub for sub in w]#[sub[0] for sub in w]
@@ -490,3 +499,17 @@ class SearchScreen(QMainWindow):
             out.extend(self.to_csv(plate, buf, id_map))
             plate += 1
         return out
+
+    def scheme_to_clipboard(self):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.pool_scheme_tb.toPlainText())
+        return
+    
+    def scheme_to_file(self):
+        fname = QFileDialog.getSaveFileName(self, 'Save to File', '.', "")
+        if fname[0] == '':
+            return
+        with open(fname[0], "w") as f:
+            f.write(self.pool_scheme_tb.toPlainText())
+        logging.getLogger(self.mod_name).info(f"wrote to file: {fname[0]}")
+        return
