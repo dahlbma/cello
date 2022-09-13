@@ -10,6 +10,7 @@ dist/
 error_msg.txt
 *.csv
 log_cello.txt
+*.xlsx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
