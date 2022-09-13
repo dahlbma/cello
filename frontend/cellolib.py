@@ -190,9 +190,10 @@ def chart_html(data, size):
                 parts = re.split('(\d+)', info)
                 row_c = parts[0]
                 if len(row_c) == 1:
-                    row = int(ord(info[0]) - ord('A'))
+                    row = int(ord(row_c[0]) - ord('A'))
                 elif len(row_c) == 2:
-                    row = int(ord(info[0]) - ord('A')) + 25
+                    row = int(ord(row_c[1]) - ord('A')) + 26
+
                 col = int(parts[1]) - 1
                 chart[row][col] = "red"
 
