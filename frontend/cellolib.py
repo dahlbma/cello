@@ -190,7 +190,6 @@ def chart_html(data, size):
             if scale < 4:
                 row = int(ord(info[0]) - ord('A'))
                 col = int(info[1:]) - 1
-                chart[row][col] = "red"
             else:
                 parts = re.split('(\d+)', info)
                 row_c = parts[0]
@@ -200,6 +199,11 @@ def chart_html(data, size):
                     row = int(ord(row_c[1]) - ord('A')) + 26
 
                 col = int(parts[1]) - 1
+            if well['compound_id'] == 'CTRL':
+                chart[row][col] = "green"
+            elif well['compound_id'] == 'DMSO':
+                chart[row][col] = "black"
+            else:
                 chart[row][col] = "red"
 
     span = lambda x: f"<span class=\"{x}\"></span>"
@@ -221,6 +225,20 @@ def chart_lambda(blob_size):
     height: {blob_size + 2}px;
     width: {blob_size + 2}px;
     background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .green {"{"}
+    height: {blob_size + 2}px;
+    width: {blob_size + 2}px;
+    background-color: green;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .black {"{"}
+    height: {blob_size + 2}px;
+    width: {blob_size + 2}px;
+    background-color: black;
     border-radius: 50%;
     display: inline-block;
     {"}"}
