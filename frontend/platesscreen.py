@@ -16,7 +16,6 @@ class PlatesScreen(QMainWindow):
         self.mod_name = "plates"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/plateswindow.ui"), self)
-        #self.window().setWindowTitle("Plates")
 
         self.centralwidget.setProperty("test", test)
       
@@ -380,8 +379,16 @@ class PlatesScreen(QMainWindow):
             self.upload_plates_table.setRowCount(0)
             self.upload_plates_table.setRowCount(len(data))
             # assume data like [{col1, col2, col3, ...}, {...}]
+
             try:
+                iBackfillCount = 0
+                iMaxRow = len(data)
                 for n in range(len(data)):
+                    bBackfill = False
+                    if data[n][2].upper() == 'BACKFILL':
+                        iBackfillCount += 1
+                        bBackfill = True
+                        data[n][2] = data[n][3] = 'BACKFILL'
                     for m in range(len(data[n])):
                         if (data[n][m] is None) or (len(data[n][m]) == 0):
                             self.data_issue = True
@@ -389,7 +396,10 @@ class PlatesScreen(QMainWindow):
                         newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                         if error is True:
                             newItem.setBackground(QColor(250, 103, 92))
-                        self.upload_plates_table.setItem(n, m, newItem)
+                        if bBackfill:
+                            self.upload_plates_table.setItem(iMaxRow-iBackfillCount, m, newItem)
+                        else:
+                            self.upload_plates_table.setItem(n-iBackfillCount, m, newItem)
                     if len(data[n]) < 7:
                         self.data_issue = True
                         for k in range(len(data[n]), 7):
