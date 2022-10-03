@@ -18,7 +18,6 @@ from os.path import exists
 
 db = mydb.disconnectSafeConnect()
 cur = db.cursor()
-NR_OF_VIALS_IN_BOX = 200
 
 def getDatabase(parent):
     data = parent.request.headers['Token']
@@ -681,16 +680,41 @@ class UploadWellInformation(tornado.web.RequestHandler):
         sConc = self.get_argument("conc")
         sVolume = self.get_argument("volume")
 
-        sSql = f'''insert into {coolDB}.config
-        (config_id, well, compound_id, notebook_ref, form, conc, volume)
-        values
-        ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', '{sConc}', '{sVolume}')
-        '''
-        try:
-            cur.execute(sSql)
-        except Exception as e:
-            self.set_status(400)
-            self.finish(str(e))
+        if sCompound == 'BACKFILL':
+            sSql = f'''select conc, volume from {coolDB}.config
+            where config_id = '{sPlate}' and well = '{sWell}'
+            '''
+            sSlask = cur.execute(sSql)
+            tRes = cur.fetchall()
+            if len(tRes) != 1:
+                self.set_status(400)
+                logging.error(f'Backfill values requires an existing CONC value in the well {len(tRes)}')
+                self.finish(str('Backfill values requires an existing CONC value in the well'))
+                return
+
+            preConc = int(tRes[0][0])
+            preVolume = int(tRes[0][1])
+            sSql = f'''update {coolDB}.config
+            set conc = '{(preConc * int(preVolume))/(preVolume + int(sVolume))}',
+            volume = '{preVolume + int(sVolume)}'
+            where config_id = '{sPlate}' and well = '{sWell}'
+            '''
+            try:
+                cur.execute(sSql)
+            except Exception as e:
+                self.set_status(400)
+                self.finish(str(e))
+        else:
+            sSql = f'''insert into {coolDB}.config
+            (config_id, well, compound_id, notebook_ref, form, conc, volume)
+            values
+            ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', '{sConc}', '{sVolume}')
+            '''
+            try:
+                cur.execute(sSql)
+            except Exception as e:
+                self.set_status(400)
+                self.finish(str(e))
 
 
 @jwtauth
