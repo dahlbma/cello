@@ -214,6 +214,7 @@ def make_app():
         (r"/vialInfo/(?P<sVial>[^\/]+)", application.vialInfo),
         (r"/addMicrotube/(?P<sTubeId>[^\/]+)/(?P<sBatchId>[^\/]+)/(?P<sVolume>[^\/]+)/(?P<sConc>[^\/]*)",
          application.AddMicrotube),
+        (r"/listFiles", application.ListDownloadFiles),
         (r"/verifyVial/(?P<sVial>[^\/]+)", application.verifyVial),
         (r"/getCelloLauncher/Windows/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Windows/"}),
         (r"/getCelloLauncher/Linux/(.*)", web.StaticFileHandler, {"path": "dist/launchers/Linux/"}),

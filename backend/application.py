@@ -27,7 +27,7 @@ def getDatabase(parent):
         return 'glass', 'cool', 'microtube', 'loctree'
     else:
         return 'glass_test', 'cool_test', 'microtube_test', 'loctree_test'
-
+    
 def res_to_json(response, cursor):
     columns = cursor.description()
     to_js = [{columns[index][0]:column for index,
@@ -79,7 +79,6 @@ def getNewPlateId(coolDB):
 
     return sPlate
 
-
 def getNewRackId(microtubeDB):
     def nextPossibleRack():
         sSql = f"select pkey from {microtubeDB}.matrix_sequence"
@@ -103,6 +102,13 @@ def getNewRackId(microtubeDB):
             break
 
     return sRack
+
+
+class ListDownloadFiles(tornado.web.RequestHandler):
+    def get(self):
+        dirFiles = [f for f in os.listdir('dist/Windows') if os.path.isfile(os.path.join('dist/Windows', f))]
+        print(dirFiles)
+        self.render("template.html", dirFiles = dirFiles)
 
 
 class PingDB(tornado.web.RequestHandler):
