@@ -114,8 +114,6 @@ class ListDownloadFiles(tornado.web.RequestHandler):
 
         cur.execute(sSql)
         res = cur.fetchall()
-        resa = json.dumps(res_to_json(res, cur), indent=4)
-        print(resa)
         res = res_to_json(res, cur)
         dirFiles = [f for f in os.listdir('dist/Windows') if os.path.isfile(os.path.join('dist/Windows', f))]
         #print(dirFiles)

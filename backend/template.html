@@ -12,9 +12,9 @@
              </ul>
           {% end %}
           {% if targetFile['type'] == 'file' %}
-             <li><a href="/vialdb/Windows/{{targetFile['NAME']}}">{{targetFile['DESCRIPTION']}}</a></li>
+             <li><a href="/vialdb/{{targetFile['path']}}">{{targetFile['DESCRIPTION']}}</a></li>
 	  {% else %}
-	     {{targetFile['DESCRIPTION']}}
+	     <b>{{targetFile['DESCRIPTION']}}</b>
           {% end %}
           {% set curLevel = targetFile['level'] %}
       {% end %}
