@@ -1,13 +1,22 @@
 <html>
   <head>
-     
   </head>
-
   <body>
-    Windows:
+    {% set curLevel = 1 %}
     <ul>
       {% for targetFile in dirFiles %}
-         <li><a href="/vialdb/Windows/{{targetFile}}">{{targetFile}}</a></li>
+          {% if targetFile['level'] > curLevel %}
+             <ul>
+          {% end %}
+          {% if targetFile['level'] < curLevel %}
+             </ul>
+          {% end %}
+          {% if targetFile['type'] == 'file' %}
+             <li><a href="/vialdb/Windows/{{targetFile['NAME']}}">{{targetFile['DESCRIPTION']}}</a></li>
+	  {% else %}
+	     {{targetFile['DESCRIPTION']}}
+          {% end %}
+          {% set curLevel = targetFile['level'] %}
       {% end %}
     </ul>
   </body>

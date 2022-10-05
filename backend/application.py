@@ -42,11 +42,6 @@ def createPngFromMolfile(regno, molfile):
         logging.error(f"regno {regno} is nostruct")
 
 
-class home(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        self.redirect('/vialdb/index.html')
-        return
-
 def getNewLocId(loctreeDB):
     sSql = f"select pkey from {loctreeDB}.location_id_sequence"
     cur.execute(sSql)
@@ -104,11 +99,28 @@ def getNewRackId(microtubeDB):
     return sRack
 
 
+class home(tornado.web.RequestHandler):
+    def get(self, *args, **kwargs):
+        self.redirect('/vialdb/index.html')
+        return
+
+
 class ListDownloadFiles(tornado.web.RequestHandler):
     def get(self):
+        sSql = f'''select name, description, type, path, level
+                   from download_files.v_all_files
+                   order by path, level, type desc
+        '''
+
+        cur.execute(sSql)
+        res = cur.fetchall()
+        resa = json.dumps(res_to_json(res, cur), indent=4)
+        print(resa)
+        res = res_to_json(res, cur)
         dirFiles = [f for f in os.listdir('dist/Windows') if os.path.isfile(os.path.join('dist/Windows', f))]
-        print(dirFiles)
-        self.render("template.html", dirFiles = dirFiles)
+        #print(dirFiles)
+        #self.render("template.html", dirFiles = dirFiles)
+        self.render("template.html", curLevel = 1, dirFiles = res)
 
 
 class PingDB(tornado.web.RequestHandler):
@@ -121,7 +133,7 @@ class PingDB(tornado.web.RequestHandler):
         cur.execute(sSql)
         res = cur.fetchall()
         self.finish()
-        
+
 
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
@@ -1408,9 +1420,9 @@ def doPrintPlate(sPlate):
 ^PW400
 ^LL0064
 ^LS0
-^BY2,3,43^FT42,48^BCN,,Y,N
+^BY2,3,43^FT47,48^BCN,,Y,N
 ^FD>:P>{sPlate}^FS
-^FT270,48^A0N,22,25^FH\^FD{sPlate}^FS
+^FT277,48^A0N,22,25^FH\^FD{sPlate}^FS
 ^PQ1,0,1,Y^XZ
 '''
     f = open('/tmp/file.txt','w')
