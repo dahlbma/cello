@@ -107,7 +107,8 @@ class home(tornado.web.RequestHandler):
 
 class ListDownloadFiles(tornado.web.RequestHandler):
     def get(self):
-        sSql = f'''select name, description, type, path, level, comment
+        sSql = f'''select name, description, type, path,
+                   level, comment, date(update_date) update_date
                    from download_files.v_all_files
                    order by path, level, type desc
         '''

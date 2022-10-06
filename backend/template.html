@@ -14,7 +14,8 @@
           {% if targetFile['type'] == 'file' %}
              <li><a href="/vialdb/{{targetFile['path']}}">{{targetFile['DESCRIPTION']}}</a>
 	     {% if targetFile['comment'] != None %}
-	         <i>{{targetFile['comment']}}</i>
+	         <i>{{targetFile['comment']}}
+	         Updated date: {{targetFile['update_date']}}</i>
              {% end %}
 	     </li>
 	  {% else %}
