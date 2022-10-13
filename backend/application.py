@@ -1218,7 +1218,8 @@ def getBoxFromDb(sBox, glassDB, loctreeDB):
     return res_to_json(tRes, cur)#jRes
 
 def doPrint(sCmp, sBatch, sType, sDate, sVial):
-
+    if sType != 'Solid':
+        sType = str(sType) + ' mM'
     zplVial = """^XA
 ^MMT
 ^PW400
