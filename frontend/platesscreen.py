@@ -322,6 +322,7 @@ class PlatesScreen(QMainWindow):
         plate = self.plate_search_eb.text()
         r = dbInterface.discardPlate(self.token, plate)
         logging.getLogger(self.mod_name).info(f"discardPlate [{plate}] returned: {r}")
+        self.platesearch_error_lab.setText(f"DISCARDED")
 
     def plate_moldisplay(self, item):
         if (item is not None):
