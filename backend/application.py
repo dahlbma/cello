@@ -101,7 +101,6 @@ def getNewRackId(microtubeDB):
 
 class home(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
-        #self.redirect('/vialdb/index.html')
         self.redirect('/vialdb/listFiles')
 
 
