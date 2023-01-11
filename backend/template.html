@@ -7,10 +7,18 @@
       {% for targetFile in dirFiles %}
           {% if targetFile['level'] > curLevel %}
              <ul>
-          {% end %}
+               {% end %}
+	       
           {% if targetFile['level'] < curLevel %}
+             {% set curLevel = curLevel - 1 %}
              </ul>
           {% end %}
+          {% if targetFile['level'] < curLevel %}
+             {% set curLevel = curLevel - 1 %}
+             </ul>
+          {% end %}
+
+	     
           {% if targetFile['type'] == 'file' %}
              <li><a href="/vialdb/{{targetFile['path']}}">{{targetFile['DESCRIPTION']}}</a>
 	     {% if targetFile['comment'] != None %}

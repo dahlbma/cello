@@ -117,7 +117,6 @@ class ListDownloadFiles(tornado.web.RequestHandler):
         res = cur.fetchall()
         res = res_to_json(res, cur)
         dirFiles = [f for f in os.listdir('dist/Windows') if os.path.isfile(os.path.join('dist/Windows', f))]
-        #print(dirFiles)
         #self.render("template.html", dirFiles = dirFiles)
         self.render("template.html", curLevel = 1, dirFiles = res)
 
