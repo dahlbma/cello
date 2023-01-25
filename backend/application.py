@@ -683,6 +683,21 @@ class UploadWellInformation(tornado.web.RequestHandler):
             numbers = sWell[len(alphabet):]
             numbers = str(numbers).zfill(2)
             return alphabet + numbers
+
+        def checkCmpId(notebook_ref, compound_id):
+            sSql = f'''
+            select compound_id from bcpvs.batch
+            where notebook_ref = '{notebook_ref}'
+            '''
+            cur.execute(sSql)
+            tRes = cur.fetchall()
+            if len(tRes) == 0:
+                return False
+            if tRes[0][0] != compound_id:
+                return False
+            else:
+                return True
+
         
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sPlate = self.get_argument("plate_id")
@@ -693,7 +708,13 @@ class UploadWellInformation(tornado.web.RequestHandler):
         sForm = self.get_argument("form")
         sConc = self.get_argument("conc")
         sVolume = self.get_argument("volume")
-
+        
+        if checkCmpId(sBatch, sCompound) == False:
+            self.set_status(400)
+            self.finish('Compound id not found')
+            return
+            
+        
         if sCompound == 'BACKFILL':
             sSql = f'''select conc, volume from {coolDB}.config
             where config_id = '{sPlate}' and well = '{sWell}'
