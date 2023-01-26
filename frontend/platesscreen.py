@@ -366,10 +366,11 @@ class PlatesScreen(QMainWindow):
                     data.pop(0)
                 self.upload_plates_data = data
                 self.populate_upload_table(data)
-        except:
+        except Exception as e:
             self.upload_plates_data = None
             self.upload_file_btn.setEnabled(False)
             logging.getLogger(self.mod_name).error("plates file import failed")
+            logging.getLogger(self.mod_name).error(str(e))
         self.enable_upload()
 
     def populate_upload_table(self, data, error=False):
@@ -380,7 +381,6 @@ class PlatesScreen(QMainWindow):
             self.upload_plates_table.setRowCount(0)
             self.upload_plates_table.setRowCount(len(data))
             # assume data like [{col1, col2, col3, ...}, {...}]
-
             try:
                 iBackfillCount = 0
                 iMaxRow = len(data)
@@ -409,8 +409,9 @@ class PlatesScreen(QMainWindow):
                             newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                             newItem.setBackground(QColor(250, 103, 92))
                             self.upload_plates_table.setItem(n, k, newItem)
-            except:
+            except Exception as e:
                 logging.getLogger(self.mod_name).error("plate file import failed")
+                logging.getLogger(self.mod_name).error(str(e))
             self.upload_populated = True
         
 
