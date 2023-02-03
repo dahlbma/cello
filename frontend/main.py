@@ -60,6 +60,7 @@ if os.path.exists(v_path):
 #base app settings
 os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
 os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu"
+os.environ["LIBGL_ALWAYS_SOFTWARE"] = "1"
 app = QApplication(['Cello'])
 clipboard = app.clipboard()
 
