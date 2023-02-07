@@ -685,6 +685,8 @@ class UploadWellInformation(tornado.web.RequestHandler):
             return alphabet + numbers
 
         def checkCmpId(notebook_ref, compound_id):
+            if compound_id.upper() == 'BACKFILL':
+                return True
             sSql = f'''
             select compound_id from bcpvs.batch
             where notebook_ref = '{notebook_ref}'
@@ -711,6 +713,7 @@ class UploadWellInformation(tornado.web.RequestHandler):
         
         if checkCmpId(sBatch, sCompound) == False:
             self.set_status(400)
+            logging.error(f'CompoundId not found: {sCompound}')
             self.finish('Compound id not found')
             return
             
@@ -729,6 +732,7 @@ class UploadWellInformation(tornado.web.RequestHandler):
 
             preConc = int(tRes[0][0])
             preVolume = int(tRes[0][1])
+            sVolume = int(float(sVolume))
             sSql = f'''update {coolDB}.config
             set conc = '{(preConc * int(preVolume))/(preVolume + int(sVolume))}',
             volume = '{preVolume + int(sVolume)}'
@@ -737,6 +741,7 @@ class UploadWellInformation(tornado.web.RequestHandler):
             try:
                 cur.execute(sSql)
             except Exception as e:
+                logging.error(f'Backfill error {str(e)}')
                 self.set_status(400)
                 self.finish(str(e))
         else:
