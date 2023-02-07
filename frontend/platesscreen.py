@@ -455,7 +455,7 @@ class PlatesScreen(QMainWindow):
                     volume]
             status = False
             if flush is False:
-                _, status = dbInterface.uploadWellInformation(self.token,
+                retVal, status = dbInterface.uploadWellInformation(self.token,
                                                             plate_id,
                                                             well,
                                                             compound_id,
@@ -465,6 +465,7 @@ class PlatesScreen(QMainWindow):
                                                             volume)
             if status is False:
                 repopulate_data.append(data)
+                logging.getLogger(self.mod_name).info(f"Failed with uploadWellInformation Plate: {plate_id} Well: {well} Error: {retVal}")
             iTickCount += 1
             if iTickCount == iTicks:
                 progress += 1
