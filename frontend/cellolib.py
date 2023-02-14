@@ -199,11 +199,16 @@ def chart_html(data, size):
                     row = int(ord(row_c[1]) - ord('A')) + 26
 
                 col = int(parts[1]) - 1
-            if well['compound_id'] == 'CTRL':
-                chart[row][col] = "green"
-            elif well['compound_id'] == 'DMSO':
-                chart[row][col] = "black"
-            else:
+
+            try:
+                if well['compound_id'] == 'CTRL':
+                    chart[row][col] = "green"
+                elif well['compound_id'] == 'DMSO':
+                    chart[row][col] = "black"
+                else:
+                    chart[row][col] = "red"
+            except:
+                # We end up here when we are scanning microtue racks
                 chart[row][col] = "red"
 
     span = lambda x: f"<span class=\"{x}\"></span>"
@@ -218,8 +223,8 @@ def chart_html(data, size):
         html += "</br>"
     return html
 
-def chart_lambda(blob_size):
-    
+def chart_lambda(blob_size = 8):
+
     return lambda x, y, size: f"""<!DOCTYPE html><html><head><style>
     .red {"{"}
     height: {blob_size + 2}px;
