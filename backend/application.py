@@ -122,11 +122,12 @@ class ListDownloadFiles(tornado.web.RequestHandler):
 class PingDB(tornado.web.RequestHandler):
     def get(self):
         sSql = "SELECT * FROM glass.box_sequence"
-        cur.execute(sSql)
+        cur.ping(sSql)
         
     def head(self):
         sSql = "SELECT * FROM glass.box_sequence"
-        cur.execute(sSql)
+        #cur.execute(sSql)
+        cur.ping(sSql)
         res = cur.fetchall()
         self.finish()
 
@@ -582,7 +583,7 @@ class MergePlates(tornado.web.RequestHandler):
                 sConc = i[5]
                 if sConc == None:
                     sConc = 'NULL'
-                dfTargetWell = quadrant.loc[quadrant[1] == sWell][2]
+                dfTargetWell = quadrant.loc[quadrant[1] == sWell][2]                
                 sTargetWell = list(dfTargetWell)[0]
                 sSql = f"""
                 insert into {coolDB}.config
