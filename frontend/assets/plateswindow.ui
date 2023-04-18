@@ -83,7 +83,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -1925,7 +1925,7 @@ QLineEdit[state=&quot;mismatch&quot;] {
       <item>
        <widget class="QWebEngineView" name="plate_display" native="true">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -1939,7 +1939,7 @@ QLineEdit[state=&quot;mismatch&quot;] {
         <property name="maximumSize">
          <size>
           <width>300</width>
-          <height>430</height>
+          <height>1000</height>
          </size>
         </property>
         <property name="styleSheet">
@@ -1957,10 +1957,13 @@ QLineEdit[state=&quot;mismatch&quot;] {
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
           <width>20</width>
-          <height>428</height>
+          <height>48</height>
          </size>
         </property>
        </spacer>
