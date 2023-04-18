@@ -518,6 +518,9 @@ class PlatesScreen(QMainWindow):
                 data, b = dbInterface.getRack(self.token, plate_id)
                 
             self.merge_datas[index] = json.loads(data)
+
+            if (index == 0) and (len(self.merge_datas[0])):
+                return -1, False
             return res[0]['wells'], True
         except:
             self.merge_datas[index] = None
@@ -782,5 +785,14 @@ class PlatesScreen(QMainWindow):
                 data.extend(disp_tran(i, self.merge_datas[i]))
         
         if not (all(x == False for x in self.ok_arr)):
-            self.plate_display.setHtml(plate_to_html(data, 384, resultdata, 384))
+            size = -1
+            if self.dom_size == 96:
+                size = 384
+            elif self.dom_size == 384:
+                size = 1536
+            else: 
+                # unrecognized size
+                logging.getLogger(self.mod_name).error("attempting to display incorrectly sized plate")
+                return
+            self.plate_display.setHtml(plate_to_html(data, size, resultdata, size))
         return
