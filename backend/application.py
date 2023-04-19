@@ -526,13 +526,34 @@ class MergePlates(tornado.web.RequestHandler):
     def post(self):
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
 
-        def getQuadrant(quadrant):
-            sSql = f"""
-            select quadrant, well96, well384
-            from {coolDB}.map96to384
-            where quadrant = {quadrant}
-            order by well96
-            """
+        def getPlateSize(sPlate):
+            sSql = f"""select type_id from {coolDB}.plate where plate_id = '{sPlate}' """
+            cur.execute(sSql)
+            iType = cur.fetchall()[0][0]
+
+            if iType == 16:
+                iType = 384
+            elif iType == 47:
+                iType = 1536
+            return iType
+            
+        def getQuadrant(quadrant, iPlateSize = 384):
+            sSql = ''
+            if iPlateSize == 384:
+                sSql = f"""
+                select quadrant, well96, well384
+                from {coolDB}.map96to384
+                where quadrant = {quadrant}
+                order by well96
+                """
+            elif iPlateSize == 1536:
+                sSql = f"""
+                select quadrant, well384, well1536
+                from {coolDB}.map384to1536
+                where quadrant = {quadrant}
+                order by well384
+                """
+
             cur.execute(sSql)
             df = pd.DataFrame(cur.fetchall())
             return df
@@ -574,7 +595,9 @@ class MergePlates(tornado.web.RequestHandler):
             return tRes
         
         def transferWells(quadrant, sourcePlate, targetPlate):
+            ii = 0
             for i in sourcePlate:
+                ii += 1
                 sPlate = i[0]
                 sWell = i[1]
                 sCmpId = i[2]
@@ -600,6 +623,7 @@ class MergePlates(tornado.web.RequestHandler):
                 )
                 """
                 cur.execute(sSql)
+                
         
         sVolume = self.get_argument("volume")
         q1 = self.get_argument("q1").upper()
@@ -607,6 +631,8 @@ class MergePlates(tornado.web.RequestHandler):
         q3 = self.get_argument("q3").upper()
         q4 = self.get_argument("q4").upper()
         targetPlate = self.get_argument("target").upper()
+
+        iTargetSize = getPlateSize(targetPlate)
 
         sSql = f"""
         select count(c.config_id) from {coolDB}.plate p, {coolDB}.config c
@@ -622,19 +648,19 @@ class MergePlates(tornado.web.RequestHandler):
             return
         
         if q1 != "":
-            quadrant = getQuadrant(1)
+            quadrant = getQuadrant(1, iTargetSize)
             plate = getPlate(q1)
             transferWells(quadrant, plate, targetPlate)
         if q2 != "":
-            quadrant = getQuadrant(2)
+            quadrant = getQuadrant(2, iTargetSize)
             plate = getPlate(q2)
             transferWells(quadrant, plate, targetPlate)
         if q3 != "":
-            quadrant = getQuadrant(3)
+            quadrant = getQuadrant(3, iTargetSize)
             plate = getPlate(q3)
             transferWells(quadrant, plate, targetPlate)
         if q4 != "":
-            quadrant = getQuadrant(4)
+            quadrant = getQuadrant(4, iTargetSize)
             plate = getPlate(q4)
             transferWells(quadrant, plate, targetPlate)
 

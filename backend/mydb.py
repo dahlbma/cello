@@ -48,8 +48,11 @@ class DisconnectSafeCursor(object):
                 try:
                     self.scarabCursor.execute(*args, **kwargs)
                 except Exception as e:
-                    scarabLogger.error(str(e))
-                    scarabLogger.error(args)
+                    if '_test' in args[0]:
+                        pass
+                    else:
+                        scarabLogger.error(str(e))
+                        scarabLogger.error(args)
                 return self.cursor.execute(*args, **kwargs)
         except MySQLdb.OperationalError:
             self.db.reconnect()
@@ -97,7 +100,12 @@ class DisconnectSafeConnection(object):
             database=config.scarabDatabase['db']
         )
         self.scarabConn.autocommit(True)
+        self.scarabConn.query('SET GLOBAL connect_timeout=28800')
+        self.scarabConn.query('SET GLOBAL interactive_timeout=28800')
+        self.scarabConn.query('SET GLOBAL wait_timeout=28800')
 
+
+        
   
     def cursor(self, *args, **kwargs):
         self.cur = self.conn.cursor(*args, **kwargs)
