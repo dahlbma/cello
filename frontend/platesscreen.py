@@ -104,10 +104,11 @@ class PlatesScreen(QMainWindow):
 
 
     def keyPressEvent(self, event):
+        page_index = self.plates_tab_wg.currentIndex()
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
-            if self.plates_tab_wg.currentIndex() == 0:
+            if page_index == 0:
                 return
-            elif self.plates_tab_wg.currentIndex() == 2:
+            elif page_index == 2:
                 self.check_plate_search_input()
             else:
                 return
