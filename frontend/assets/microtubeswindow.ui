@@ -474,6 +474,9 @@
               <property name="text">
                <string/>
               </property>
+              <property name="textInteractionFlags">
+               <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+              </property>
              </widget>
             </item>
            </layout>
@@ -711,6 +714,9 @@
               <property name="text">
                <string>No file chosen</string>
               </property>
+              <property name="textInteractionFlags">
+               <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+              </property>
              </widget>
             </item>
             <item row="1" column="0">
@@ -730,8 +736,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>81</width>
-                 <height>31</height>
+                 <width>393</width>
+                 <height>532</height>
                 </rect>
                </property>
                <layout class="QGridLayout" name="gridLayout_13">
@@ -853,6 +859,9 @@
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                </property>
+                <property name="textInteractionFlags">
+                 <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
                 </property>
                </widget>
               </item>
@@ -1250,6 +1259,9 @@ Microtubes</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
           </property>
          </widget>
          <widget class="QLabel" name="label_3">
