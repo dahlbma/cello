@@ -720,7 +720,7 @@ class PlatesScreen(QMainWindow):
 
         sizesMatchingOK = self.check_merge_sizes()# sizes between parts match
         if not sizesMatchingOK:
-            self.merge_status_append("Source plates are not all of same size.")
+            self.merge_status_append("Source plates size mismatch")
 
         self.color_boxes()
         targetSizeOK = (self.size_arr[0] != -1) and \
@@ -729,10 +729,7 @@ class PlatesScreen(QMainWindow):
             self.merge_status_append("Size mismatch between source and target plates.")
         
         if (not sizesMatchingOK) or (not targetSizeOK): # show source info if there are errors
-            self.merge_status_append(f"""\nQ1:{self.plate_ids[1]} size: {self.size_arr[1]}
-                                         \nQ2:{self.plate_ids[2]} size: {self.size_arr[2]}
-                                         \nQ3:{self.plate_ids[3]} size: {self.size_arr[3]}
-                                         \nQ4:{self.plate_ids[4]} size: {self.size_arr[4]}""")
+            self.merge_status_append(f"\nQ1:{self.plate_ids[1]} size: {self.size_arr[1]}\nQ2:{self.plate_ids[2]} size: {self.size_arr[2]}\nQ3:{self.plate_ids[3]} size: {self.size_arr[3]}\nQ4:{self.plate_ids[4]} size: {self.size_arr[4]}")
             if not targetSizeOK: # only print target info when relevant
                 self.merge_status_append(f"\nTarget:{self.plate_ids[0]} size: {self.size_arr[0]}")
 
