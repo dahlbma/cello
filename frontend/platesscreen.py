@@ -99,6 +99,8 @@ class PlatesScreen(QMainWindow):
         self.join_result_eb.textChanged.connect(self.mod0)
         self.merge_volume_eb.textChanged.connect(self.mod_vol)
 
+        self.merge_status_lab_init = 1
+
         validator = QIntValidator(0, 1000, self)
         self.merge_volume_eb.setValidator(validator)
 
@@ -521,6 +523,7 @@ class PlatesScreen(QMainWindow):
             self.merge_datas[index] = json.loads(data)
 
             if (index == 0) and (len(self.merge_datas[0])):
+                self.merge_status_append("Target plate not empty.")
                 return -1, False
             return res[0]['wells'], True
         except:
@@ -550,7 +553,7 @@ class PlatesScreen(QMainWindow):
 
     def color_boxes(self):
         if self.merge_volume_eb.text() == "":
-            self.mark_merge_box(5, "mismatch")
+            self.mark_merge_box(5, "bad")
         else:
             self.mark_merge_box(5, "good")
         pattern1 = '^[pP]{1}[0-9]{6}$'
@@ -605,6 +608,7 @@ class PlatesScreen(QMainWindow):
                 if self.plate_ids[i] not in ids:
                     ids.append(self.plate_ids[i])
                 else: 
+                    self.merge_status_append("Duplicate plate ID in Q{i}")
                     self.ok_arr[i] = False
                     self.plate_ids[i] = -1
 
@@ -616,18 +620,24 @@ class PlatesScreen(QMainWindow):
             return 0
 
     def move_focus(self, mod, ok_list):
-        if ok_list[mod] is True:
+        next_box = -1
+        if mod == -1:
+            next_box = self.get_free_box_index(ok_list, 0)
+        elif mod == 4:
+            next_box = 0
+        elif ok_list[mod] is True:
             next_box = self.get_free_box_index(ok_list, mod)
-            if next_box == 0:
-                self.join_result_eb.setFocus()
-            elif next_box == 1:
-                self.join_q1_eb.setFocus()
-            elif next_box == 2:
-                self.join_q2_eb.setFocus()
-            elif next_box == 3:
-                self.join_q3_eb.setFocus()
-            elif next_box == 4:
-                self.join_q4_eb.setFocus()
+        
+        if next_box == 0:
+            self.join_result_eb.setFocus()
+        elif next_box == 1:
+            self.join_q1_eb.setFocus()
+        elif next_box == 2:
+            self.join_q2_eb.setFocus()
+        elif next_box == 3:
+            self.join_q3_eb.setFocus()
+        elif next_box == 4:
+            self.join_q4_eb.setFocus()
 
     def mod0(self):
         self.currentTexts[0] = self.join_result_eb.text()
@@ -658,8 +668,18 @@ class PlatesScreen(QMainWindow):
         self.currentTexts[5] = self.merge_volume_eb.text()
         self.merge_check(volume_was_modified=True)
 
-#TODO retranslate OK plates to html
+    def merge_status_append(self, text):
+        if self.merge_status_lab_init == 1:
+            self.merge_status_lab_init = 0
+            self.merge_status_lab.setText(text)
+        else:
+            s = self.merge_status_lab.text()
+            self.merge_status_lab.setText(s + "\n" + text)
+
     def merge_check(self, volume_was_modified=True):
+        self.merge_status_lab.clear()
+        self.merge_status_lab_init = 1
+
         noEmptyEntriesOK = (self.join_result_eb.text() != "") and \
             ((self.join_q1_eb.text() != "") or \
             (self.join_q2_eb.text() != "") or \
@@ -699,9 +719,22 @@ class PlatesScreen(QMainWindow):
             # filled fields are valid
 
         sizesMatchingOK = self.check_merge_sizes()# sizes between parts match
+        if not sizesMatchingOK:
+            self.merge_status_append("Source plates are not all of same size.")
+
         self.color_boxes()
         targetSizeOK = (self.size_arr[0] != -1) and \
             (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
+        if not targetSizeOK:
+            self.merge_status_append("Size mismatch between source and target plates.")
+        
+        if (not sizesMatchingOK) or (not targetSizeOK): # show source info if there are errors
+            self.merge_status_append(f"""\nQ1:{self.plate_ids[1]} size: {self.size_arr[1]}
+                                         \nQ2:{self.plate_ids[2]} size: {self.size_arr[2]}
+                                         \nQ3:{self.plate_ids[3]} size: {self.size_arr[3]}
+                                         \nQ4:{self.plate_ids[4]} size: {self.size_arr[4]}""")
+            if not targetSizeOK: # only print target info when relevant
+                self.merge_status_append(f"\nTarget:{self.plate_ids[0]} size: {self.size_arr[0]}")
 
         volumeOK = (self.merge_volume_eb.text() != "")
         
