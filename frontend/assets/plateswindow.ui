@@ -83,7 +83,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -1405,6 +1405,8 @@ QFrame#merge_frame_4[state=&quot;mismatch&quot;] {
                 </widget>
                </item>
               </layout>
+              <zorder>label_12</zorder>
+              <zorder>join_q4_eb</zorder>
              </widget>
             </item>
             <item row="0" column="0">
@@ -1524,6 +1526,8 @@ QFrame#merge_frame_1[state=&quot;mismatch&quot;] {
                 </widget>
                </item>
               </layout>
+              <zorder>label_5</zorder>
+              <zorder>join_q1_eb</zorder>
              </widget>
             </item>
             <item row="1" column="0">
@@ -1643,6 +1647,8 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
                 </widget>
                </item>
               </layout>
+              <zorder>label_11</zorder>
+              <zorder>join_q3_eb</zorder>
              </widget>
             </item>
             <item row="0" column="1">
@@ -1762,6 +1768,8 @@ QFrame#merge_frame_2[state=&quot;mismatch&quot;] {
                 </widget>
                </item>
               </layout>
+              <zorder>label_10</zorder>
+              <zorder>join_q2_eb</zorder>
              </widget>
             </item>
            </layout>
@@ -1905,6 +1913,11 @@ QLineEdit[state=&quot;mismatch&quot;] {
            </widget>
           </item>
          </layout>
+         <zorder>merge_frame_result</zorder>
+         <zorder>join_errorlab</zorder>
+         <zorder>label_8</zorder>
+         <zorder>merge_status_lab</zorder>
+         <zorder>nine6to384_btn</zorder>
         </widget>
        </widget>
       </item>
@@ -1992,6 +2005,46 @@ QLineEdit[state=&quot;mismatch&quot;] {
    <header location="global">QtWebEngineWidgets/QWebEngineView</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>merge_volume_eb</tabstop>
+  <tabstop>join_q1_eb</tabstop>
+  <tabstop>join_q2_eb</tabstop>
+  <tabstop>join_q3_eb</tabstop>
+  <tabstop>join_q4_eb</tabstop>
+  <tabstop>join_result_eb</tabstop>
+  <tabstop>nine6to384_btn</tabstop>
+  <tabstop>new_plates_save_btn</tabstop>
+  <tabstop>new_plates_type_cb</tabstop>
+  <tabstop>new_plates_comment_eb</tabstop>
+  <tabstop>plate_location_cb</tabstop>
+  <tabstop>label_to_plates_comment_eb</tabstop>
+  <tabstop>label_to_plate_id_eb</tabstop>
+  <tabstop>label_to_n_plates_sb</tabstop>
+  <tabstop>label_to_plates_save_btn</tabstop>
+  <tabstop>label_to_plates_type_cb</tabstop>
+  <tabstop>plate_table</tabstop>
+  <tabstop>plate_export_btn</tabstop>
+  <tabstop>plate_comment_btn</tabstop>
+  <tabstop>plate_comment_eb</tabstop>
+  <tabstop>update_plate_location_cb</tabstop>
+  <tabstop>plate_discard_chk</tabstop>
+  <tabstop>plate_print_btn</tabstop>
+  <tabstop>plate_search_btn</tabstop>
+  <tabstop>plate_search_eb</tabstop>
+  <tabstop>plate_discard_btn</tabstop>
+  <tabstop>choose_file_btn</tabstop>
+  <tabstop>upload_plate_size_cb</tabstop>
+  <tabstop>upload_file_btn</tabstop>
+  <tabstop>upload_plates_table</tabstop>
+  <tabstop>upload_export_btn</tabstop>
+  <tabstop>plates_tab_wg</tabstop>
+  <tabstop>goto_vials_btn</tabstop>
+  <tabstop>goto_plates_btn</tabstop>
+  <tabstop>goto_microtubes_btn</tabstop>
+  <tabstop>goto_boxes_btn</tabstop>
+  <tabstop>new_n_plates_sb</tabstop>
+  <tabstop>goto_search_btn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
