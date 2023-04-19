@@ -83,7 +83,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -1337,7 +1337,7 @@ QFrame#merge_frame_result[state=&quot;mismatch&quot;] {
                   </size>
                  </property>
                  <property name="text">
-                  <string>Result:</string>
+                  <string>Target:</string>
                  </property>
                 </widget>
                </item>
