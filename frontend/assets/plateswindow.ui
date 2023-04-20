@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1257</width>
-    <height>810</height>
+    <height>817</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1174,98 +1174,13 @@ QLineEdit[state=&quot;mismatch&quot;] {
             </item>
            </layout>
           </item>
-          <item row="1" column="2">
-           <spacer name="verticalSpacer_18">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::MinimumExpanding</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>120</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="6" column="2">
-           <widget class="QPushButton" name="nine6to384_btn">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>82</width>
-              <height>66</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>82</width>
-              <height>66</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton[state=&quot;base&quot;] {
-}
-QPushButton[state=&quot;good&quot;] {
-	background-color: rgb(167, 221, 181)
-}
-QPushButton[state=&quot;bad&quot;] {
-	background-color: rgb(234, 112, 112)
-}
-QPushButton[state=&quot;mismatch&quot;] {
-	background-color: rgb(154, 231, 244)
-}</string>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>70</width>
-              <height>60</height>
-             </size>
-            </property>
-            <property name="state" stdset="0">
-             <string>base</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="4">
-           <spacer name="verticalSpacer_19">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>201</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="1" column="1">
-           <widget class="QLabel" name="label_8">
-            <property name="font">
-             <font>
-              <pointsize>20</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Join plates of the same size</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="5">
-           <spacer name="horizontalSpacer_26">
+          <item row="3" column="0" rowspan="3">
+           <spacer name="horizontalSpacer_23">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
+             <enum>QSizePolicy::MinimumExpanding</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -1286,7 +1201,7 @@ QPushButton[state=&quot;mismatch&quot;] {
             <property name="minimumSize">
              <size>
               <width>100</width>
-              <height>80</height>
+              <height>100</height>
              </size>
             </property>
             <property name="styleSheet">
@@ -1333,11 +1248,19 @@ QFrame#merge_frame_result[state=&quot;mismatch&quot;] {
                  <property name="minimumSize">
                   <size>
                    <width>140</width>
-                   <height>0</height>
+                   <height>20</height>
                   </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                  </font>
                  </property>
                  <property name="text">
                   <string>Target:</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                  </property>
                 </widget>
                </item>
@@ -1357,9 +1280,80 @@ QFrame#merge_frame_result[state=&quot;mismatch&quot;] {
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QLabel" name="join_target_size_lab">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>12</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </item>
             </layout>
+           </widget>
+          </item>
+          <item row="6" column="2">
+           <widget class="QPushButton" name="nine6to384_btn">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>82</width>
+              <height>66</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>82</width>
+              <height>66</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton[state=&quot;base&quot;] {
+}
+QPushButton[state=&quot;good&quot;] {
+	background-color: rgb(167, 221, 181)
+}
+QPushButton[state=&quot;bad&quot;] {
+	background-color: rgb(234, 112, 112)
+}
+QPushButton[state=&quot;mismatch&quot;] {
+	background-color: rgb(154, 231, 244)
+}</string>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>70</width>
+              <height>60</height>
+             </size>
+            </property>
+            <property name="state" stdset="0">
+             <string>base</string>
+            </property>
            </widget>
           </item>
           <item row="3" column="1" rowspan="5">
@@ -1409,15 +1403,15 @@ QFrame#merge_frame_1[state=&quot;mismatch&quot;] {
                <string>base</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_11">
-               <item row="0" column="1">
-                <spacer name="verticalSpacer_3">
+               <item row="1" column="2">
+                <spacer name="horizontalSpacer_16">
                  <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+                  <enum>Qt::Horizontal</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>20</width>
-                   <height>92</height>
+                   <width>68</width>
+                   <height>20</height>
                   </size>
                  </property>
                 </spacer>
@@ -1435,31 +1429,8 @@ QFrame#merge_frame_1[state=&quot;mismatch&quot;] {
                  </property>
                 </spacer>
                </item>
-               <item row="1" column="1">
-                <widget class="QLineEdit" name="join_q1_eb">
-                 <property name="styleSheet">
-                  <string notr="true">QLineEdit{
-	border: 1px solid black;
-	border-radius: 3px
-}</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2">
-                <spacer name="horizontalSpacer_16">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>68</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item row="2" column="1">
-                <spacer name="verticalSpacer_10">
+               <item row="0" column="1">
+                <spacer name="verticalSpacer_3">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
                  </property>
@@ -1486,9 +1457,48 @@ QFrame#merge_frame_1[state=&quot;mismatch&quot;] {
                  </property>
                 </widget>
                </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="join_q1_size_lab">
+                 <property name="font">
+                  <font>
+                   <pointsize>20</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <spacer name="verticalSpacer_10">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>92</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="join_q1_eb">
+                 <property name="styleSheet">
+                  <string notr="true">QLineEdit{
+	border: 1px solid black;
+	border-radius: 3px
+}</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
               <zorder>label_5</zorder>
               <zorder>join_q1_eb</zorder>
+              <zorder>join_q1_size_lab</zorder>
              </widget>
             </item>
             <item row="0" column="1">
@@ -1613,9 +1623,25 @@ QFrame#merge_frame_2[state=&quot;mismatch&quot;] {
                  </property>
                 </widget>
                </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="join_q2_size_lab">
+                 <property name="font">
+                  <font>
+                   <pointsize>20</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
               </layout>
               <zorder>label_10</zorder>
               <zorder>join_q2_eb</zorder>
+              <zorder>join_q2_size_lab</zorder>
              </widget>
             </item>
             <item row="1" column="1">
@@ -1663,19 +1689,6 @@ QFrame#merge_frame_4[state=&quot;mismatch&quot;] {
                <string>base</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_14">
-               <item row="0" column="1">
-                <spacer name="verticalSpacer_15">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>89</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
                <item row="1" column="0">
                 <spacer name="horizontalSpacer_21">
                  <property name="orientation">
@@ -1689,25 +1702,15 @@ QFrame#merge_frame_4[state=&quot;mismatch&quot;] {
                  </property>
                 </spacer>
                </item>
-               <item row="1" column="1">
-                <widget class="QLineEdit" name="join_q4_eb">
-                 <property name="styleSheet">
-                  <string notr="true">QLineEdit{
-	border: 1px solid black;
-	border-radius: 3px
-}</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2">
-                <spacer name="horizontalSpacer_22">
+               <item row="0" column="1">
+                <spacer name="verticalSpacer_15">
                  <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
+                  <enum>Qt::Vertical</enum>
                  </property>
                  <property name="sizeHint" stdset="0">
                   <size>
-                   <width>60</width>
-                   <height>20</height>
+                   <width>20</width>
+                   <height>89</height>
                   </size>
                  </property>
                 </spacer>
@@ -1725,6 +1728,29 @@ QFrame#merge_frame_4[state=&quot;mismatch&quot;] {
                  </property>
                 </spacer>
                </item>
+               <item row="1" column="2">
+                <spacer name="horizontalSpacer_22">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>60</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="join_q4_eb">
+                 <property name="styleSheet">
+                  <string notr="true">QLineEdit{
+	border: 1px solid black;
+	border-radius: 3px
+}</string>
+                 </property>
+                </widget>
+               </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_12">
                  <property name="font">
@@ -1740,9 +1766,25 @@ QFrame#merge_frame_4[state=&quot;mismatch&quot;] {
                  </property>
                 </widget>
                </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="join_q4_size_lab">
+                 <property name="font">
+                  <font>
+                   <pointsize>20</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+                 </property>
+                </widget>
+               </item>
               </layout>
               <zorder>label_12</zorder>
               <zorder>join_q4_eb</zorder>
+              <zorder>join_q4_size_lab</zorder>
              </widget>
             </item>
             <item row="1" column="0">
@@ -1867,41 +1909,28 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
                  </property>
                 </widget>
                </item>
+               <item row="2" column="2">
+                <widget class="QLabel" name="join_q3_size_lab">
+                 <property name="font">
+                  <font>
+                   <pointsize>20</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
               </layout>
               <zorder>label_11</zorder>
               <zorder>join_q3_eb</zorder>
+              <zorder>join_q3_size_lab</zorder>
              </widget>
             </item>
            </layout>
-          </item>
-          <item row="7" column="4">
-           <spacer name="verticalSpacer_20">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>201</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="3" column="0" rowspan="3">
-           <spacer name="horizontalSpacer_23">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::MinimumExpanding</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>18</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
           <item row="8" column="1">
            <widget class="QLabel" name="join_errorlab">
@@ -1929,16 +1958,83 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
             </property>
            </spacer>
           </item>
-          <item row="1" column="4" rowspan="2">
-           <widget class="QLabel" name="merge_status_lab">
+          <item row="3" column="4">
+           <spacer name="verticalSpacer_19">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>201</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="2">
+           <spacer name="verticalSpacer_18">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::MinimumExpanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>120</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="label_8">
+            <property name="font">
+             <font>
+              <pointsize>20</pointsize>
+             </font>
+            </property>
             <property name="text">
-             <string/>
+             <string>Join plates of the same size</string>
             </property>
-            <property name="wordWrap">
+           </widget>
+          </item>
+          <item row="6" column="5">
+           <spacer name="horizontalSpacer_26">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>18</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="7" column="4">
+           <spacer name="verticalSpacer_20">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>201</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="4" rowspan="2">
+           <widget class="QTextEdit" name="merge_status_tb">
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOn</enum>
+            </property>
+            <property name="readOnly">
              <bool>true</bool>
-            </property>
-            <property name="textInteractionFlags">
-             <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
             </property>
            </widget>
           </item>
@@ -2036,7 +2132,6 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
   <tabstop>join_q2_eb</tabstop>
   <tabstop>join_q3_eb</tabstop>
   <tabstop>join_q4_eb</tabstop>
-  <tabstop>join_result_eb</tabstop>
   <tabstop>nine6to384_btn</tabstop>
   <tabstop>new_plates_save_btn</tabstop>
   <tabstop>new_plates_type_cb</tabstop>

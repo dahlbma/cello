@@ -99,7 +99,7 @@ class PlatesScreen(QMainWindow):
         self.join_result_eb.textChanged.connect(self.mod0)
         self.merge_volume_eb.textChanged.connect(self.mod_vol)
 
-        self.merge_status_lab_init = 1
+        self.merge_status_tb_init = 1
 
         validator = QIntValidator(0, 1000, self)
         self.merge_volume_eb.setValidator(validator)
@@ -492,7 +492,7 @@ class PlatesScreen(QMainWindow):
         export_table(self.upload_plates_table)
 
     def verify_merge_plate(self, plate_id, index):
-        self.merge_status_lab.setText("")
+        self.merge_status_tb.setText("")
         if plate_id == "":
             self.merge_datas[index] = None
             return -1, False
@@ -522,9 +522,8 @@ class PlatesScreen(QMainWindow):
                 
             self.merge_datas[index] = json.loads(data)
 
-            if (index == 0) and (len(self.merge_datas[0])):
-                self.merge_status_append("Target plate not empty.")
-                return -1, False
+            if (index == 0) and (len(self.merge_datas[0]) > 0):
+                return res[0]['wells'], False
             return res[0]['wells'], True
         except:
             self.merge_datas[index] = None
@@ -560,6 +559,7 @@ class PlatesScreen(QMainWindow):
         pattern2 = '^[mM]{1}[xX]{1}[0-9]{4}$'
 
         t0 = self.currentTexts[0]
+        
         if ((not self.ok_arr[0]) and (self.size_arr[0] != -1)) or \
              ((t0 != "") and (not (re.match(pattern1, t0) or re.match(pattern2, t0)) )):
             self.mark_merge_box(0, "bad")
@@ -669,16 +669,16 @@ class PlatesScreen(QMainWindow):
         self.merge_check(volume_was_modified=True)
 
     def merge_status_append(self, text):
-        if self.merge_status_lab_init == 1:
-            self.merge_status_lab_init = 0
-            self.merge_status_lab.setText(text)
+        if self.merge_status_tb_init == 1:
+            self.merge_status_tb_init = 0
+            self.merge_status_tb.setText(text)
         else:
-            s = self.merge_status_lab.text()
-            self.merge_status_lab.setText(s + "\n" + text)
+            s = self.merge_status_tb.toPlainText()
+            self.merge_status_tb.setText(s + "\n" + text)
 
     def merge_check(self, volume_was_modified=True):
-        self.merge_status_lab.clear()
-        self.merge_status_lab_init = 1
+        self.merge_status_tb.clear()
+        self.merge_status_tb_init = 1
 
         noEmptyEntriesOK = (self.join_result_eb.text() != "") and \
             ((self.join_q1_eb.text() != "") or \
@@ -689,18 +689,38 @@ class PlatesScreen(QMainWindow):
         if self.mod_arr[1] != 0:
             self.size_arr[1], self.ok_arr[1] = \
                 self.verify_merge_plate(self.join_q1_eb.text(), 1)
+            if self.size_arr[1] != -1:
+                self.join_q1_size_lab.setText(f"Size:\n{self.size_arr[1]}")
+            else:
+                self.join_q1_size_lab.setText("")
         if self.mod_arr[2] != 0:
             self.size_arr[2], self.ok_arr[2] = \
                 self.verify_merge_plate(self.join_q2_eb.text(), 2)
+            if self.size_arr[2] != -1:
+                self.join_q2_size_lab.setText(f"Size:\n{self.size_arr[2]}")
+            else:
+                self.join_q2_size_lab.setText("")
         if self.mod_arr[3] != 0:
             self.size_arr[3], self.ok_arr[3] = \
                 self.verify_merge_plate(self.join_q3_eb.text(), 3)
+            if self.size_arr[3] != -1:
+                self.join_q3_size_lab.setText(f"Size:\n{self.size_arr[3]}")
+            else:
+                self.join_q3_size_lab.setText("")
         if self.mod_arr[4] != 0:
             self.size_arr[4], self.ok_arr[4] = \
                 self.verify_merge_plate(self.join_q4_eb.text(), 4)
+            if self.size_arr[4] != -1:
+                self.join_q4_size_lab.setText(f"Size:\n{self.size_arr[4]}")
+            else:
+                self.join_q4_size_lab.setText("")
         if self.mod_arr[0] != 0:
             self.size_arr[0], self.ok_arr[0] = \
                 self.verify_merge_plate(self.join_result_eb.text(), 0)
+            if self.size_arr[0] != -1:
+                self.join_target_size_lab.setText(f"Size: {self.size_arr[0]}")
+            else:
+                self.join_target_size_lab.setText("")
         
         self.check_fields_unique()
         if volume_was_modified is False:
@@ -718,20 +738,23 @@ class PlatesScreen(QMainWindow):
             ((self.ok_arr[0] is True) or ((self.ok_arr[0] is False) and (self.size_arr[0] == -1)))
             # filled fields are valid
 
+        if (self.merge_datas[0] is not None) and ((slenelf.merge_datas[0]) != 0):
+            self.merge_status_append("Target plate not empty.\n")
+
         sizesMatchingOK = self.check_merge_sizes()# sizes between parts match
-        if not sizesMatchingOK:
-            self.merge_status_append("Source plates size mismatch")
+        if (not sizesMatchingOK) and (self.dom_size != -1):
+            self.merge_status_append("Source plates size mismatch.\n")
 
         self.color_boxes()
         targetSizeOK = (self.size_arr[0] != -1) and \
             (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
-        if not targetSizeOK:
-            self.merge_status_append("Size mismatch between source and target plates.")
+        if (not targetSizeOK) and (self.dom_size != -1) and ():
+            self.merge_status_append("Size mismatch between source and target plates.\n")
         
-        if (not sizesMatchingOK) or (not targetSizeOK): # show source info if there are errors
-            self.merge_status_append(f"\nQ1:{self.plate_ids[1]} size: {self.size_arr[1]}\nQ2:{self.plate_ids[2]} size: {self.size_arr[2]}\nQ3:{self.plate_ids[3]} size: {self.size_arr[3]}\nQ4:{self.plate_ids[4]} size: {self.size_arr[4]}")
-            if not targetSizeOK: # only print target info when relevant
-                self.merge_status_append(f"\nTarget:{self.plate_ids[0]} size: {self.size_arr[0]}")
+        #if (not sizesMatchingOK) or (not targetSizeOK): # show source info if there are errors
+        #    self.merge_status_append(f"\nQ1:{self.plate_ids[1]} size: {self.size_arr[1]}\nQ2:{self.plate_ids[2]} size: {self.size_arr[2]}\nQ3:{self.plate_ids[3]} size: {self.size_arr[3]}\nQ4:{self.plate_ids[4]} size: {self.size_arr[4]}")
+        #    if not targetSizeOK: # only print target info when relevant
+        #        self.merge_status_append(f"\nTarget:{self.plate_ids[0]} size: {self.size_arr[0]}")
 
         volumeOK = (self.merge_volume_eb.text() != "")
         
@@ -766,14 +789,14 @@ class PlatesScreen(QMainWindow):
             self.join_result_eb.setText("")
             self.join_result_eb.setText(merge)
 
-            self.merge_status_lab.setText(f"Merged plates [{merged_plates}] into \
+            self.merge_status_tb.setText(f"Merged plates [{merged_plates}] into \
 {self.plate_ids[0]}.\nReturned message:\"{r}\"")
 
             QApplication.restoreOverrideCursor()
             return
         except:
             merged_plates = ",".join([id for id in self.plate_ids[1:] if id != -1])
-            self.merge_status_lab.setText(f"Merging plates [{merged_plates}] into \
+            self.merge_status_tb.setText(f"Merging plates [{merged_plates}] into \
 {self.plate_ids[0]} failed with error message:\"{r}\"")
             self.ok_arr[0] = False
             self.merge_check()
