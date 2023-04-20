@@ -608,7 +608,7 @@ class PlatesScreen(QMainWindow):
                 if self.plate_ids[i] not in ids:
                     ids.append(self.plate_ids[i])
                 else: 
-                    self.merge_status_append("Duplicate plate ID in Q{i}")
+                    self.merge_status_append(f"Duplicate plate ID in Q{i}")
                     self.ok_arr[i] = False
                     self.plate_ids[i] = -1
 
@@ -623,8 +623,6 @@ class PlatesScreen(QMainWindow):
         next_box = -1
         if mod == -1:
             next_box = self.get_free_box_index(ok_list, 0)
-        elif mod == 4:
-            next_box = 0
         elif ok_list[mod] is True:
             next_box = self.get_free_box_index(ok_list, mod)
         
@@ -738,7 +736,7 @@ class PlatesScreen(QMainWindow):
             ((self.ok_arr[0] is True) or ((self.ok_arr[0] is False) and (self.size_arr[0] == -1)))
             # filled fields are valid
 
-        if (self.merge_datas[0] is not None) and ((slenelf.merge_datas[0]) != 0):
+        if (self.merge_datas[0] is not None) and (len(self.merge_datas[0]) != 0):
             self.merge_status_append("Target plate not empty.\n")
 
         sizesMatchingOK = self.check_merge_sizes()# sizes between parts match
@@ -748,7 +746,7 @@ class PlatesScreen(QMainWindow):
         self.color_boxes()
         targetSizeOK = (self.size_arr[0] != -1) and \
             (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
-        if (not targetSizeOK) and (self.dom_size != -1) and ():
+        if (not targetSizeOK) and (self.dom_size != -1):
             self.merge_status_append("Size mismatch between source and target plates.\n")
         
         #if (not sizesMatchingOK) or (not targetSizeOK): # show source info if there are errors
@@ -804,18 +802,19 @@ class PlatesScreen(QMainWindow):
             return
     
     def showMergePlates(self):
-        def disp_tran(quad, data):
+        def disp_tran(quad, data, size):
+            mult = 1 if size == 96 else 2 # no need to display anything larger than 4*384 / 1536
             shiftAlpha = 0
             shiftNum = 0
             if quad == 1:
                 return data
             elif quad == 2:
-                shiftNum = 12
+                shiftNum = 12 * mult
             elif quad == 3:
-                shiftAlpha = 8
+                shiftAlpha = 8 * mult
             elif quad == 4:
-                shiftAlpha = 8
-                shiftNum = 12
+                shiftAlpha = 8 * mult
+                shiftNum = 12 * mult
             ret = []
             wellColName = 'well'
             try:
@@ -836,9 +835,9 @@ class PlatesScreen(QMainWindow):
         data = []
         for i in range(1, 5):
             if self.merge_datas[i] != None:
-                data.extend(disp_tran(i, self.merge_datas[i]))
+                data.extend(disp_tran(i, self.merge_datas[i], self.size_arr[i]))
         
-        if not (all(x == False for x in self.ok_arr)):
+        if not (all(x == False for x in self.ok_arr[1:5])):
             size = -1
             if self.dom_size == 96:
                 size = 384
@@ -849,4 +848,6 @@ class PlatesScreen(QMainWindow):
                 logging.getLogger(self.mod_name).error("attempting to display incorrectly sized plate")
                 return
             self.plate_display.setHtml(plate_to_html(data, size, resultdata, size))
+        else:
+            self.plate_display
         return
