@@ -91,6 +91,7 @@ class PlatesScreen(QMainWindow):
         self.merge_datas = [None]*5
 
         self.currentTexts = [""]*6 # i=0: result, i=1:q1, ..., i=5:volume_eb
+        self.join_clear_btn.clicked.connect(self.clear_merge_inputs)
 
         self.join_q1_eb.textChanged.connect(self.mod1)
         self.join_q2_eb.textChanged.connect(self.mod2)
@@ -491,6 +492,14 @@ class PlatesScreen(QMainWindow):
     def export_upload_data(self):
         export_table(self.upload_plates_table)
 
+    def clear_merge_inputs(self):
+        self.merge_volume_eb.setText("")
+        self.join_q1_eb.setText("")
+        self.join_q2_eb.setText("")
+        self.join_q3_eb.setText("")
+        self.join_q4_eb.setText("")
+        self.join_result_eb.setText("")
+
     def verify_merge_plate(self, plate_id, index):
         self.merge_status_tb.setText("")
         if plate_id == "":
@@ -530,7 +539,6 @@ class PlatesScreen(QMainWindow):
         except:
             self.merge_datas[index] = None
             return -1, False
-
 
     def check_merge_sizes(self):
         self.sizes_dict = {}
@@ -768,7 +776,10 @@ class PlatesScreen(QMainWindow):
             self.nine6to384_btn.setProperty("state", "mismatch")
             self.nine6to384_btn.style().polish(self.nine6to384_btn)
         
-        self.showMergePlates()
+        if all(x == "" for x in self.currentTexts):
+            self.plate_display.setHtml("")
+        elif not (all(x == False for x in self.ok_arr)):
+            self.showMergePlates()
 
     def nine6to384_merge(self):
         r = None
@@ -804,7 +815,6 @@ class PlatesScreen(QMainWindow):
             return
 
     def showMergePlates(self):
-        print("show")
         resultdata = self.merge_datas[0]
         size2 = self.size_arr[0]
 
@@ -825,6 +835,5 @@ class PlatesScreen(QMainWindow):
                 return
             if self.size_arr[0] == -1:
                 size2 = size1
-            print(f"size1:{size1}, size2:{size2}")
             self.plate_display.setHtml(plate_to_html(data, size1, resultdata, size2))
         return
