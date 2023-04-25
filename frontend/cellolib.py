@@ -158,20 +158,24 @@ def getNextFreeRow(table, row, col, entireRowFree=False, fromSame=False):
     return -1, -1
 
 def plate_to_html(data, size1, resultdata, size2):
-    html = chart_html(data, size1)
+    html = chart_html(data, size1, "_s")
     optional = ""
     if size2 != None:
         optional = "<span class=\"normal\"></br></br>to</br></br></br></span>" \
-                   + chart_html(resultdata, size2)
+                   + chart_html(resultdata, size2, "_t")
     try:
-        blob_size = {'96':8, '384':8, '1536':2}[str(size1)]
+        blob_size1 = {'96':8, '384':8, '1536':2}[str(size1)]
     except:
         return ""
     if size2 != None:
-        blob_size = {'96':8, '384':8, '1536':2}[str(size2)]
-    return chart_lambda(blob_size)(html, optional, size=blob_size)
+        blob_size2 = {'96':8, '384':8, '1536':2}[str(size2)]
+    # assemble 2 bodies, with optional prefaced with "to", which should enable separate sizes for each text body
+    #return chart_lambda(blob_size1)(html, optional, size=blob_size1)
+    print(f"bs1:{blob_size1}, bs2:{blob_size2}")
+    outtext = chart2(blob_size1, blob_size2)(html, optional)
+    return outtext
 
-def chart_html(data, size):
+def chart_html(data, size, pf):
     try:
         scale = {'96':1, '384':2, '1536':4}[str(size)]
         rows = 8*scale
@@ -179,7 +183,7 @@ def chart_html(data, size):
     except:
         return ""
 
-    chart = [["blue" for _ in range(cols)] for _ in range(rows)]
+    chart = [["blue" + pf for _ in range(cols)] for _ in range(rows)]
 
     if data != None:
         for well in data:
@@ -202,14 +206,14 @@ def chart_html(data, size):
 
             try:
                 if well['compound_id'] == 'CTRL':
-                    chart[row][col] = "green"
+                    chart[row][col] = "green" + pf
                 elif well['compound_id'] == 'DMSO':
-                    chart[row][col] = "black"
+                    chart[row][col] = "black" + pf
                 else:
-                    chart[row][col] = "red"
+                    chart[row][col] = "red" + pf
             except:
                 # We end up here when we are scanning microtue racks
-                chart[row][col] = "red"
+                chart[row][col] = "red" + pf
 
     span = lambda x: f"<span class=\"{x}\"></span>"
     html = ""
@@ -261,3 +265,105 @@ def chart_lambda(blob_size = 8):
     {x}
     {y}
     </div></body></html>"""
+
+def chart2(blob_size1 = 8, blob_size2 = 8):
+    return lambda x, y: f"""<!DOCTYPE html><html><head><style>
+    .red_s {"{"}
+    height: {blob_size1 + 2}px;
+    width: {blob_size1 + 2}px;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .red_t {"{"}
+    height: {blob_size2 + 2}px;
+    width: {blob_size2 + 2}px;
+    background-color: red;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .green_s {"{"}
+    height: {blob_size1 + 2}px;
+    width: {blob_size1 + 2}px;
+    background-color: green;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .green_t {"{"}
+    height: {blob_size2 + 2}px;
+    width: {blob_size2 + 2}px;
+    background-color: green;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .black_s {"{"}
+    height: {blob_size1 + 2}px;
+    width: {blob_size1 + 2}px;
+    background-color: black;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .black_t {"{"}
+    height: {blob_size2 + 2}px;
+    width: {blob_size2 + 2}px;
+    background-color: black;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .blue_s {"{"}
+    height: {blob_size1 - 2}px;
+    width: {blob_size1 - 2}px;
+    border: 2px solid blue;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .blue_t {"{"}
+    height: {blob_size2 - 2}px;
+    width: {blob_size2 - 2}px;
+    border: 2px solid blue;
+    border-radius: 50%;
+    display: inline-block;
+    {"}"}
+    .normal {"{"}
+    letter-spacing: normal;
+    {"}"}
+    </style></head><body>
+    <div style="text-align:center; line-height:{blob_size1 + 2}px; letter-spacing: -4px;">
+    {x}
+    </div>
+    <div style="text-align:center; line-height:{blob_size2 + 2}px; letter-spacing: -4px;">
+    {y}
+    </div>
+    </body></html>"""
+
+def disp_tran(quad, data, size):
+        mult = 1 if size == 96 else 2 # no need to display anything larger than 4*384 / 1536
+        shiftAlpha = 0
+        shiftNum = 0
+        if quad == 1:
+            return data
+        elif quad == 2:
+            shiftNum = 12 * mult
+        elif quad == 3:
+            shiftAlpha = 8 * mult
+        elif quad == 4:
+            shiftAlpha = 8 * mult
+            shiftNum = 12 * mult
+        ret = []
+        wellColName = 'well'
+        try:
+            if data[0]['well'] == data[0]['well']:
+                wellColName = 'well'
+        except:
+            wellColName = 'position'
+        for well in data:
+            new_well = well.copy()
+            info = new_well[wellColName]
+            row = chr(ord(info[0]) + shiftAlpha)
+            try:
+                col = int(info[1:]) + shiftNum
+            except:
+                print(info)
+            new_well[wellColName] = f"{row}{col}"
+            ret.append(new_well)
+        return ret

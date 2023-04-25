@@ -521,10 +521,12 @@ class PlatesScreen(QMainWindow):
                 data, b = dbInterface.getRack(self.token, plate_id)
                 
             self.merge_datas[index] = json.loads(data)
-
-            if (index == 0) and (len(self.merge_datas[0]) > 0):
-                return res[0]['wells'], False
-            return res[0]['wells'], True
+            size = res[0]['wells']
+            if (index == 0) and (len(self.merge_datas[0]) > 0) and (size not in [384, 1536]):
+                    return size, False
+            elif size not in [96, 384]:
+                return size, False
+            return size, True
         except:
             self.merge_datas[index] = None
             return -1, False
@@ -800,54 +802,29 @@ class PlatesScreen(QMainWindow):
             self.merge_check()
             QApplication.restoreOverrideCursor()
             return
-    
-    def showMergePlates(self):
-        def disp_tran(quad, data, size):
-            mult = 1 if size == 96 else 2 # no need to display anything larger than 4*384 / 1536
-            shiftAlpha = 0
-            shiftNum = 0
-            if quad == 1:
-                return data
-            elif quad == 2:
-                shiftNum = 12 * mult
-            elif quad == 3:
-                shiftAlpha = 8 * mult
-            elif quad == 4:
-                shiftAlpha = 8 * mult
-                shiftNum = 12 * mult
-            ret = []
-            wellColName = 'well'
-            try:
-                if data[0]['well'] == data[0]['well']:
-                    wellColName = 'well'
-            except:
-                wellColName = 'position'
-            for well in data:
-                new_well = well.copy()
-                info = new_well[wellColName]
-                row = chr(ord(info[0]) + shiftAlpha)
-                col = int(info[1:]) + shiftNum
-                new_well[wellColName] = f"{row}{col}"
-                ret.append(new_well)
-            return ret
 
+    def showMergePlates(self):
+        print("show")
         resultdata = self.merge_datas[0]
+        size2 = self.size_arr[0]
+
         data = []
         for i in range(1, 5):
-            if self.merge_datas[i] != None:
+            if (self.merge_datas[i] != None) and (self.ok_arr[i]):
                 data.extend(disp_tran(i, self.merge_datas[i], self.size_arr[i]))
         
         if not (all(x == False for x in self.ok_arr[1:5])):
-            size = -1
+            size1 = -1
             if self.dom_size == 96:
-                size = 384
+                size1 = 384
             elif self.dom_size == 384:
-                size = 1536
+                size1 = 1536
             else: 
                 # unrecognized size
                 logging.getLogger(self.mod_name).error("attempting to display incorrectly sized plate")
                 return
-            self.plate_display.setHtml(plate_to_html(data, size, resultdata, size))
-        else:
-            self.plate_display
+            if self.size_arr[0] == -1:
+                size2 = size1
+            print(f"size1:{size1}, size2:{size2}")
+            self.plate_display.setHtml(plate_to_html(data, size1, resultdata, size2))
         return
