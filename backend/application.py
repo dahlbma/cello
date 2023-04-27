@@ -27,7 +27,7 @@ def getDatabase(parent):
         return 'glass', 'cool', 'microtube', 'loctree'
     else:
         return 'glass_test', 'cool_test', 'microtube_test', 'loctree_test'
-    
+
 def res_to_json(response, cursor):
     columns = cursor.description()
     to_js = [{columns[index][0]:column for index,
@@ -115,7 +115,7 @@ class ListDownloadFiles(tornado.web.RequestHandler):
         cur.execute(sSql)
         res = cur.fetchall()
         res = res_to_json(res, cur)
-        
+
         self.render("template.html", curLevel = 1, dirFiles = res)
 
 
@@ -123,7 +123,7 @@ class PingDB(tornado.web.RequestHandler):
     def get(self):
         sSql = "SELECT * FROM glass.box_sequence"
         cur.ping(sSql)
-        
+
     def head(self):
         sSql = "SELECT * FROM glass.box_sequence"
         #cur.execute(sSql)
@@ -184,7 +184,7 @@ class AddMicrotube(tornado.web.RequestHandler):
 class GetMicroTubesFromFile(tornado.web.RequestHandler):
     def post(self):
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
-                
+
         try:
             file1 = self.request.files['file'][0]
             sIds = tornado.escape.xhtml_unescape(file1.body)
@@ -250,7 +250,7 @@ or b.compound_id = '{sId}'
                 from {microtubeDB}.tube t,
                 {microtubeDB}.v_matrix_tube mt,
                 {microtubeDB}.v_matrix m,
-                bcpvs.batch b                
+                bcpvs.batch b
                 where
                 b.notebook_ref = t.notebook_ref and
                 t.tube_id = mt.tube_id and
@@ -267,7 +267,7 @@ or b.compound_id = '{sId}'
             jRes = makeJson(tRes, jRes, sId)
         self.write(json.dumps(jRes, indent=4))
 
-        
+
 @jwtauth
 class getMicroTubes(tornado.web.RequestHandler):
     def get(self, sBatches):
@@ -299,7 +299,7 @@ class getMicroTubes(tornado.web.RequestHandler):
         jRes = list()
         for sId in saBatches:
             sSql = f"""
-SELECT 
+SELECT
  t.notebook_ref AS batchId,
  t.tube_id AS tubeId,
  t.volume * 1000000 AS volume,
@@ -335,7 +335,7 @@ or b.compound_id = '{sId}'
                 from {microtubeDB}.tube t,
                 {microtubeDB}.v_matrix_tube mt,
                 {microtubeDB}.v_matrix m,
-                bcpvs.batch b                
+                bcpvs.batch b
                 where
                 b.notebook_ref = t.notebook_ref and
                 t.tube_id = mt.tube_id and
@@ -379,7 +379,7 @@ class CreateRacks(tornado.web.RequestHandler):
 
 @jwtauth
 class CreatePlatesFromLabel(tornado.web.RequestHandler):
-    
+
     def put(self, sStartPlate, sPlateType, sPlateName, sNumberOfPlates):
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
 
@@ -396,7 +396,7 @@ class CreatePlatesFromLabel(tornado.web.RequestHandler):
                     break
             return lRetVal
 
-        
+
         saNewPlates = dict()
         plateKeys = []
         plateValues = []
@@ -536,7 +536,7 @@ class MergePlates(tornado.web.RequestHandler):
             elif iType == 47:
                 iType = 1536
             return iType
-            
+
         def getQuadrant(quadrant, iPlateSize = 384):
             sSql = ''
             if iPlateSize == 384:
@@ -593,7 +593,7 @@ class MergePlates(tornado.web.RequestHandler):
             sSlask = cur.execute(sSql)
             tRes = cur.fetchall()
             return tRes
-        
+
         def transferWells(quadrant, sourcePlate, targetPlate):
             ii = 0
             for i in sourcePlate:
@@ -606,7 +606,7 @@ class MergePlates(tornado.web.RequestHandler):
                 sConc = i[5]
                 if sConc == None:
                     sConc = 'NULL'
-                dfTargetWell = quadrant.loc[quadrant[1] == sWell][2]                
+                dfTargetWell = quadrant.loc[quadrant[1] == sWell][2]
                 sTargetWell = list(dfTargetWell)[0]
                 sSql = f"""
                 insert into {coolDB}.config
@@ -623,8 +623,8 @@ class MergePlates(tornado.web.RequestHandler):
                 )
                 """
                 cur.execute(sSql)
-                
-        
+
+
         sVolume = self.get_argument("volume")
         q1 = self.get_argument("q1").upper()
         q2 = self.get_argument("q2").upper()
@@ -646,7 +646,7 @@ class MergePlates(tornado.web.RequestHandler):
             self.set_status(400)
             self.finish(sError)
             return
-        
+
         if q1 != "":
             quadrant = getQuadrant(1, iTargetSize)
             plate = getPlate(q1)
@@ -701,7 +701,7 @@ class SetPlateType(tornado.web.RequestHandler):
         '''
         self.finish()
 
-    
+
 @jwtauth
 class UploadWellInformation(tornado.web.RequestHandler):
     def post(self):
@@ -727,7 +727,7 @@ class UploadWellInformation(tornado.web.RequestHandler):
             else:
                 return True
 
-        
+
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
         sPlate = self.get_argument("plate_id")
         sWell = self.get_argument("well")
@@ -737,14 +737,14 @@ class UploadWellInformation(tornado.web.RequestHandler):
         sForm = self.get_argument("form")
         sConc = self.get_argument("conc")
         sVolume = self.get_argument("volume")
-        
+
         if checkCmpId(sBatch, sCompound) == False:
             self.set_status(400)
             logging.error(f'CompoundId not found: {sCompound}')
             self.finish('Compound id not found')
             return
-            
-        
+
+
         if sCompound == 'BACKFILL':
             sSql = f'''select conc, volume from {coolDB}.config
             where config_id = '{sPlate}' and well = '{sWell}'
@@ -869,7 +869,7 @@ class UpdateRackLocation(tornado.web.RequestHandler):
         except Exception as e:
             self.set_status(400)
             self.finish(str(e))
-            
+
 
 @jwtauth
 class MoveBox(tornado.web.RequestHandler):
@@ -885,14 +885,14 @@ class MoveBox(tornado.web.RequestHandler):
         except Exception as e:
             self.set_status(400)
             self.finish(str(e))
-            
+
 
 @jwtauth
 class ReadScannedRack(tornado.web.RequestHandler):
     def post(self):
-        
+
         glassDB, coolDB, microtubeDB, loctreeDB = getDatabase(self)
-        
+
         def createRackIfNotFound(sRack):
             sSql = f"""
             select matrix_id from {microtubeDB}.matrix where matrix_id = '{sRack}'
@@ -907,7 +907,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
                 ('{sRack}', now())
                 """
                 cur.execute(sSql)
-        
+
         try:
             sLocation = self.get_argument("location")
             file1 = self.request.files['file'][0]
@@ -938,7 +938,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
         saError = []
 
         createRackIfNotFound(sRackId)
-        
+
         for sLine in saFile:
             m = re.search("\s+(\w\d\d);\s+(\d+)", sLine)
             if m:
@@ -959,7 +959,7 @@ class ReadScannedRack(tornado.web.RequestHandler):
                 set matrix_id = NULL, position = NULL
                 where tube_id = '{tRes[0][0]}'"""
                 sSlask = cur.execute(sSql)
-            
+
             sSql = f"""select matrix_id from {microtubeDB}.matrix_tube
             where tube_id = '%s'
             """ % sTube
@@ -1099,7 +1099,7 @@ class UploadBinary(tornado.web.RequestHandler):
             self.set_status(500)
             self.write({'message': 'OS not supported'})
             return
-        
+
         output_file = open(bin_file, 'wb')
         output_file.write(file1['body'])
         output_file.close()
@@ -1112,7 +1112,7 @@ class UploadVersionNo(tornado.web.RequestHandler):
 
         with open(ver_file, "r") as f:
             data = json.load(f)
-        
+
         data["version"] = ver_no
 
         with open(ver_file, "w") as f:
@@ -1143,11 +1143,11 @@ class UploadLauncher(tornado.web.RequestHandler):
             self.set_status(500)
             self.write({'message': 'OS not supported'})
             return
-        
+
         output_file = open(bin_file, 'wb')
         output_file.write(file1['body'])
         output_file.close()
-            
+
 @jwtauth
 class UploadTaredVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
@@ -1220,7 +1220,7 @@ def getVialPosition(sVialId, glassDB, loctreeDB):
                from {glassDB}.vial v
                left join {loctreeDB}.locations l on v.location = l.loc_id
                where v.vial_id='{sVialId}'"""
-    
+
     sSlask = cur.execute(sSql)
     tRes = cur.fetchall()
     logging.info(tRes)
@@ -1254,7 +1254,7 @@ def getBoxFromDb(sBox, glassDB, loctreeDB):
  (select coordinate from {glassDB}.box_sequence order by coordinate limit {positions}) a
  on tt.pos = a.coordinate
  order by a.coordinate asc""")
-    
+
     tRes = cur.fetchall()
 
     #jRes = []
@@ -1320,7 +1320,7 @@ class verifyVial(tornado.web.RequestHandler):
         elif len(str(tRes[0][0])) > 4:
             #lError = True
             sError = 'Vial already checked in ' + sVial
-      
+
         if lError:
             self.set_status(400)
             self.finish(sError)
@@ -1398,7 +1398,7 @@ class EditVial(tornado.web.RequestHandler):
 
         if sTare != 'NULL' and sGross != 'NULL':
             sNetWeight = float("{:.7f}".format(float(sGross) - float(sTare)))
-        
+
         sSql = f"""
         select notebook_ref from {glassDB}.vial
         where vial_id = '{sVial}'"""
@@ -1487,7 +1487,7 @@ def doPrintRack(sRack):
         sNumbers = m.groups()[0]
     else:
         return
-    
+
     s = f'''^XA
 ^MMT
 ^PW400
@@ -1502,8 +1502,8 @@ def doPrintRack(sRack):
     f.write(s)
     f.close()
     os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates /tmp/file.txt")
-    
-        
+
+
 @jwtauth
 class PrintRack(tornado.web.RequestHandler):
     def get(self, sRack):
@@ -1626,7 +1626,7 @@ class vialInfo(tornado.web.RequestHandler):
                   left join bcpvs.batch c ON v.notebook_ref = c.notebook_ref
                   left join {loctreeDB}.v_all_locations l on v.location = l.loc_id
                where vial_id ='{sVial}'"""
-        
+
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
@@ -1692,14 +1692,14 @@ class UpdateVialPosition(tornado.web.RequestHandler):
         sSql = f"""select name from {loctreeDB}.locations where loc_id = '{sBoxId}'"""
         sSlask = cur.execute(sSql)
         tLoc = cur.fetchall()
-        
+
         sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId, glassDB, loctreeDB)
         sLogString = f"""location from {sOldBox} {sOldName}:{sOldCoordinate}\
  to {sBoxId} {tLoc[0][0]}:{sPos}"""
 
         logVialChange(glassDB, sVialId, sLogString)
         logging.info('Placed ' + sVialId + ' in ' + sBoxId)
-        
+
         # Update the new location of the vial
         sSql = f"""update {glassDB}.vial
                    set location = '{sBoxId}', pos = '{sPos}', updated_date = now()
@@ -1806,7 +1806,7 @@ class searchVials(tornado.web.RequestHandler):
                 sSlask = cur.execute(sSql)
             except Exception as e:
                 logging.error("Error: " + str(e))
-                
+
                 self.set_status(400)
                 self.finish()
                 return
@@ -1851,7 +1851,7 @@ class VerifyLocation(tornado.web.RequestHandler):
             self.finish('Unknown location')
         else:
             self.finish()
-            
+
 
 @jwtauth
 class searchBatches(tornado.web.RequestHandler):
@@ -1939,7 +1939,7 @@ class DeleteLocation(tornado.web.RequestHandler):
             self.set_status(400)
             self.finish(f'{sLocation} not empty, location has sublocations')
             return
-        
+
         sSlask = cur.execute(f"""
         select * from {glassDB}.vial where location = '{sLocation}'
         """)
@@ -1948,7 +1948,7 @@ class DeleteLocation(tornado.web.RequestHandler):
             self.set_status(400)
             self.finish(f'Vials in {sLocation}, location not empty')
             return
-        
+
         sSlask = cur.execute(f"""
         select * from {microtubeDB}.matrix where location = '{sLocation}'
         """)
@@ -1985,7 +1985,7 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
-        
+
 
 @jwtauth
 class CreateMolImage(tornado.web.RequestHandler):
@@ -2077,7 +2077,7 @@ class GetLocationChildren(tornado.web.RequestHandler):
             select l.loc_id, l.name, l.path, t.name type, t.use_subpos has_children
             from {loctreeDB}.v_all_locations l, {loctreeDB}.location_type t
             where l.type_id = t.type_id and
-            l.parent is null'''        
+            l.parent is null'''
         else:
             sSql = f'''
             select l.loc_id, l.name, l.path, t.name type, t.use_subpos has_children
@@ -2123,7 +2123,7 @@ class AddLocation(tornado.web.RequestHandler):
             loc_type = 24
         elif sLocationType == 'Shelf':
             loc_type = 7
-            
+
         sSql = f'''
         insert into {loctreeDB}.locations (loc_id, parent, type_id, created_date, name)
         values 

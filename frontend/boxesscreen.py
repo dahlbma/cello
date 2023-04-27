@@ -23,7 +23,7 @@ class BoxesScreen(QMainWindow):
         self.goto_vials_btn.clicked.connect(self.gotoVials)
         self.goto_microtubes_btn.clicked.connect(self.gotoMicrotubes)
         self.goto_plates_btn.clicked.connect(self.gotoPlates)
-        
+
         self.boxes_tab_wg.setCurrentIndex(0)
         self.boxes_tab_wg.currentChanged.connect(self.tabChanged)
 
@@ -78,7 +78,7 @@ class BoxesScreen(QMainWindow):
         self.transit_vials_btn.clicked.connect(self.transitVials)
         self.transit_vials_btn.setEnabled(False)
         self.update_export_btn.clicked.connect(self.export_box_table)
-        
+
         self.box_table.itemChanged.connect(self.updateVialPosition)
         self.box_table.currentItemChanged.connect(self.box_moldisplay)
 
@@ -166,7 +166,7 @@ class BoxesScreen(QMainWindow):
         for p in path_l:
             items = self.boxes_tree.findItems(p, Qt.MatchRecursive)
             self.boxes_tree.setCurrentItem(items[0])
-            self.boxes_tree.expandItem(items[0])   
+            self.boxes_tree.expandItem(items[0])
 
     def selectSerialNo(self, item):
         try:
@@ -207,7 +207,7 @@ class BoxesScreen(QMainWindow):
             self.add_location_barcode = item.text(2)
         else:
             self.move_box_lab.setText("")
-            
+
             self.add_location_lab.setText("")
             self.add_storage_type_lab.setText("")
 
@@ -304,7 +304,7 @@ class BoxesScreen(QMainWindow):
     def deleteLocation(self):
         target = f"{self.delete_location_lab.text()}/{self.add_location_barcode}"
         logging.getLogger(self.mod_name).info(f"delete {target}!")
-        
+
         #send delete request
         r, ret = dbInterface.deleteLocation(self.token, self.add_location_barcode)
         if ret is False:
@@ -367,7 +367,7 @@ class BoxesScreen(QMainWindow):
             logging.getLogger(self.mod_name).info(f"recieved data")
         except:
             self.box_data = None
-    
+
         path_res = dbInterface.getBoxLocation(self.token, box)
         logging.getLogger(self.mod_name).info(f"recieved path: {path_res}")
         self.path_js = json.loads(path_res)
@@ -438,7 +438,7 @@ class BoxesScreen(QMainWindow):
         else:
             self.box_table.setCurrentCell(r, 0)
             self.box_table.editItem(self.box_table.item(r, col))
-            self.box_table.scrollToItem(self.box_table.item(r, col), QAbstractItemView.PositionAtCenter)    
+            self.box_table.scrollToItem(self.box_table.item(r, col), QAbstractItemView.PositionAtCenter)
         return
 
     def transitVials(self):
@@ -468,7 +468,7 @@ class BoxesScreen(QMainWindow):
         sBox = self.update_box_eb.text()
         dbInterface.printBoxLabel(self.token, sBox)
         return
-    
+
     def export_box_table(self):
         export_table(self.box_table)
 
@@ -484,7 +484,7 @@ class BoxesScreen(QMainWindow):
         self.freebox_table.setCurrentCell(0,0)
         self.freebox_export_btn.setEnabled(True)
         return
-    
+
     def setFreeBoxesTableData(self, data):
         self.freebox_table.setRowCount(0)
         if data is None:
