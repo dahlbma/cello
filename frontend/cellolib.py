@@ -169,6 +169,14 @@ def plate_to_html(data, size1, resultdata, size2):
         return ""
     if size2 != None:
         blob_size2 = {'96':8, '384':8, '1536':2}[str(size2)]
+
+        ############################
+        # Mats added the next two lines. blob_size2 is undefined if I don't do this, and the application crashes
+    else:
+        blob_size2 = {'96':8, '384':8, '1536':2}[str(size1)]
+
+        # End dirty fix
+        ###########################
     # assemble 2 bodies, with optional prefaced with "to", which should enable separate sizes for each text body
     #return chart_lambda(blob_size1)(html, optional, size=blob_size1)
     print(f"bs1:{blob_size1}, bs2:{blob_size2}")
