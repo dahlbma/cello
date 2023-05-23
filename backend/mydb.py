@@ -38,7 +38,7 @@ class DisconnectSafeCursor(object):
             scarabLogger.error(str(e))
             scarabLogger.error(args)
         return self.cursor.execute(*args, **kwargs)
-            
+
 
     def execute(self, *args, **kwargs):
         try:
