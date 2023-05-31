@@ -24,7 +24,7 @@ class MicrotubesScreen(QMainWindow):
         self.goto_vials_btn.clicked.connect(self.gotoVials)
         self.goto_boxes_btn.clicked.connect(self.gotoBoxes)
         self.goto_plates_btn.clicked.connect(self.gotoPlates)
-        
+
         self.microtubes_tab_wg.setCurrentIndex(0)
         self.microtubes_tab_wg.currentChanged.connect(self.tabChanged)
 
@@ -74,7 +74,7 @@ class MicrotubesScreen(QMainWindow):
             elif self.microtubes_tab_wg.currentIndex() == 1:
                 self.search_rack()
                 return
-            
+
 
     def tabChanged(self):
         page_index = self.microtubes_tab_wg.currentIndex()
@@ -113,7 +113,7 @@ class MicrotubesScreen(QMainWindow):
         iTickInterval = 1
         if len(saBatches) > 100:
             iTickInterval = int(len(saBatches) / 100)
-        
+
         self.popup = PopUpProgress(f'Searching for {len(saBatches)} IDs')
         self.popup.show()
         iTick = 0
@@ -123,7 +123,7 @@ class MicrotubesScreen(QMainWindow):
             if iLocalTick == iTickInterval:
                 iLocalTick = 0
                 iTick += 1
-                
+
             QApplication.processEvents()
             self.popup.obj.proc_counter(iTick)
 
@@ -195,7 +195,7 @@ class MicrotubesScreen(QMainWindow):
                 logging.error(str(e))
         self.tubes_batches_table.setSortingEnabled(True)
         return
-        
+
 
     def showMicrotubeMol(self, item):
         if item is not None:
@@ -216,7 +216,7 @@ class MicrotubesScreen(QMainWindow):
                 selectedRows.append(item.row())
                 exportIds.append(self.tubes_batches_table.item(item.row(), 2).text())
         exportString = "\n".join(exportIds)
-        
+
 
         fname = QFileDialog.getSaveFileName(self, 'Save to File', '.', "")
         if fname[0] == '':
@@ -241,7 +241,7 @@ class MicrotubesScreen(QMainWindow):
         try:
             self.rack_data = json.loads(res)
         except:
-            self.rack_data = None   
+            self.rack_data = None
             self.rack_export_btn.setEnabled(False)
             self.rack_table.setRowCount(0)
             self.structure_lab.clear()
@@ -308,7 +308,7 @@ class MicrotubesScreen(QMainWindow):
             self.rack_boxid_lab.setText(loc_id)
         else:
             self.rack_boxid_lab.setText("")
-    
+
     def check_print(self, item):
         if item == "empty":
             l = self.rack_search_eb.text().split(" ")
@@ -328,7 +328,7 @@ class MicrotubesScreen(QMainWindow):
                 displayMolfile(self, compoundId)
             else:
                 self.structure_lab.clear()
-    
+
     def show_racks(self, data):
         #make copy
         data_copy = list(data)
@@ -347,7 +347,7 @@ class MicrotubesScreen(QMainWindow):
             part.append(p)
         if len(part) > 0:
             data_parts.append(part)
-        
+
         #Get html
         id_hdr = lambda x: f"<span class=\"normal\">{x}</span>"
 
@@ -358,7 +358,7 @@ class MicrotubesScreen(QMainWindow):
             html += id_hdr(p[0]['matrixId']) \
                     + "</br>" \
                     + chart_html(p, 96)
-        
+
         #Show html
         self.rack_display.setHtml(chart_lambda(8)(html, "", size=8))
 
@@ -376,7 +376,7 @@ class MicrotubesScreen(QMainWindow):
                                                 '.', "")
         if len(self.upload_fnames[0]) == 0:
             return
-        
+
         filename = self.upload_fnames[0][0]
         if len(self.upload_fnames[0]) > 1:
             filename += " ..."
@@ -425,7 +425,7 @@ class MicrotubesScreen(QMainWindow):
         self.update_box_eb.setEnabled(False)
         self.upload_copy_log_btn.setEnabled(True)
         self.upload_result_lab.setText(res_txt)
-    
+
     def copyLog(self):
         clipboard = QApplication.clipboard()
         clipboard.setText(self.upload_result_lab.text())
@@ -443,7 +443,6 @@ class MicrotubesScreen(QMainWindow):
             logging.getLogger(self.mod_name).info(f"create racks [{nr_o_rs}] failed:\n{res}")
 
 
-    
     def addRow(self):
         self.create_microtubes_table.insertRow(self.create_microtubes_table.rowCount())
 
@@ -520,7 +519,7 @@ class MicrotubesScreen(QMainWindow):
 
         #flush table
         self.create_microtubes_table.setRowCount(0)
-        
+
         #add error rows back
         self.create_microtubes_table.setRowCount(len(errors))
         for row in range(len(errors)):
@@ -535,7 +534,7 @@ class MicrotubesScreen(QMainWindow):
 
         for i in range(0, 5):
             self.addRow()
-        
+
         self.create_microtubes_table.setCurrentCell(0, 0)
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
 
@@ -567,7 +566,7 @@ class MicrotubesScreen(QMainWindow):
                 for i in range(0, 5):
                     self.addRow()
         except:
-            logging.getLogger(self.mod_name).error("microtube file import failed")  
+            logging.getLogger(self.mod_name).error("microtube file import failed")
         self.create_microtubes_table.cellChanged.connect(self.checkEmpty)
 
     def export_create_data(self):
@@ -588,7 +587,7 @@ class MicrotubesScreen(QMainWindow):
             self.move_box_id_eb.setEnabled(False)
             self.move_rack_id_eb.setFocus()
             return
-    
+
     def moveRackStep2(self):
         pattern = '^[a-zA-Z]{2}[0-9]{5}$'
         rack_id = self.move_rack_id_eb.text() #should be OK

@@ -41,7 +41,7 @@ class PopUpProgress(QWidget):
 
     def on_count_changed(self, value):
         self.pbar.setValue(value)
-            
+
 
 class QCustomTableWidgetItem (QTableWidgetItem):
     def __init__ (self, value):
