@@ -122,14 +122,17 @@ class ListDownloadFiles(tornado.web.RequestHandler):
 class PingDB(tornado.web.RequestHandler):
     def get(self):
         sSql = "SELECT * FROM glass.box_sequence"
-        cur.ping(sSql)
+        ret = cur.ping(sSql)
+        if ret == 'error':
+            self.set_status(400)
+
 
     def head(self):
         sSql = "SELECT * FROM glass.box_sequence"
-        #cur.execute(sSql)
-        cur.ping(sSql)
-        res = cur.fetchall()
-        self.finish()
+        ret = cur.ping(sSql)
+        if ret == 'error':
+            self.set_status(400)
+
 
 
 @jwtauth
@@ -1656,7 +1659,7 @@ class TransitVials(tornado.web.RequestHandler):
             logging.info(f'Placed {sVialId} in Compound collection')
             # Update the new location of the vial, SL11013 is 'Compound collection'
             sSql = f"""update {glassDB}.vial
-                       set location = 'SL11013', pos = '', updated_date = now()
+                       set location = 'SL34040', pos = '', updated_date = now()
                        where vial_id = '{sVialId}'"""
             sSlask = cur.execute(sSql)
 
