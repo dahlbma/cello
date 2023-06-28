@@ -23,9 +23,9 @@ class SearchScreen(QMainWindow):
         self.centralwidget.setProperty("test", test)
 
         self.goto_vials_btn.clicked.connect(self.gotoVials)
-        self.goto_boxes_btn.clicked.connect(self.gotoBoxes)  
+        self.goto_boxes_btn.clicked.connect(self.gotoBoxes)
         self.goto_microtubes_btn.clicked.connect(self.gotoMicrotubes)
-        self.goto_plates_btn.clicked.connect(self.gotoPlates)      
+        self.goto_plates_btn.clicked.connect(self.gotoPlates)
 
         self.search_tab_wg.setCurrentIndex(0)
         self.search_tab_wg.currentChanged.connect(self.tabChanged)
@@ -369,7 +369,7 @@ class SearchScreen(QMainWindow):
                 if iLocalTick == iTickInterval:
                     iLocalTick = 0
                     iTick += 1
-                    
+
                 QApplication.processEvents()
                 self.popup.obj.proc_counter(iTick)
 

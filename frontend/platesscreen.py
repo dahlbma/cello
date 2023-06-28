@@ -18,7 +18,7 @@ class PlatesScreen(QMainWindow):
         loadUi(resource_path("assets/plateswindow.ui"), self)
 
         self.centralwidget.setProperty("test", test)
-      
+
         self.nine6to384_btn.setIcon(QIcon(resource_path("assets/arrow.png")))
 
         self.goto_search_btn.clicked.connect(self.gotoSearch)
@@ -36,14 +36,14 @@ class PlatesScreen(QMainWindow):
         types = [' ', "96", "384", "1536"]
         self.new_plates_type_cb.addItems(types)
         self.new_plates_type_cb.currentTextChanged.connect(self.check_plates_input)
-        
+
         self.new_plates_comment_eb.textChanged.connect(self.check_plates_input)
 
         locations = ['Compound Center', "CC Freezer A", "CC Freezer B", "Sent to User"]
         self.plate_location_cb.addItems(locations)
         locations.append(' ')
         self.update_plate_location_cb.addItems(locations)
-        
+
         self.label_to_plates_save_btn.clicked.connect(self.createPlatesFromLabel)
         self.label_to_plates_save_btn.setEnabled(False)
         self.label_to_plates_type_cb.addItems(types)
@@ -417,7 +417,7 @@ class PlatesScreen(QMainWindow):
                 logging.getLogger(self.mod_name).error("plate file import failed")
                 logging.getLogger(self.mod_name).error(str(e))
             self.upload_populated = True
-        
+
 
     def upload_plate_table(self):
         repopulate_data = []
@@ -442,7 +442,7 @@ class PlatesScreen(QMainWindow):
                     flush = True
                 else:
                     flush = False
-            
+
             well = self.upload_plates_table.item(row, 1).text()
             compound_id = self.upload_plates_table.item(row, 2).text()
             batch = self.upload_plates_table.item(row, 3).text()
@@ -476,7 +476,7 @@ class PlatesScreen(QMainWindow):
                 iTickCount = 0
                 self.upload_pbar.setValue(progress)
         self.upload_pbar.setValue(100)
-        
+
         QApplication.restoreOverrideCursor()
         self.populate_upload_table(repopulate_data, error=True)
         self.enable_upload()
@@ -528,7 +528,7 @@ class PlatesScreen(QMainWindow):
                 data, b = dbInterface.getPlate(self.token, plate_id)
             else:
                 data, b = dbInterface.getRack(self.token, plate_id)
-                
+
             self.merge_datas[index] = json.loads(data)
             size = res[0]['wells']
             if (index == 0) and (len(self.merge_datas[0]) > 0) and (size not in [384, 1536]):
@@ -554,7 +554,7 @@ class PlatesScreen(QMainWindow):
             return False
         self.dom_size = int(max(self.sizes_dict,
             key = lambda x: len(self.sizes_dict[x])))
-        
+
         if len(self.sizes_dict) == 1:
             return True
         else: 
@@ -569,7 +569,7 @@ class PlatesScreen(QMainWindow):
         pattern2 = '^[mM]{1}[xX]{1}[0-9]{4}$'
 
         t0 = self.currentTexts[0]
-        
+
         if ((not self.ok_arr[0]) and (self.size_arr[0] != -1)) or \
              ((t0 != "") and (not (re.match(pattern1, t0) or re.match(pattern2, t0)) )):
             self.mark_merge_box(0, "bad")

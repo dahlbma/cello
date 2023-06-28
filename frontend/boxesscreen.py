@@ -47,6 +47,8 @@ class BoxesScreen(QMainWindow):
         self.boxes_tree.currentItemChanged.connect(self.check_deletion_params)
         self.boxes_tree.currentItemChanged.connect(self.selectSerialNo)
 
+        self.boxes_tree.itemDoubleClicked.connect(self.open_box_from_tree)
+
         self.boxes_tree_reload_btn.clicked.connect(self.reload_tree)
 
         self.box_search_btn.clicked.connect(self.find_in_box_tree)
@@ -136,8 +138,10 @@ class BoxesScreen(QMainWindow):
             childItem = QTreeWidgetItem(item, self.locationInput(child))
             if child['has_children'] == -1:
                 childItem.setChildIndicatorPolicy(QTreeWidgetItem.DontShowIndicator)
+                childItem.setData(0, Qt.UserRole, -1)
             else:
                 childItem.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+                childItem.setData(0, Qt.UserRole, 0)  
         return len(children)
 
     def take_children(self, item):
@@ -172,6 +176,13 @@ class BoxesScreen(QMainWindow):
                 self.boxes_tree.setCurrentItem(item, 2)
         except:
             return
+        
+    def open_box_from_tree(self, item):
+        if item.data(0, Qt.UserRole) == -1:
+            loc = item.text(2)
+            self.update_box_eb.setText(loc)
+            self.boxes_tab_wg.setCurrentIndex(1)
+
 
     def reload_tree(self):
         self.boxes_tree.clear()
