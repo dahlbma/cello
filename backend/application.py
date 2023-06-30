@@ -229,7 +229,7 @@ SELECT
  b.compound_id as compoundId
 FROM
  {microtubeDB}.tube t
- join bcpvs.batch b on t.notebook_ref = b.notebook_ref
+ join {bcpvsDB}.batch b on t.notebook_ref = b.notebook_ref
  left join {microtubeDB}.v_matrix_tube mt on t.tube_id = mt.tube_id
  left join {microtubeDB}.v_matrix m on m.matrix_id = mt.matrix_id
 where
@@ -255,7 +255,7 @@ or b.compound_id = '{sId}'
                 from {microtubeDB}.tube t,
                 {microtubeDB}.v_matrix_tube mt,
                 {microtubeDB}.v_matrix m,
-                bcpvs.batch b
+                {bcpvsDB}.batch b
                 where
                 b.notebook_ref = t.notebook_ref and
                 t.tube_id = mt.tube_id and
@@ -314,7 +314,7 @@ SELECT
  b.compound_id as compoundId
 FROM
  {microtubeDB}.tube t
- join bcpvs.batch b on t.notebook_ref = b.notebook_ref
+ join {bcpvsDB}.batch b on t.notebook_ref = b.notebook_ref
  left join {microtubeDB}.v_matrix_tube mt on t.tube_id = mt.tube_id
  left join {microtubeDB}.v_matrix m on m.matrix_id = mt.matrix_id
 where
@@ -340,7 +340,7 @@ or b.compound_id = '{sId}'
                 from {microtubeDB}.tube t,
                 {microtubeDB}.v_matrix_tube mt,
                 {microtubeDB}.v_matrix m,
-                bcpvs.batch b
+                {bcpvsDB}.batch b
                 where
                 b.notebook_ref = t.notebook_ref and
                 t.tube_id = mt.tube_id and
@@ -589,7 +589,7 @@ class MergePlates(tornado.web.RequestHandler):
                 'DMSO' form,
                 t.conc,
                 t.VOLUME
-                from {microtubeDB}.tube t, {microtubeDB}.matrix_tube mt, bcpvs.batch b
+                from {microtubeDB}.tube t, {microtubeDB}.matrix_tube mt, {bcpvsDB}.batch b
                 where t.tube_id = mt.tube_id
                 and b.notebook_ref = t.notebook_ref
                 and mt.matrix_id = '{sPlate}'
@@ -720,7 +720,7 @@ class UploadWellInformation(tornado.web.RequestHandler):
             if compound_id.upper() == 'BACKFILL':
                 return True
             sSql = f'''
-            select compound_id from bcpvs.batch
+            select compound_id from {bcpvsDB}.batch
             where notebook_ref = '{notebook_ref}'
             '''
             cur.execute(sSql)
@@ -1063,7 +1063,7 @@ class getRack(tornado.web.RequestHandler):
             m.matrix_id as matrixId, mt.position as position, m.location as location,
             t.conc * 1000, compound_id, SUBSTR(mt.position, 2,3) as rackrow, m.loc_id
             from {microtubeDB}.tube t, {microtubeDB}.v_matrix_tube mt, {microtubeDB}.v_matrix m,
-            bcpvs.batch b
+            {bcpvsDB}.batch b
             where
             t.notebook_ref = b.notebook_ref and
             t.tube_id = mt.tube_id and
@@ -1220,7 +1220,7 @@ def logVialChange(glassDB, sVialId, sLogMessage, sNewPos=None):
     except Exception as e:
         logging.error("Vial_log error {str(e)}")
 
-def getVialPosition(sVialId, glassDB, loctreeDB):
+def getVialPosition(sVialId, glassDB, loctreeDB, bcpvsDB):
     sSql = f"""select IFNULL(v.location, '') location, l.name, IFNULL(v.pos, '') coordinate
                from {glassDB}.vial v
                left join {loctreeDB}.locations l on v.location = l.loc_id
@@ -1233,7 +1233,7 @@ def getVialPosition(sVialId, glassDB, loctreeDB):
         return '', '', ''
     return str(tRes[0][0]).upper(), str(tRes[0][1]), tRes[0][2]
 
-def getBoxFromDb(sBox, glassDB, loctreeDB):
+def getBoxFromDb(sBox, glassDB, loctreeDB, bcpvsDB):
     positions = 0
     sSql = f"""select subpos from {loctreeDB}.locations, {loctreeDB}.location_type
     where {loctreeDB}.locations.loc_id = '{sBox}'
@@ -1253,7 +1253,7 @@ def getBoxFromDb(sBox, glassDB, loctreeDB):
  from
  (SELECT v.pos, v.vial_id, c.compound_id, v.location, v.notebook_ref
  from {glassDB}.vial v
- left join bcpvs.batch c on v.notebook_ref = c.notebook_ref
+ left join {bcpvsDB}.batch c on v.notebook_ref = c.notebook_ref
  where v.location = '{sBox}') tt
  right outer join
  (select coordinate from {glassDB}.box_sequence order by coordinate limit {positions}) a
@@ -1342,7 +1342,7 @@ class verifyVial(tornado.web.RequestHandler):
         FORMAT(FLOOR(v.conc), 0) conc,
         IFNULL(ROUND((((v.net*1000)/b.BIOLOGICAL_MW)/conc)*1000000), '') dilution_factor
         from {glassDB}.vial v
-        left join bcpvs.batch b ON v.notebook_ref = b.notebook_ref
+        left join {bcpvsDB}.batch b ON v.notebook_ref = b.notebook_ref
         where v.vial_id = '{sVial}'
         """
         sSlask = cur.execute(sSql)
@@ -1459,7 +1459,7 @@ class EditVial(tornado.web.RequestHandler):
         sSql = f"""
         select
         ROUND((((v.net*1000)/b.BIOLOGICAL_MW)/conc)*1000000) dilution_factor
-        from {glassDB}.vial v, bcpvs.batch b
+        from {glassDB}.vial v, {bcpvsDB}.batch b
         where v.notebook_ref = b.notebook_ref and v.vial_id = '{sVial}'
         """
         sSlask = cur.execute(sSql)
@@ -1523,7 +1523,7 @@ class printVial(tornado.web.RequestHandler):
         logging.info("Printing label for " + sVial)
         sSql = f"""
         select v.notebook_ref batch_id, b.compound_id, IFNULL(v.conc, 'Solid')
-        from {glassDB}.vial v, bcpvs.batch b
+        from {glassDB}.vial v, {bcpvsDB}.batch b
         where v.vial_id='{sVial}' and v.notebook_ref = b.notebook_ref
         """
         sSlask = cur.execute(sSql)
@@ -1628,7 +1628,7 @@ class vialInfo(tornado.web.RequestHandler):
                    compound_id,
                    path box_id
                from {glassDB}.vial v
-                  left join bcpvs.batch c ON v.notebook_ref = c.notebook_ref
+                  left join {bcpvsDB}.batch c ON v.notebook_ref = c.notebook_ref
                   left join {loctreeDB}.v_all_locations l on v.location = l.loc_id
                where vial_id ='{sVial}'"""
 
@@ -1654,7 +1654,7 @@ class TransitVials(tornado.web.RequestHandler):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         sIds = set(sVials.split())
         for sVialId in sIds:
-            sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId, glassDB, loctreeDB)
+            sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId, glassDB, loctreeDB, bcpvsDB)
             sLogString = f"""location from {sOldBox} {sOldName}:{sOldCoordinate}\
  to Compound collection"""
             logVialChange(glassDB, sVialId, sLogString)
@@ -1698,7 +1698,7 @@ class UpdateVialPosition(tornado.web.RequestHandler):
         sSlask = cur.execute(sSql)
         tLoc = cur.fetchall()
 
-        sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId, glassDB, loctreeDB)
+        sOldBox, sOldName, sOldCoordinate = getVialPosition(sVialId, glassDB, loctreeDB, bcpvsDB)
         sLogString = f"""location from {sOldBox} {sOldName}:{sOldCoordinate}\
  to {sBoxId} {tLoc[0][0]}:{sPos}"""
 
@@ -1768,7 +1768,7 @@ class printBox(tornado.web.RequestHandler):
 class GetBox(tornado.web.RequestHandler):
     def get(self, sBox):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
-        jRes = getBoxFromDb(sBox, glassDB, loctreeDB)
+        jRes = getBoxFromDb(sBox, glassDB, loctreeDB, bcpvsDB)
         try:
             #jResult = [{'message':'Box type:' + tRes[0][2] + ', Description:' + tRes[0][1],
             #            'data':jRes}]
@@ -1802,7 +1802,7 @@ class searchVials(tornado.web.RequestHandler):
             ROUND(((v.net*1000/c.biological_mw)/v.conc)*1000000) AS dilution
             FROM
 	    {glassDB}.vial v
-            left join bcpvs.batch c ON v.notebook_ref = c.notebook_ref
+            left join {bcpvsDB}.batch c ON v.notebook_ref = c.notebook_ref
             LEFT OUTER JOIN {loctreeDB}.v_all_locations l on v.location = l.loc_id
             WHERE v.vial_id = '{sId}'
             """
@@ -1880,7 +1880,7 @@ class searchBatches(tornado.web.RequestHandler):
             v.vial_id vialId,
             c.biological_mw as batchMolWeight
             FROM {glassDB}.vial v,
-            bcpvs.batch c,
+            {bcpvsDB}.batch c,
             {loctreeDB}.v_all_locations l
             where
 	    v.notebook_ref = c.notebook_ref and
@@ -1898,7 +1898,7 @@ class searchBatches(tornado.web.RequestHandler):
             v.vial_id vialId,
             c.biological_mw as batchMolWeight
             FROM {glassDB}.vial v,
-            bcpvs.batch c,
+            {bcpvsDB}.batch c,
             {loctreeDB}.v_all_locations l
             where
 	    v.notebook_ref = c.notebook_ref and
@@ -2004,7 +2004,7 @@ class CreateMolImage(tornado.web.RequestHandler):
         sSql = ""
         if m:
             sSql = f"""select mol
-            from bcpvs.JCMOL_MOLTABLE m, {glassDB}.vial v, bcpvs.batch c
+            from {bcpvsDB}.JCMOL_MOLTABLE m, {glassDB}.vial v, {bcpvsDB}.batch c
             where v.notebook_ref = c.notebook_ref
             and c.compound_id = m.compound_id and
             vial_id = '{sId}'
@@ -2014,14 +2014,14 @@ class CreateMolImage(tornado.web.RequestHandler):
             m = re.search("CBK\d\d\d\d\d\d", sId)
             if m:
                 sSql = f"""select mol
-                from bcpvs.JCMOL_MOLTABLE m
+                from {bcpvsDB}.JCMOL_MOLTABLE m
                 where
                 m.compound_id = '{sId}'
                 """
             else:
                 sSql = f"""
                 select mol
-                from bcpvs.JCMOL_MOLTABLE m, bcpvs.batch b
+                from {bcpvsDB}.JCMOL_MOLTABLE m, {bcpvsDB}.batch b
                 where
                 m.compound_id = b.compound_id and
                 b.notebook_ref = '{sId}'
