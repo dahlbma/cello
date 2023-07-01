@@ -83,7 +83,7 @@ class SearchScreen(QMainWindow):
 
 
     def check_vial_search_input(self):
-        pattern = '^[vV][0-9]{6}$'
+        pattern = '^[vV]\d{6,7}$'
         t = self.vial_search_eb.text()
         t = t.rstrip()
         if re.match(pattern, t):
@@ -215,7 +215,7 @@ class SearchScreen(QMainWindow):
 
     def search_batches(self):
         batches = self.batch_search_eb.text()
-        batches = re.sub("[^0-9a-zA-Z]+", " ", batches)
+        batches = re.sub("[^0-9a-zA-Z_]+", " ", batches)
         logging.getLogger(self.mod_name).info(f"batches search {batches}")
         res = dbInterface.getBatches(self.token, batches)
         self.batches_data = None
