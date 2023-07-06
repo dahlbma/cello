@@ -1983,7 +1983,8 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         (select l.loc_id, t.subpos, l.name, l.path, t.name loc_type
         from {loctreeDB}.v_all_locations l, {loctreeDB}.location_type t
         where l.type_id = t.type_id
-        and t.subpos is not null and t.subpos < 300) ll
+        and t.subpos is not null and t.subpos < 300
+        and  l.loc_id in (select location from {glassDB}.vial)) ll
         on v.location = ll.loc_id  order by path, free_positions
         """
 
