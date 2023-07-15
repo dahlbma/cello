@@ -283,7 +283,6 @@ class getMicroTubes(tornado.web.RequestHandler):
             return
         saBatches = list(sBatches.split())
         jResTot = list()
-
         def makeJson(tData, jRes, sId):
             if len(tData) == 0:
                 return jRes
