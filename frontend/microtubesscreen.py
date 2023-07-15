@@ -103,7 +103,7 @@ class MicrotubesScreen(QMainWindow):
         self.tubes_batches_table.setRowCount(0);
         self.tubes_batches_table.update()
         batches = self.tubes_batch_eb.text()
-        batches = re.sub("[^0-9a-zA-Z]+", " ", batches)
+        batches = re.sub("[^0-9a-zA-Z_]+", " ", batches)
         if len(batches) < 1:
             return
         logging.getLogger(self.mod_name).info(f"microtubes batch search for [{batches}]")
