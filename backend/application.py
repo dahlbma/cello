@@ -757,7 +757,7 @@ class UploadWellInformation(tornado.web.RequestHandler):
             tRes = cur.fetchall()
             if len(tRes) != 1:
                 self.set_status(400)
-                logging.error(f'Backfill values requires an existing CONC value in the well {len(tRes)}')
+                logging.error(f'Backfill values requires an existing CONC value in the well {sPlate} {sWell}')
                 self.finish(str('Backfill values requires an existing CONC value in the well'))
                 return
 
