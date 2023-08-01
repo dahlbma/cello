@@ -183,7 +183,7 @@ def plate_to_html(data, size1, resultdata, size2):
     outtext = chart2(blob_size1, blob_size2)(html, optional)
     return outtext
 
-def chart_html(data, size, pf):
+def chart_html(data, size, pf=''):
     try:
         scale = {'96':1, '384':2, '1536':4}[str(size)]
         rows = 8*scale
