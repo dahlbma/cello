@@ -19,6 +19,34 @@ from os.path import exists
 db = mydb.disconnectSafeConnect()
 cur = db.cursor()
 
+
+def vialPresentInDDD(sVial):
+    sSql = f'''
+    select vial_id from vialdb.vial where vial_id = '{sVial}'
+    '''
+    cur.execute(sSql)
+    tResDDD = cur.fetchall()
+
+    sSql = f'''
+    select vial_id from glass.vial where vial_id = '{sVial}'
+    '''
+    cur.execute(sSql)
+    tResCello = cur.fetchall()
+    
+    if len(tResDDD) == 1 and len(tResCello) == 0:
+        return True
+    else:
+        return False
+    
+def isItDDDConnetion(parent):
+    data = parent.request.headers['Token']
+    jsonData = json.loads(data)
+    database = jsonData['database']
+    if database == 'DDD':
+        return True
+    else:
+        return False
+    
 def getDatabase(parent):
     data = parent.request.headers['Token']
     jsonData = json.loads(data)
@@ -1615,7 +1643,10 @@ class vialInfo(tornado.web.RequestHandler):
         tRes = cur.fetchall()
         lError = False
         if len(tRes) != 1:
-            sError = 'Vial not found'
+            if isItDDDConnetion(self) and vialPresentInDDD(sVial):
+                sError = 'Vial not copied over please contact author of the program'
+            else:
+                sError = 'Vial not found'
             self.set_status(400)
             self.finish(sError)
             logging.error('Vial ' + sVial + ' not found')
