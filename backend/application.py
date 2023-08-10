@@ -789,12 +789,12 @@ class UploadWellInformation(tornado.web.RequestHandler):
                 self.finish(str('Backfill values requires an existing CONC value in the well'))
                 return
 
-            preConc = int(tRes[0][0])
-            preVolume = int(tRes[0][1])
-            sVolume = int(float(sVolume))
+            preConc = float(tRes[0][0])
+            preVolume = float(tRes[0][1])
+            sVolume = float(sVolume)
             sSql = f'''update {coolDB}.config
-            set conc = '{(preConc * int(preVolume))/(preVolume + int(sVolume))}',
-            volume = '{preVolume + int(sVolume)}'
+            set conc = '{(preConc * float(preVolume))/(preVolume + float(sVolume))}',
+            volume = '{preVolume + float(sVolume)}'
             where config_id = '{sPlate}' and well = '{sWell}'
             '''
             try:
