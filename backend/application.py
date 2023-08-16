@@ -357,23 +357,20 @@ or b.compound_id = '{sId}'
                 return
             if len(tRes) == 0:
                 sSql = f"""select
-                t.notebook_ref as batchId,
-                t.tube_id as tubeId,
-                t.volume*1000000 as volume,
-                m.matrix_id as matrixId,
-                mt.position as position,
-                m.location as location,
-                b.compound_id as compoundId
-                from {microtubeDB}.tube t,
-                {microtubeDB}.v_matrix_tube mt,
-                {microtubeDB}.v_matrix m,
-                {bcpvsDB}.batch b
-                where
-                b.notebook_ref = t.notebook_ref and
-                t.tube_id = mt.tube_id and
-                m.matrix_id = mt.matrix_id and
-                t.tube_id = '{sId}'
+t.notebook_ref as batchId,
+t.tube_id as tubeId,
+t.volume*1000000 as volume,
+m.matrix_id as matrixId,
+mt.position as position,
+m.location as location,
+b.compound_id as compoundId
+from microtube.tube t
+left outer join microtube.matrix_tube mt on t.tube_id = mt.tube_id
+left outer join microtube.matrix m on m.matrix_id = mt.matrix_id
+join bcpvs.batch b on b.notebook_ref = t.notebook_ref and
+t.tube_id = '{sId}'
                 """
+
                 try:
                     sSlask = cur.execute(sSql)
                     tRes = cur.fetchall()
