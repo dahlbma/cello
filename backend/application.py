@@ -37,7 +37,7 @@ def vialPresentInDDD(sVial):
         return True
     else:
         return False
-    
+
 def isItDDDConnetion(parent):
     data = parent.request.headers['Token']
     jsonData = json.loads(data)
@@ -46,7 +46,7 @@ def isItDDDConnetion(parent):
         return True
     else:
         return False
-    
+
 def getDatabase(parent):
     data = parent.request.headers['Token']
     jsonData = json.loads(data)
@@ -925,6 +925,29 @@ class ReadScannedRack(tornado.web.RequestHandler):
 
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
 
+        def resetPosition(sLine, sRackId):
+            m = re.search("\s+(\w\d\d);", sLine)
+            if m:
+                sPosition = m.groups()[0]
+            else:
+                logging.error(f'{sLine}')
+                return
+
+            # Reset any tube that was in the position we are about to update
+            sSql = f"""select tube_id from {microtubeDB}.matrix_tube
+            where matrix_id = '{sRackId}' and position = '{sPosition}'
+            """
+            sSlask = cur.execute(sSql)
+            tRes = cur.fetchall()
+            if len(tRes) > 0:
+                # Reset position and rack for old tube here
+                sSql = f"""update {microtubeDB}.matrix_tube
+                set matrix_id = NULL, position = NULL
+                where tube_id = '{tRes[0][0]}'"""
+                sSlask = cur.execute(sSql)
+
+
+
         def createRackIfNotFound(sRack):
             sSql = f"""
             select matrix_id from {microtubeDB}.matrix where matrix_id = '{sRack}'
@@ -970,8 +993,12 @@ class ReadScannedRack(tornado.web.RequestHandler):
         saError = []
 
         createRackIfNotFound(sRackId)
-
+        logging.info(f'Updating rack {sRackId}')
+        
         for sLine in saFile:
+            if "NO READ" in sLine or "Forced Stop" in sLine:
+                resetPosition(sLine, sRackId)
+            
             m = re.search("\s+(\w\d\d);\s+(\d+)", sLine)
             if m:
                 sPosition = m.groups()[0]
