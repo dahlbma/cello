@@ -82,10 +82,14 @@ def getNewLocId(loctreeDB):
 
 def getNewPlateId(coolDB):
     def nextPossiblePlate():
-        sSql = f"select pkey from {coolDB}.plate_sequence"
+        # Use cool sequence to get unique sequence over both glass and ddd_cool
+        #sSql = f"select pkey from {coolDB}.plate_sequence"
+        sSql = f"select pkey from cool.plate_sequence"
         cur.execute(sSql)
         pkey = cur.fetchall()[0][0] +1
-        sSql = f"update {coolDB}.plate_sequence set pkey={pkey}"
+        # Use cool sequence to get unique sequence over both glass and ddd_cool
+        #sSql = f"update {coolDB}.plate_sequence set pkey={pkey}"
+        sSql = f"update cool.plate_sequence set pkey={pkey}"
         cur.execute(sSql)
         return pkey
 
@@ -106,10 +110,14 @@ def getNewPlateId(coolDB):
 
 def getNewRackId(microtubeDB):
     def nextPossibleRack():
-        sSql = f"select pkey from {microtubeDB}.matrix_sequence"
+        # Use microtube sequence to get unique sequence over both glass and ddd_microtube
+        #sSql = f"select pkey from {microtubeDB}.matrix_sequence"
+        sSql = f"select pkey from microtube.matrix_sequence"
         cur.execute(sSql)
         pkey = cur.fetchall()[0][0] +1
-        sSql = f"update {microtubeDB}.matrix_sequence set pkey={pkey}"
+        # Use microtube sequence to get unique sequence over both glass and ddd_microtube
+        #sSql = f"update {microtubeDB}.matrix_sequence set pkey={pkey}"
+        sSql = f"update microtube.matrix_sequence set pkey={pkey}"
         cur.execute(sSql)
         return pkey
 
@@ -162,7 +170,6 @@ class PingDB(tornado.web.RequestHandler):
         ret = cur.ping(sSql)
         if ret == 'error':
             self.set_status(400)
-
 
 
 @jwtauth
@@ -364,10 +371,10 @@ m.matrix_id as matrixId,
 mt.position as position,
 m.location as location,
 b.compound_id as compoundId
-from microtube.tube t
-left outer join microtube.matrix_tube mt on t.tube_id = mt.tube_id
-left outer join microtube.matrix m on m.matrix_id = mt.matrix_id
-join bcpvs.batch b on b.notebook_ref = t.notebook_ref and
+from {microtubeDB}.tube t
+left outer join {microtubeDB}.v_matrix_tube mt on t.tube_id = mt.tube_id
+left outer join {microtubeDB}.v_matrix m on m.matrix_id = mt.matrix_id
+join {bcpvsDB}.batch b on b.notebook_ref = t.notebook_ref and
 t.tube_id = '{sId}'
                 """
 
@@ -1588,7 +1595,9 @@ class printVial(tornado.web.RequestHandler):
 
 def getNextVialId(glassDB):
     sTmp = "V[0-9]+"
-    sSql = f'select pkey from {glassDB}.vial_id_sequence'
+    # Use glass sequence to get unique sequence over both glass and ddd_glass
+    #sSql = f'select pkey from {glassDB}.vial_id_sequence'
+    sSql = f'select pkey from glass.vial_id_sequence'
     sSlask =  cur.execute(sSql)
     iVialPkey = cur.fetchall()[0][0]
     sNewVial = 'V' + str(iVialPkey).zfill(6)
@@ -1602,7 +1611,9 @@ def getNextVialId(glassDB):
             sNewVial = 'V' + str(iVialPkey).zfill(6)
         else:
             break
-    sSql = f"""update {glassDB}.vial_id_sequence set pkey = {iVialPkey}"""
+    # Use glass sequence to get unique sequence over both glass and ddd_glass
+    #sSql = f"""update {glassDB}.vial_id_sequence set pkey = {iVialPkey}"""
+    sSql = f"""update glass.vial_id_sequence set pkey = {iVialPkey}"""
     sSlask =  cur.execute(sSql)
     return sNewVial
 
