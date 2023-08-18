@@ -114,7 +114,9 @@ class VialsScreen(QMainWindow):
         displayMolfile(self, vialId)
 
     def printVial(self):
-        dbInterface.printVialLabel(self.token, self.edit_vial_id_eb.text())
+        sVial = self.edit_vial_id_eb.text()
+        if len(sVial) > 3:
+            dbInterface.printVialLabel(self.token, sVial)
 
     def updateVial(self):
         res, l = dbInterface.editVial(self.token,
