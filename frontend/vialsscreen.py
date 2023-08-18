@@ -30,6 +30,7 @@ class VialsScreen(QMainWindow):
 
         self.edit_vial_id_eb.textChanged.connect(self.check_vial_search_input)
         self.edit_update_btn.clicked.connect(self.updateVial)
+        self.print_vial_btn.clicked.connect(self.printVial)
 
         types = [' ', "10", "20", "50", "Solid"]
         self.edit_vconc_cb.addItems(types)
@@ -80,6 +81,7 @@ class VialsScreen(QMainWindow):
             self.vial_data = None
             self.v_search = False
             self.edit_update_btn.setEnabled(False)
+            self.print_vial_btn.setEnabled(False)
             self.errorlabel.setText(str(res))
             self.edit_batch_id_eb.setText('')
             self.edit_compound_id_eb.setText('')
@@ -95,6 +97,7 @@ class VialsScreen(QMainWindow):
         logging.getLogger(self.mod_name).info(f"receieved {self.vial_data}")
         self.v_search = True
         self.edit_update_btn.setEnabled(True)
+        self.print_vial_btn.setEnabled(True)
         self.errorlabel.setText('')
         sBatch = ''
         if self.vial_data[0]['batch_id'] != None:
@@ -110,6 +113,9 @@ class VialsScreen(QMainWindow):
         self.edit_batch_id_eb.setFocus()
         displayMolfile(self, vialId)
 
+    def printVial(self):
+        dbInterface.printVialLabel(self.token, self.edit_vial_id_eb.text())
+
     def updateVial(self):
         res, l = dbInterface.editVial(self.token,
                                       self.edit_vial_id_eb.text(),
@@ -123,7 +129,7 @@ class VialsScreen(QMainWindow):
                 self.edit_vial_error_lab.setText(res)
             self.edit_dilution_eb.setText(str(res[0]['dilution_factor']))
             self.edit_vial_error_lab.setText('')
-            dbInterface.printVialLabel(self.token, self.edit_vial_id_eb.text())
+            #dbInterface.printVialLabel(self.token, self.edit_vial_id_eb.text())
             self.check_vial_search_input()
         except Exception as e:
             logging.getLogger(self.mod_name).error(str(e))
