@@ -135,7 +135,7 @@ def displayMolfile(self, sId):
 
 def export_table(table):
         mat = [[table.item(row, col).text() for col in range(table.columnCount())] for row in range(table.rowCount())]
-        csv = '\n'.join(list(map(lambda x: ', '.join(x), mat)))
+        csv = '\n'.join(list(map(lambda x: ','.join(x), mat)))
         clipboard = QApplication.clipboard()
         clipboard.setText(csv)
         send_msg("Export data", "Data copied to clipboard!")
