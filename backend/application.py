@@ -47,6 +47,12 @@ def isItDDDConnetion(parent):
     else:
         return False
 
+def getConnectionName(parent):
+    data = parent.request.headers['Token']
+    jsonData = json.loads(data)
+    database = jsonData['database']
+    return database
+
 def getDatabase(parent):
     data = parent.request.headers['Token']
     jsonData = json.loads(data)
@@ -1603,20 +1609,26 @@ def getNextVialId(glassDB):
     sNewVial = 'V' + str(iVialPkey).zfill(6)
 
     while True:
-        sSql = f"""select vial_id from {glassDB}.vial where vial_id = '{sNewVial}'"""
+        sSql = f"""select vial_id from glass.vial where vial_id = '{sNewVial}'"""
         sSlask =  cur.execute(sSql)
-        res = cur.fetchall()
-        if len(res) == 1:
+        resLive = cur.fetchall()
+
+        sSql = f"""select vial_id from ddd_glass.vial where vial_id = '{sNewVial}'"""
+        sSlask =  cur.execute(sSql)
+        resDDD = cur.fetchall()
+
+        if len(resLive) == 1 or len(resDDD) == 1:
             iVialPkey += 1
             sNewVial = 'V' + str(iVialPkey).zfill(6)
         else:
             break
+
     # Use glass sequence to get unique sequence over both glass and ddd_glass
     #sSql = f"""update {glassDB}.vial_id_sequence set pkey = {iVialPkey}"""
     sSql = f"""update glass.vial_id_sequence set pkey = {iVialPkey}"""
     sSlask =  cur.execute(sSql)
-    return sNewVial
 
+    return sNewVial
 
 @jwtauth
 class CreateEmptyVials(tornado.web.RequestHandler):
@@ -2037,6 +2049,9 @@ class DeleteLocation(tornado.web.RequestHandler):
 class GetFreeBoxes(tornado.web.RequestHandler):
     def get(self):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+
+        sOwner = getConnectionName(self)
+        
         sSql = f"""
         select ll.loc_id location,
         FORMAT(ll.subpos - IFNULL(v_count, 0), 0) free_positions,
@@ -2046,13 +2061,15 @@ class GetFreeBoxes(tornado.web.RequestHandler):
         from {glassDB}.vial group by location) v
         right outer join
         (select l.loc_id, t.subpos, l.name, l.path, t.name loc_type
-        from {loctreeDB}.v_all_locations l, {loctreeDB}.location_type t
-        where l.type_id = t.type_id
+        from {loctreeDB}.v_all_locations l, {loctreeDB}.location_type t, {loctreeDB}.locations lowner
+        where l.type_id = t.type_id and lowner.loc_id = l.loc_id and lowner.owner = '{sOwner}'
         and t.subpos is not null and t.subpos < 300
-        and  l.loc_id in (select location from {glassDB}.vial)) ll
+        ) ll
         on v.location = ll.loc_id  order by path, free_positions
         """
 
+
+        
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         self.write(json.dumps(res_to_json(tRes, cur)))
@@ -2175,10 +2192,12 @@ class AddBox(tornado.web.RequestHandler):
         elif sBoxSize == 'Matrix':
             loc_type = 7
 
+        sOwner = getConnectionName(self)
+
         sSql = f'''
-        insert into {loctreeDB}.locations (loc_id, parent, type_id, created_date, name)
+        insert into {loctreeDB}.locations (loc_id, parent, type_id, created_date, name, owner)
         values 
-        ('{sNewLocId}', '{sParent}', '{loc_type}', now(), '{sBoxName}')
+        ('{sNewLocId}', '{sParent}', '{loc_type}', now(), '{sBoxName}', '{sOwner}')
         '''
         cur.execute(sSql)
 
