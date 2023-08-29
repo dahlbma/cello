@@ -77,6 +77,8 @@ class BoxesScreen(QMainWindow):
         self.update_print_btn.setEnabled(False)
         self.transit_vials_btn.clicked.connect(self.transitVials)
         self.transit_vials_btn.setEnabled(False)
+        self.renameBoxBtn.clicked.connect(self.renameBox)
+        self.renameBoxBtn.setEnabled(False)
         self.update_export_btn.clicked.connect(self.export_box_table)
 
         self.box_table.itemChanged.connect(self.updateVialPosition)
@@ -387,8 +389,10 @@ class BoxesScreen(QMainWindow):
         #not bad results
         self.update_name_lab.setText(f"{self.path_js[0]['path']}")
         self.update_name_lab.setStyleSheet("")
+        self.box_name_eb.setText(self.path_js[0]['NAME'])
         self.setBoxTableData(self.box_data, box)
         self.box_table.setCurrentCell(0,0)
+        self.renameBoxBtn.setEnabled(True)
         self.update_print_btn.setEnabled(True)
         self.transit_vials_btn.setEnabled(True)
         self.update_export_btn.setEnabled(True)
@@ -440,6 +444,12 @@ class BoxesScreen(QMainWindow):
             self.box_table.editItem(self.box_table.item(r, col))
             self.box_table.scrollToItem(self.box_table.item(r, col), QAbstractItemView.PositionAtCenter)
         return
+
+    def renameBox(self):
+        sBox = self.update_box_eb.text()
+        sNewName = self.box_name_eb.text()
+        dbInterface.updateBoxName(self.token, sBox, sNewName)
+        self.check_search_input()
 
     def transitVials(self):
         items = self.box_table.selectedItems()

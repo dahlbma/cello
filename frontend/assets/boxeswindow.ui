@@ -109,7 +109,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="boxes_tab_wg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="loc_tree_tab">
          <attribute name="title">
@@ -261,8 +261,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>360</width>
-               <height>959</height>
+               <width>333</width>
+               <height>941</height>
               </rect>
              </property>
              <layout class="QGridLayout" name="gridLayout_8">
@@ -1195,15 +1195,6 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
                         </color>
                        </brush>
                       </colorrole>
-                      <colorrole role="PlaceholderText">
-                       <brush brushstyle="SolidPattern">
-                        <color alpha="128">
-                         <red>255</red>
-                         <green>0</green>
-                         <blue>0</blue>
-                        </color>
-                       </brush>
-                      </colorrole>
                      </active>
                      <inactive>
                       <colorrole role="WindowText">
@@ -1227,15 +1218,6 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
                       <colorrole role="ButtonText">
                        <brush brushstyle="SolidPattern">
                         <color alpha="255">
-                         <red>255</red>
-                         <green>0</green>
-                         <blue>0</blue>
-                        </color>
-                       </brush>
-                      </colorrole>
-                      <colorrole role="PlaceholderText">
-                       <brush brushstyle="SolidPattern">
-                        <color alpha="128">
                          <red>255</red>
                          <green>0</green>
                          <blue>0</blue>
@@ -1271,15 +1253,6 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
                         </color>
                        </brush>
                       </colorrole>
-                      <colorrole role="PlaceholderText">
-                       <brush brushstyle="SolidPattern">
-                        <color alpha="128">
-                         <red>0</red>
-                         <green>0</green>
-                         <blue>0</blue>
-                        </color>
-                       </brush>
-                      </colorrole>
                      </disabled>
                     </palette>
                    </property>
@@ -1305,7 +1278,23 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
           <string>Update box content</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="2" column="1" rowspan="3">
+          <item row="1" column="0">
+           <spacer name="horizontalSpacer_9">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="2" rowspan="3">
            <widget class="QTableWidget" name="box_table">
             <attribute name="horizontalHeaderDefaultSectionSize">
              <number>180</number>
@@ -1338,30 +1327,14 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
             </column>
            </widget>
           </item>
-          <item row="2" column="2">
+          <item row="2" column="3">
            <widget class="QToolButton" name="update_export_btn">
             <property name="text">
              <string>...</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <spacer name="horizontalSpacer_9">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="0" column="1">
+          <item row="0" column="2">
            <layout class="QGridLayout" name="gridLayout_3">
             <item row="3" column="0">
              <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -1372,6 +1345,9 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="placeholderText">
+                 <string>Box Id</string>
                 </property>
                </widget>
               </item>
@@ -1393,21 +1369,21 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
               </item>
              </layout>
             </item>
-            <item row="3" column="1">
-             <widget class="QLabel" name="update_name_lab">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+            <item row="1" column="0">
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
               </property>
-              <property name="text">
-               <string/>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
               </property>
-              <property name="textInteractionFlags">
-               <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>13</height>
+               </size>
               </property>
-             </widget>
+             </spacer>
             </item>
             <item row="0" column="0">
              <widget class="QLabel" name="label_5">
@@ -1424,21 +1400,21 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <spacer name="verticalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
+            <item row="3" column="1">
+             <widget class="QLabel" name="update_name_lab">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
+              <property name="text">
+               <string/>
               </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>13</height>
-               </size>
+              <property name="textInteractionFlags">
+               <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
               </property>
-             </spacer>
+             </widget>
             </item>
             <item row="1" column="1">
              <spacer name="horizontalSpacer_15">
@@ -1468,7 +1444,20 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
             </item>
            </layout>
           </item>
-          <item row="5" column="1">
+          <item row="3" column="3" rowspan="2">
+           <spacer name="verticalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>23</width>
+              <height>535</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="5" column="2">
            <spacer name="verticalSpacer_3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -1484,18 +1473,35 @@ QLabel#move_error_lab[state=&quot;false&quot;] {
             </property>
            </spacer>
           </item>
-          <item row="3" column="2" rowspan="2">
-           <spacer name="verticalSpacer_5">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>23</width>
-              <height>535</height>
-             </size>
-            </property>
-           </spacer>
+          <item row="1" column="1" colspan="2">
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QLineEdit" name="box_name_eb"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="renameBoxBtn">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(51, 122, 183)</string>
+              </property>
+              <property name="text">
+               <string>Rename Box</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_21">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>

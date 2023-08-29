@@ -248,6 +248,14 @@ def addBox(token, sParent, sBoxName, sBoxSize):
     else:
         return True
 
+def updateBoxName(token, box, newName):
+    r = requests.put(f'{baseUrl}updateBoxName/{box}/{newName}',
+                     headers={'token': token})
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return None, True
+
 def addLocation(token, sParent, sLocationName, sLocationType):
     r = requests.put(f'{baseUrl}addLocation/{sParent}/{sLocationName}/{sLocationType}',
                       headers={'token': token})
