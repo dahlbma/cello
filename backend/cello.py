@@ -175,6 +175,7 @@ def make_app():
         (r"/addLocation/(?P<sParent>[^\/]+)/(?P<sLocationName>[^\/]+)/(?P<sLocationType>[^\/]+)",
          application.AddLocation),
         (r"/moveBox/(?P<sBox>[^\/]+)/(?P<sLocation>[^\/]+)", application.MoveBox),
+        (r"/updateBoxName/(?P<sBox>[^\/]+)/(?P<sNewName>[^\/]+)", application.UpdateBoxName),
         (r"/getBox/(?P<sBox>[^\/]+)", application.GetBox),
         (r"/getBoxLocation/(?P<sBox>[^\/]+)", application.GetBoxLocation),
         (r"/printBox/(?P<sBox>[^\/]+)", application.printBox),

@@ -914,6 +914,26 @@ class UpdateRackLocation(tornado.web.RequestHandler):
 
 
 @jwtauth
+class UpdateBoxName(tornado.web.RequestHandler):
+    def put(self, sBox, sNewName):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        if len(sNewName) < 2:
+            self.set_status(400)
+            self.finish(str(e))
+        else:
+            sSql = f"""
+            update {loctreeDB}.locations set name = '{sNewName}'
+            where loc_id = '{sBox}'
+            """
+            try:
+                sSlask = cur.execute(sSql)
+                self.finish()
+            except Exception as e:
+                self.set_status(400)
+                self.finish(str(e))
+
+
+@jwtauth
 class MoveBox(tornado.web.RequestHandler):
     def put(self, sBox, sLocation):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
