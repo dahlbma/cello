@@ -1966,7 +1966,7 @@ class searchBatches(tornado.web.RequestHandler):
         for sId in sIds:
             tmpIds += "'" + sId + "'"
         stringIds = tmpIds.replace("''", "','")
-        if sIds[0].startswith('CBK'):
+        if sIds[0].startswith('CBK') or sIds[0].startswith('SLL'):
             sSql = f"""
             SELECT v.notebook_ref as batchId,
             c.compound_id as compoundId,
