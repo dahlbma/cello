@@ -133,7 +133,7 @@ class SearchScreen(QMainWindow):
         
     def search_many_vials(self):
         vials = self.mult_vial_search_eb.text()
-        vials = re.sub("[^0-9a-zA-Z]+", " ", vials)
+        vials = re.sub("[^0-9a-zA-Z-]+", " ", vials)
         logging.getLogger(self.mod_name).info(f"multvial search {vials}")
         res = dbInterface.getManyVials(self.token, vials)
         self.multvial_data = None
@@ -215,7 +215,7 @@ class SearchScreen(QMainWindow):
 
     def search_batches(self):
         batches = self.batch_search_eb.text()
-        batches = re.sub("[^0-9a-zA-Z_]+", " ", batches)
+        batches = re.sub("[^0-9a-zA-Z_-]+", " ", batches)
         logging.getLogger(self.mod_name).info(f"batches search {batches}")
         res = dbInterface.getBatches(self.token, batches)
         self.batches_data = None
