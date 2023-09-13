@@ -62,7 +62,7 @@ def getDatabase(parent):
     elif database == 'DDD':
         return 'ddd_glass', 'ddd_cool', 'ddd_microtube', 'loctree', 'ddd_bcpvs'
     else:
-        return 'glass_test', 'cool_test', 'microtube_test', 'loctree_test'
+        return 'glass_test', 'cool_test', 'microtube_test', 'loctree_test', 'bcpvs'
 
 def res_to_json(response, cursor):
     columns = cursor.description()
