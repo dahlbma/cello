@@ -135,7 +135,13 @@ class SearchScreen(QMainWindow):
         vials = self.mult_vial_search_eb.text()
         vials = re.sub("[^0-9a-zA-Z-]+", " ", vials)
         logging.getLogger(self.mod_name).info(f"multvial search {vials}")
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        v_n = len(vials)
+        if v_n > 20:
+            send_msg(f'Searching for {v_n} vials.\nThis might take a few minutes.\nPlease wait.')
         res = dbInterface.getManyVials(self.token, vials)
+        # change to get single vial at a time for progress bar
+        QApplication.restoreOverrideCursor()
         self.multvial_data = None
         try:
             self.multvial_data = json.loads(res)
