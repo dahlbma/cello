@@ -160,6 +160,8 @@ def getNextFreeRow(table, row, col, entireRowFree=False, fromSame=False):
 def plate_to_html(data, size1, resultdata, size2):
     html = chart_html(data, size1, "_s")
     optional = ""
+    #set default blob sizes for printing only one plate
+    blob_size1, blob_size2 = 8, 8
     if size2 != None:
         optional = "<span class=\"normal\"></br></br>to</br></br></br></span>" \
                    + chart_html(resultdata, size2, "_t")
@@ -172,8 +174,8 @@ def plate_to_html(data, size1, resultdata, size2):
 
         ############################
         # Mats added the next two lines. blob_size2 is undefined if I don't do this, and the application crashes
-    else:
-        blob_size2 = {'96':8, '384':8, '1536':2}[str(size1)]
+    #else:
+    #    blob_size2 = {'96':8, '384':8, '1536':2}[str(size1)]
 
         # End dirty fix
         ###########################
