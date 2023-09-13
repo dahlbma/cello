@@ -41,7 +41,7 @@ class PlatesScreen(QMainWindow):
 
         locations = ['Compound Center', "CC Freezer A", "CC Freezer B", "Sent to User"]
         self.plate_location_cb.addItems(locations)
-        locations.append(' ')
+        #locations.insert(0, ' ') # is this even necessary or safe?
         self.update_plate_location_cb.addItems(locations)
 
         self.label_to_plates_save_btn.clicked.connect(self.createPlatesFromLabel)
@@ -205,6 +205,9 @@ class PlatesScreen(QMainWindow):
         if re.match(pattern, t):
             self.plateSearch(t)
         else:
+            self.plate_display.setHtml("")
+            if len(sPlateId) > 0:
+                self.platesearch_error_lab.setText("Incorrectly formatted id")
             self.plate_search = None
             self.plate_data = None
             self.plate_comment_eb.setText("")
@@ -251,7 +254,8 @@ class PlatesScreen(QMainWindow):
                 self.plate_comment_eb.setText(info[0]['comments'])
                 self.update_plate_location_cb.setCurrentText(info[0]['loc_id'])
                 self.platesearch_error_lab.setText(f"Plate size: {info[0]['wells']}")
-                self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
+                self.plate_display.setHtml("")
+                #self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
                 self.plate_comment_eb.setEnabled(True)
                 self.plate_comment_btn.setEnabled(True)
                 logging.getLogger(self.mod_name).info(f"empty plate, no data received")

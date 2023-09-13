@@ -23,20 +23,13 @@
    <layout class="QGridLayout" name="gridLayout_7">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_6">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="goto_search_btn">
-        <property name="text">
-         <string>Search</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="QPushButton" name="goto_plates_btn">
+      <item row="0" column="3">
+       <widget class="QPushButton" name="goto_microtubes_btn">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="text">
-         <string>Plates</string>
+         <string>Microtubes</string>
         </property>
        </widget>
       </item>
@@ -50,13 +43,13 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="goto_microtubes_btn">
+      <item row="0" column="4">
+       <widget class="QPushButton" name="goto_plates_btn">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="text">
-         <string>Microtubes</string>
+         <string>Plates</string>
         </property>
        </widget>
       </item>
@@ -64,6 +57,13 @@
        <widget class="QPushButton" name="goto_vials_btn">
         <property name="text">
          <string>Vials</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="goto_search_btn">
+        <property name="text">
+         <string>Search</string>
         </property>
        </widget>
       </item>
@@ -83,7 +83,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>4</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -596,7 +596,78 @@ Plates</string>
           <string>Manage Plates</string>
          </attribute>
          <layout class="QGridLayout" name="gridLayout_8">
-          <item row="2" column="1" rowspan="3" colspan="8">
+          <item row="2" column="0">
+           <spacer name="horizontalSpacer_7">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="3" column="6">
+           <spacer name="horizontalSpacer_8">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="2">
+           <spacer name="horizontalSpacer_9">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Maximum</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>27</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="1">
+           <spacer name="verticalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>15</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="3">
+           <widget class="QCheckBox" name="plate_discard_chk">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1" rowspan="3" colspan="5">
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="1" column="1">
              <spacer name="verticalSpacer_4">
@@ -663,54 +734,6 @@ Plates</string>
             </item>
            </layout>
           </item>
-          <item row="1" column="5">
-           <spacer name="horizontalSpacer_9">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Maximum</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="0">
-           <spacer name="horizontalSpacer_7">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="3" column="9">
-           <spacer name="horizontalSpacer_8">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="5" column="1">
            <spacer name="verticalSpacer_6">
             <property name="orientation">
@@ -727,95 +750,25 @@ Plates</string>
             </property>
            </spacer>
           </item>
-          <item row="0" column="1">
-           <spacer name="verticalSpacer_5">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Fixed</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>15</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="1" column="4">
-           <layout class="QGridLayout" name="gridLayout_3">
-            <item row="1" column="2">
-             <widget class="QPushButton" name="plate_comment_btn">
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(51, 122, 183)</string>
-              </property>
-              <property name="text">
-               <string>Update</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLineEdit" name="plate_comment_eb">
-              <property name="placeholderText">
-               <string>Comment</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="2">
-             <widget class="QComboBox" name="update_plate_location_cb"/>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="platesearch_error_lab">
-              <property name="styleSheet">
-               <string notr="true">color: red</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="label_21">
-              <property name="text">
-               <string>Location:</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="6">
-           <widget class="QCheckBox" name="plate_discard_chk">
+           <widget class="QPushButton" name="plate_discard_btn">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(234, 112, 112)</string>
+            </property>
             <property name="text">
-             <string/>
+             <string>Discard
+Plates</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="2">
-             <widget class="QPushButton" name="plate_print_btn">
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(51, 122, 183)</string>
-              </property>
-              <property name="text">
-               <string>Print Label</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2">
-             <widget class="QPushButton" name="plate_search_btn">
-              <property name="maximumSize">
-               <size>
-                <width>100</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(51, 122, 183)</string>
-              </property>
-              <property name="text">
-               <string>Search</string>
-              </property>
-             </widget>
-            </item>
+          <item row="1" column="1">
+           <layout class="QGridLayout" name="gridLayout_3">
             <item row="0" column="0">
              <widget class="QLabel" name="label_2">
               <property name="maximumSize">
@@ -837,23 +790,7 @@ Plates</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <spacer name="horizontalSpacer_6">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Fixed</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>30</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="1" column="0" colspan="2">
+            <item row="1" column="0">
              <widget class="QLineEdit" name="plate_search_eb">
               <property name="maximumSize">
                <size>
@@ -866,40 +803,83 @@ Plates</string>
               </property>
              </widget>
             </item>
+            <item row="0" column="2">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>7</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="1" column="5">
+             <widget class="QPushButton" name="plate_comment_btn">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(51, 122, 183)</string>
+              </property>
+              <property name="text">
+               <string>Update</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QLabel" name="label_21">
+              <property name="text">
+               <string>Location:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="plate_search_btn">
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(51, 122, 183)</string>
+              </property>
+              <property name="text">
+               <string>Search</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="platesearch_error_lab">
+              <property name="styleSheet">
+               <string notr="true">color: red</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QLineEdit" name="plate_comment_eb">
+              <property name="placeholderText">
+               <string>Comment</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QPushButton" name="plate_print_btn">
+              <property name="styleSheet">
+               <string notr="true">background-color: rgb(51, 122, 183)</string>
+              </property>
+              <property name="text">
+               <string>Print Label</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="5">
+             <widget class="QComboBox" name="update_plate_location_cb"/>
+            </item>
            </layout>
-          </item>
-          <item row="1" column="7">
-           <widget class="QPushButton" name="plate_discard_btn">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: rgb(234, 112, 112)</string>
-            </property>
-            <property name="text">
-             <string>Discard
-Plates</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::Preferred</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </widget>
@@ -2218,13 +2198,7 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
   <tabstop>label_to_plates_type_cb</tabstop>
   <tabstop>plate_table</tabstop>
   <tabstop>plate_export_btn</tabstop>
-  <tabstop>plate_comment_btn</tabstop>
-  <tabstop>plate_comment_eb</tabstop>
-  <tabstop>update_plate_location_cb</tabstop>
   <tabstop>plate_discard_chk</tabstop>
-  <tabstop>plate_print_btn</tabstop>
-  <tabstop>plate_search_btn</tabstop>
-  <tabstop>plate_search_eb</tabstop>
   <tabstop>plate_discard_btn</tabstop>
   <tabstop>choose_file_btn</tabstop>
   <tabstop>upload_plate_size_cb</tabstop>
