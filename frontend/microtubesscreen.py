@@ -360,7 +360,7 @@ class MicrotubesScreen(QMainWindow):
                     + chart_html(p, 96)
 
         #Show html
-        self.rack_display.setHtml(chart_lambda(8)(html, "", size=8))
+        self.rack_display.setHtml(chart2()(html, ""))
 
     def print_rack(self):
         rack = self.currentRack
