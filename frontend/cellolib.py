@@ -179,7 +179,7 @@ def plate_to_html(data, size1, resultdata, size2):
         ###########################
     # assemble 2 bodies, with optional prefaced with "to", which should enable separate sizes for each text body
     #return chart_lambda(blob_size1)(html, optional, size=blob_size1)
-    print(f"bs1:{blob_size1}, bs2:{blob_size2}")
+    #print(f"bs1:{blob_size1}, bs2:{blob_size2}")
     outtext = chart2(blob_size1, blob_size2)(html, optional)
     return outtext
 
