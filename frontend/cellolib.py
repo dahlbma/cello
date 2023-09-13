@@ -183,7 +183,7 @@ def plate_to_html(data, size1, resultdata, size2):
     outtext = chart2(blob_size1, blob_size2)(html, optional)
     return outtext
 
-def chart_html(data, size, pf=''):
+def chart_html(data, size, pf='_s'):
     try:
         scale = {'96':1, '384':2, '1536':4}[str(size)]
         rows = 8*scale
@@ -220,7 +220,7 @@ def chart_html(data, size, pf=''):
                 else:
                     chart[row][col] = "red" + pf
             except:
-                # We end up here when we are scanning microtue racks
+                # We end up here when we are scanning microtube racks
                 chart[row][col] = "red" + pf
 
     span = lambda x: f"<span class=\"{x}\"></span>"
