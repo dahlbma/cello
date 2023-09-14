@@ -56,6 +56,11 @@ class SearchScreen(QMainWindow):
         self.pool_scheme_to_cb_btn.clicked.connect(self.scheme_to_clipboard)
         self.pool_scheme_to_file_btn.clicked.connect(self.scheme_to_file)
 
+        self.multisearch_btn.clicked.connect(self.search_multisearch)
+        self.multisearch_vials_table.currentItemChanged.connect(lambda i = 0: self.multisearch_sync(i))
+        self.multisearch_tubes_table.currentItemChanged.connect(lambda i = 1: self.multisearch_sync(i))
+        self.multisearch_plate_table.currentItemChanged.connect(lambda i = 2: self.multisearch_sync(i))
+
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.search_tab_wg.currentIndex() == 1:
@@ -519,3 +524,87 @@ class SearchScreen(QMainWindow):
             f.write(self.pool_scheme_tb.toPlainText())
         logging.getLogger(self.mod_name).info(f"wrote to file: {fname[0]}")
         return
+    
+    def search_multisearch(self):
+        batches = self.multisearch_eb.text()
+        batches = re.sub("[^0-9a-zA-Z_-]+", " ", batches)
+        logging.getLogger(self.mod_name).info(f"multisearch {batches}")
+
+        ids = batches.strip().split(' ')
+        mode = 0 if ids[0][0:3] != "CBK" else 1
+        print(f'multisearch for {"batch" if not mode else "compound"} ids{batches}')
+        res_vials = None # dbInterface.get_0(self.token, batches)
+
+        self.multisearch_vials_data = None
+        try:
+            logging.getLogger(self.mod_name).info(f"multisearch for vials")
+            self.multisearch_vials_data = json.loads(res_vials)
+        except:
+            # TODO: Actually, add empty row with only id populated
+            self.multisearch_vials_data = []
+            self.multisearch_vials_table.setRowCount(0)
+            #self.structure_lab.clear()
+        self.multisearch_vials_data = self.multisearch_proc_data(0, mode, self.multisearch_vials_data, ids)
+        logging.getLogger(self.mod_name).info(f"receieved vials data")
+        #self.setMultiSearch_vials_TableData(self.multisearch_vials_data)
+        self.multisearch_vials_table.setCurrentCell(0,0)
+        
+        
+        res_tubes = None # dbInterface.get_1(self.token, batches)
+        self.multisearch_tubes_data = None
+        try:
+            logging.getLogger(self.mod_name).info(f"multisearch for tubes")
+            self.multisearch_tubes_data = json.loads(res_tubes)
+        except:
+            # TODO: Actually, add empty row with only id populated
+            self.multisearch_tubes_data = []
+            self.multisearch_tubes_table.setRowCount(0)
+            #self.structure_lab.clear()
+        logging.getLogger(self.mod_name).info(f"receieved tubes data")
+        #self.setMultiSearch_tubes_TableData(self.multisearch_tubes_data)
+        self.multisearch_tubes_table.setCurrentCell(0,0)
+
+
+        res_plate = None # dbInterface.get_2(self.token, batches)
+        self.multisearch_plate_data = None
+        try:
+            logging.getLogger(self.mod_name).info(f"multisearch for plate")
+            #self.multisearch_plate_data = json.loads(res_plate)
+            raise Exception("not implemented yet")
+        except:
+            # TODO: Actually, add empty row with only id populated
+            self.multisearch_plate_data = []
+            self.multisearch_plate_table.setRowCount(0)
+            #self.structure_lab.clear()
+        logging.getLogger(self.mod_name).info(f"receieved plate data")
+        #self.setMultiSearch_plate_TableData(self.multisearch_plate_data)
+        self.multisearch_plate_table.setCurrentCell(0,0)
+
+        #self.multisearch_export_btn.setEnabled(True)
+        
+    def multisearch_proc_data(self, table, mode, data, ids):
+        print(f'table:{table}, mode:{mode}, data:{data}, ids:{ids}')
+        id_index = -1
+        if table == 0: # mode == 0 - batch id, 1 - compound id
+            id_index = 4 + mode
+        elif table == 1:
+            id_index = mode
+        else: # table == 2
+            id_index == 3 - mode
+        out = []
+
+
+    def multisearch_sync(self, index):
+        # unhook
+        self.multisearch_vials_table.currentItemChanged.disconnect()
+        self.multisearch_tubes_table.currentItemChanged.disconnect()
+        self.multisearch_plate_table.currentItemChanged.disconnect()
+
+        # find topmost item with id in all tables
+        if index == 0: # vials table
+            print(f'vials table comp id: {index}')
+
+        # re-hook
+        self.multisearch_vials_table.currentItemChanged.connect(self.multisearch_sync(0))
+        self.multisearch_tubes_table.currentItemChanged.connect(self.multisearch_sync(1))
+        self.multisearch_plate_table.currentItemChanged.connect(self.multisearch_sync(2))
