@@ -137,7 +137,7 @@ class SearchScreen(QMainWindow):
         logging.getLogger(self.mod_name).info(f"multvial search {vials}")
         QApplication.setOverrideCursor(Qt.WaitCursor)
         v_n = len(vials.split(' '))
-        if v_n > 20:
+        if v_n > 5000:
             send_msg("Vial Search", f'Searching for {v_n} vials.\nThis might take a few minutes.\nPlease wait.\nPress OK.')
         res = dbInterface.getManyVials(self.token, vials)
         # change to get single vial at a time for progress bar
