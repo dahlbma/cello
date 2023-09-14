@@ -1893,14 +1893,14 @@ class searchVials(tornado.web.RequestHandler):
             c.compound_id AS compoundId,
             v.location AS boxId,
             l.name AS boxDescription,
-            l.path,
+            '' as path,
             v.pos,
             c.biological_mw AS batchMolWeight,
             ROUND(((v.net*1000/c.biological_mw)/v.conc)*1000000) AS dilution
             FROM
 	    {glassDB}.vial v
             left join {bcpvsDB}.batch c ON v.notebook_ref = c.notebook_ref
-            LEFT OUTER JOIN {loctreeDB}.v_all_locations l on v.location = l.loc_id
+            LEFT OUTER JOIN {loctreeDB}.locations l on v.location = l.loc_id
             WHERE v.vial_id = '{sId}'
             """
 
