@@ -204,6 +204,7 @@ class AddMicrotube(tornado.web.RequestHandler):
             self.finish(sError)
             return
         try:
+            sTubeId = sTubeId.strip()
             #0019953454 microtube_id is 10 digits
             ss = re.search(r'^(\d){10}$', sTubeId).group(0)
         except:
@@ -1604,6 +1605,7 @@ class PrintRack(tornado.web.RequestHandler):
 class printVial(tornado.web.RequestHandler):
     def get(self, sVial):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        sVial = sVial.strip()
         logging.info("Printing label for " + sVial)
         sSql = f"""
         select v.notebook_ref batch_id, b.compound_id, IFNULL(v.conc, 'Solid')
