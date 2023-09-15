@@ -503,6 +503,20 @@ class CreatePlatesFromLabel(tornado.web.RequestHandler):
         self.write(res)
 
 
+@jwtauth
+class CreatePlateFromRack(tornado.web.RequestHandler):
+    def get(self, sRack):
+        jRes =list()
+        jRes.append({"plate_id":'P100036'})
+        self.write(json.dumps(jRes))
+
+@jwtauth
+class DuplicatePlate(tornado.web.RequestHandler):
+    def get(self, sPlate):
+        jRes =list()
+        jRes.append({"plate_id":'P100036'})
+        self.write(json.dumps(jRes))
+
 
 @jwtauth
 class CreatePlates(tornado.web.RequestHandler):
@@ -1599,6 +1613,31 @@ class PrintRack(tornado.web.RequestHandler):
     def get(self, sRack):
         logging.info("Printing label for rack " + sRack)
         doPrintRack(sRack)
+
+
+@jwtauth
+class PrintRackList(tornado.web.RequestHandler):
+    def get(self, sRack):
+        logging.info("Printing labels for all contents in rack " + sRack)
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+
+        sSql = f"""select
+        t.notebook_ref as batchId, b.compound_id
+        from {microtubeDB}.tube t, {microtubeDB}.v_matrix_tube mt, {microtubeDB}.v_matrix m,
+        {bcpvsDB}.batch b
+        where
+        t.notebook_ref = b.notebook_ref and
+        t.tube_id = mt.tube_id and
+        m.matrix_id = mt.matrix_id and
+        mt.matrix_id = '{sRack}'"""
+        try:
+            sSlask = cur.execute(sSql)
+            tRes = cur.fetchall()
+        except Exception as e:
+            logging.info("Error: " + str(e) + ' problem with rack:' + sRack)
+            return
+        for row in tRes:
+            doPrint(row[1], row[0], "", "", "")
 
 
 @jwtauth
