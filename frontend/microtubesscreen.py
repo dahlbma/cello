@@ -35,6 +35,8 @@ class MicrotubesScreen(QMainWindow):
 
         self.rack_search_btn.clicked.connect(self.search_rack)
         self.rack_export_btn.clicked.connect(self.export_rack_data)
+        self.rack_copy_btn.clicked.connect(self.copy_rack)
+        self.rack_print_list_btn.clicked.connect(self.print_rack_list)
 
         self.rack_table.currentItemChanged.connect(self.rack_moldisplay)
         self.rack_table.currentItemChanged.connect(self.show_loc_id)
@@ -314,12 +316,18 @@ class MicrotubesScreen(QMainWindow):
             l = self.rack_search_eb.text().split(" ")
             self.currentRack = l[0]
             self.rack_print_label_btn.setEnabled(True)
+            self.rack_copy_btn.setEnabled(True)
+            self.rack_print_list_btn.setEnabled(True)
         elif (self.rack_table.rowCount() > 0) and (item is not None):
             self.currentRack = self.rack_table.item(item.row(), 4).text()
             self.rack_print_label_btn.setEnabled(True)
+            self.rack_copy_btn.setEnabled(True)
+            self.rack_print_list_btn.setEnabled(True)
         else:
             self.currentRack = None
             self.rack_print_label_btn.setEnabled(False)
+            self.rack_copy_btn.setEnabled(False)
+            self.rack_print_list_btn.setEnabled(False)
 
 
     def rack_moldisplay(self, item):
@@ -366,8 +374,27 @@ class MicrotubesScreen(QMainWindow):
         rack = self.currentRack
         dbInterface.printRack(self.token, rack)
 
+    def print_rack_list(self):
+        rack = self.currentRack
+        print("print rack list")
+        dbInterface.printRackList(self.token, rack)
+
     def export_rack_data(self):
         export_table(self.rack_table)
+
+    def copy_rack(self):
+        rack = self.currentRack
+        res =  dbInterface.createPlateFromRack(self.token, rack)
+        try:
+            p = json.loads(res)
+        except:
+            logging.error(f"copy rack {rack} returned bad response: <{res}>")
+            return
+        self.gotoPlates()
+        self.window().widget(5).plates_tab_wg.setCurrentIndex(2)
+        self.window().widget(5).plate_search_eb.setText(p[0]['plate_id'])
+        self.window().widget(5).plate_search_btn.setFocus()
+        self.window().widget(5).plate_search_btn.click()
 
 
     def getRackFile(self):

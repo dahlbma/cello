@@ -315,6 +315,24 @@ def printRack(token, rack):
         res = r.content
     return res
 
+def printRackList(token, rack):
+    r = requests.get(f'{baseUrl}printRackList/{rack}',
+                      headers={'token': token})
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    return res
+
+def createPlateFromRack(token, rack):
+    r = requests.get(f'{baseUrl}createPlateFromRack/{rack}',
+                      headers={'token': token})
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    return res
+
 def verifyLocation(token, location):
     r = requests.get(f'{baseUrl}verifyLocation/{location}',
                       headers={'token': token})
