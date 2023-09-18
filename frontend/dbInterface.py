@@ -324,8 +324,8 @@ def printRackList(token, rack):
         res = r.content
     return res
 
-def createPlateFromRack(token, rack):
-    r = requests.get(f'{baseUrl}createPlateFromRack/{rack}',
+def createPlateFromRack(token, rack, volume):
+    r = requests.get(f'{baseUrl}createPlateFromRack/{rack}/{volume}',
                       headers={'token': token})
     try:
         res = r.content.decode()

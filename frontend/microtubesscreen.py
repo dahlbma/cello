@@ -384,7 +384,9 @@ class MicrotubesScreen(QMainWindow):
 
     def copy_rack(self):
         rack = self.currentRack
-        res =  dbInterface.createPlateFromRack(self.token, rack)
+        # Create anew editbox for volume (nM), hardcoding this for testing
+        volume = 50
+        res =  dbInterface.createPlateFromRack(self.token, rack, volume)
         try:
             p = json.loads(res)
         except:
