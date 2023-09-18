@@ -143,6 +143,40 @@ def getNewRackId(microtubeDB):
     return sRack
 
 
+def copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateId):
+    glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+    sNewplateName = f'Copy of {sOldPlateId}'
+    sSql = f"""
+    insert into {coolDB}.plate (plate_id,
+    config_id,
+    type_id,
+    comments,
+    created_date,
+    updated_date,
+    loc_id)
+    values (
+    '{sPlateId}',
+    '{sPlateId}',
+    {iPlateType},
+    '{sNewplateName}',
+    now(),
+    now(),
+    '{sLocation}')"""
+
+    cur.execute(sSql)
+
+
+def copyWell(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
+    glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+    
+    sSql = f'''insert into {coolDB}.config
+    (config_id, well, compound_id, notebook_ref, form, conc, volume)
+    values
+    ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', '{sConc}', '{sVolume}')
+    '''
+    cur.execute(sSql)
+
+
 class home(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.redirect('/vialdb/listFiles')
@@ -505,14 +539,39 @@ class CreatePlatesFromLabel(tornado.web.RequestHandler):
 
 @jwtauth
 class CreatePlateFromRack(tornado.web.RequestHandler):
-    def get(self, sRack):
+    def get(self, sRack, sVolume):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        # This is the type_id in the db for 96 well plates
+        sPlateId = getNewPlateId(coolDB)
+        iPlateType = 1
+        sLocation = ''
+        sOldPlateId = sRack
+
+        copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateId)
+
+        sSql = f'''
+        select mt.position as well, b.compound_id, b.notebook_ref, 'DMSO' as form,
+        t.conc*1000 as conc, {sVolume} as volume
+        from {microtubeDB}.matrix_tube mt, {bcpvsDB}.batch b, {microtubeDB}.tube t
+        where mt.tube_id = t.tube_id
+        and t.notebook_ref = b.notebook_ref
+        and matrix_id = '{sRack}'
+        '''
+        cur.execute(sSql)
+        tMicrotubes = cur.fetchall()
+        for tube in tMicrotubes:
+            #                        well     cmp      batch    form     conc          volume
+            copyWell(self, sPlateId, tube[0], tube[1], tube[2], tube[3], int(tube[4]), tube[5])
+        
         jRes =list()
-        jRes.append({"plate_id":'P100036'})
+        jRes.append({"plate_id":sPlateId})
         self.write(json.dumps(jRes))
+
 
 @jwtauth
 class DuplicatePlate(tornado.web.RequestHandler):
     def get(self, sPlate):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         jRes =list()
         jRes.append({"plate_id":'P100036'})
         self.write(json.dumps(jRes))
@@ -859,7 +918,7 @@ class VerifyPlate(tornado.web.RequestHandler):
             where matrix_id = '{sPlate}'
             """
         else:
-            sError = 'Plate not found'
+            sError = 'Plate not found {sPlate}'
             self.set_status(400)
             self.finish(sError)
             return
@@ -867,7 +926,7 @@ class VerifyPlate(tornado.web.RequestHandler):
         cur.execute(sSql)
         tRes = cur.fetchall()
         if len(tRes) == 0:
-            sError = 'Plate not found'
+            sError = f'Plate not found {sPlate}'
             self.set_status(400)
             self.finish(sError)
             return
@@ -886,7 +945,7 @@ class GetPlate(tornado.web.RequestHandler):
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         if len(tRes) == 0:
-            sError = 'Plate not found'
+            sError = f'Plate not found {sPlate}'
             self.set_status(400)
             self.finish(sError)
             logging.error(sError)
