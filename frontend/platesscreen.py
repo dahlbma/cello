@@ -328,11 +328,9 @@ class PlatesScreen(QMainWindow):
         except:
             logging.error(f"duplicate plate {rack} returned bad response: <{res}>")
             return
-        #self.gotoPlates()
-        #self.window().widget(5).plates_tab_wg.setCurrentIndex(2)
-        self.window().widget(5).plate_search_eb.setText(p[0]['plate_id'])
-        self.window().widget(5).plate_search_btn.setFocus()
-        self.window().widget(5).plate_search_btn.click()
+        self.plate_search_eb.setText(p[0]['plate_id'])
+        self.plate_search_btn.setFocus()
+        self.plate_search_btn.click()
 
 
     def setDiscard(self, state):
