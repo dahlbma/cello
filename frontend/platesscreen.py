@@ -62,6 +62,9 @@ class PlatesScreen(QMainWindow):
         self.plate_print_btn.clicked.connect(self.printPlate)
         self.plate_print_btn.setEnabled(False)
 
+        self.plate_duplicate_btn.clicked.connect(self.duplicatePlate)
+        self.plate_duplicate_btn.setEnabled(False)
+        
         self.plate_table.currentItemChanged.connect(self.plate_moldisplay)
 
         self.upload_populated = False
@@ -245,6 +248,7 @@ class PlatesScreen(QMainWindow):
             self.setDiscard(False)
             self.setDiscard(True)
             self.plate_print_btn.setEnabled(True)
+            self.plate_duplicate_btn.setEnabled(True)
         except Exception as e:
             self.plate_comment_eb.setText("")
             self.update_plate_location_cb.setCurrentText("")
@@ -258,16 +262,19 @@ class PlatesScreen(QMainWindow):
                 self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
                 self.plate_comment_eb.setEnabled(True)
                 self.plate_comment_btn.setEnabled(True)
+                self.plate_print_btn.setEnabled(True)
+                self.plate_duplicate_btn.setEnabled(True)
                 logging.getLogger(self.mod_name).info(f"empty plate, no data received")
             else:
                 self.plate_display.setHtml("")
                 self.platesearch_error_lab.setText(res)
                 self.plate_comment_eb.setEnabled(False)
                 self.plate_comment_btn.setEnabled(False)
+                self.plate_print_btn.setEnabled(False)
+                self.plate_duplicate_btn.setEnabled(False)
                 logging.getLogger(self.mod_name).info(f"search returned {res}")
             self.plate_data = None
             self.plate_table.setRowCount(0)
-            self.plate_print_btn.setEnabled(False)
         QApplication.restoreOverrideCursor()
     
     def setPlateTableData(self, data):
@@ -311,6 +318,22 @@ class PlatesScreen(QMainWindow):
     def printPlate(self):
         plate = self.plate_search_eb.text()
         dbInterface.printPlateLabel(self.token, plate)
+
+    def duplicatePlate(self):
+        plate = self.plate_search_eb.text()
+        sVolume = 50
+        res = dbInterface.duplicatePlate(self.token, plate, sVolume)
+        try:
+            p = json.loads(res)
+        except:
+            logging.error(f"duplicate plate {rack} returned bad response: <{res}>")
+            return
+        #self.gotoPlates()
+        #self.window().widget(5).plates_tab_wg.setCurrentIndex(2)
+        self.window().widget(5).plate_search_eb.setText(p[0]['plate_id'])
+        self.window().widget(5).plate_search_btn.setFocus()
+        self.window().widget(5).plate_search_btn.click()
+
 
     def setDiscard(self, state):
         if state:

@@ -163,6 +163,12 @@ def printPlateLabel(token, sPlate):
     res = r.content.decode()
     return res
 
+def duplicatePlate(token, sPlate, sVolume):
+    r = requests.get(f'{baseUrl}duplicatePlate/{sPlate}/{sVolume}',
+                     headers={'token': token})
+    res = r.content.decode()
+    return res
+
 def getFreePositions(token):
     r = requests.get(f'{baseUrl}getFreeBoxes',
                      headers={'token': token})
