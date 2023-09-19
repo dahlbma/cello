@@ -587,7 +587,7 @@ class CreatePlateFromRack(tornado.web.RequestHandler):
 
 @jwtauth
 class DuplicatePlate(tornado.web.RequestHandler):
-    def get(self, sPlate):
+    def get(self, sPlate, sVolume):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         jRes =list()
         jRes.append({"plate_id":'P100036'})
