@@ -36,6 +36,7 @@ class MicrotubesScreen(QMainWindow):
         self.rack_search_btn.clicked.connect(self.search_rack)
         self.rack_export_btn.clicked.connect(self.export_rack_data)
         self.rack_copy_btn.clicked.connect(self.copy_rack)
+        self.copy_volume_eb.setEnabled(False)
         self.rack_print_list_btn.clicked.connect(self.print_rack_list)
 
         self.rack_table.currentItemChanged.connect(self.rack_moldisplay)
@@ -250,6 +251,7 @@ class MicrotubesScreen(QMainWindow):
             logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}] returned: {res}")
             return
         logging.getLogger(self.mod_name).info(f"receieved {len(self.rack_data)} responses")
+        self.copy_volume_eb.setEnabled(True)
         self.setRackTableData(self.rack_data)
         self.rack_table.setCurrentCell(0,0)
         self.rack_export_btn.setEnabled(True)
@@ -384,8 +386,8 @@ class MicrotubesScreen(QMainWindow):
 
     def copy_rack(self):
         rack = self.currentRack
-        # Create anew editbox for volume (nM), hardcoding this for testing
-        volume = 50
+        # Create anew editbox for volume (nL), hardcoding this for testing
+        volume = self.copy_volume_eb.text()
         res =  dbInterface.createPlateFromRack(self.token, rack, volume)
         try:
             p = json.loads(res)
