@@ -550,7 +550,7 @@
                </sizepolicy>
               </property>
               <property name="placeholderText">
-               <string>Copy volume in nM</string>
+               <string>Copy volume in nL</string>
               </property>
              </widget>
             </item>
