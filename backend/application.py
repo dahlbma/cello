@@ -174,6 +174,22 @@ def copyWell(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
     values
     ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', '{sConc}', '{sVolume}')
     '''
+    try:
+        cur.execute(sSql)
+        return True
+    except:
+        return False
+
+def decreseVolumeInTube(self, sTube, sOldVolume, sVolumeToSubtract):
+    glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+    iNewVolume = int(sOldVolume) - int(sVolumeToSubtract)
+    fNewVolume = float(iNewVolume)/1000000
+    fNewVolume= f'{fNewVolume:.8f}'
+    sSql = f'''
+    update {microtubeDB}.tube
+    set volume = {fNewVolume}
+    where tube_id = '{sTube}'
+    '''
     cur.execute(sSql)
 
 
@@ -546,12 +562,12 @@ class CreatePlateFromRack(tornado.web.RequestHandler):
         iPlateType = 1
         sLocation = ''
         sOldPlateId = sRack
+        sForm = 'DMSO'
 
         copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateId)
 
         sSql = f'''
-        select mt.position as well, b.compound_id, b.notebook_ref, 'DMSO' as form,
-        t.conc*1000 as conc, {sVolume} as volume
+        select mt.position as well, b.compound_id, b.notebook_ref, t.conc*1000 as conc, t.tube_id, volume*1000000
         from {microtubeDB}.matrix_tube mt, {bcpvsDB}.batch b, {microtubeDB}.tube t
         where mt.tube_id = t.tube_id
         and t.notebook_ref = b.notebook_ref
@@ -560,8 +576,9 @@ class CreatePlateFromRack(tornado.web.RequestHandler):
         cur.execute(sSql)
         tMicrotubes = cur.fetchall()
         for tube in tMicrotubes:
-            #                        well     cmp      batch    form     conc          volume
-            copyWell(self, sPlateId, tube[0], tube[1], tube[2], tube[3], int(tube[4]), tube[5])
+            #                           well     cmp      batch    form   conc          volume
+            if(copyWell(self, sPlateId, tube[0], tube[1], tube[2], sForm, int(tube[3]), sVolume)):
+                decreseVolumeInTube(self, tube[4], tube[5], sVolume)
         
         jRes =list()
         jRes.append({"plate_id":sPlateId})
