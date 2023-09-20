@@ -143,11 +143,12 @@ def getNewRackId(microtubeDB):
     return sRack
 
 
-def copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateId):
+def copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateComment):
     glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
-    sNewplateName = f'Copy of {sOldPlateId}'
+    sNewplateName = f'Copy of {sOldPlateComment}'
     sSql = f"""
-    insert into {coolDB}.plate (plate_id,
+    insert into {coolDB}.plate
+    (plate_id,
     config_id,
     type_id,
     comments,
@@ -172,7 +173,7 @@ def copyWell(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
     sSql = f'''insert into {coolDB}.config
     (config_id, well, compound_id, notebook_ref, form, conc, volume)
     values
-    ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', '{sConc}', '{sVolume}')
+    ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', {sConc}, '{sVolume}')
     '''
     try:
         cur.execute(sSql)
@@ -180,9 +181,28 @@ def copyWell(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
     except:
         return False
 
+def decreseVolumeInWell(self, sPlate, sWell, sOldVolume, sVolumeToSubtract):
+    glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+    try:
+        fNewVolume = float(sOldVolume) - float(sVolumeToSubtract)
+    except:
+        # The source volume is NULL so we fail to calculate the new volume
+        return
+    sSql = f'''
+    update {coolDB}.config set volume = '{fNewVolume}'
+    where config_id = '{sPlate}'
+    and well = '{sWell}'
+    '''
+    cur.execute(sSql)
+    
+
 def decreseVolumeInTube(self, sTube, sOldVolume, sVolumeToSubtract):
     glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
-    iNewVolume = int(sOldVolume) - int(sVolumeToSubtract)
+    try:
+        iNewVolume = int(sOldVolume) - int(sVolumeToSubtract)
+    except:
+        # The source volume is NULL so we fail to calculate the new volume
+        return
     fNewVolume = float(iNewVolume)/1000000
     fNewVolume= f'{fNewVolume:.8f}'
     sSql = f'''
@@ -561,10 +581,10 @@ class CreatePlateFromRack(tornado.web.RequestHandler):
         sPlateId = getNewPlateId(coolDB)
         iPlateType = 1
         sLocation = ''
-        sOldPlateId = sRack
+        sOldPlateComment = sRack
         sForm = 'DMSO'
 
-        copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateId)
+        copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateComment)
 
         sSql = f'''
         select mt.position as well, b.compound_id, b.notebook_ref, t.conc*1000 as conc, t.tube_id, volume*1000000
@@ -589,9 +609,41 @@ class CreatePlateFromRack(tornado.web.RequestHandler):
 class DuplicatePlate(tornado.web.RequestHandler):
     def get(self, sPlate, sVolume):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        sNewPlateId = getNewPlateId(coolDB)
+        sSql = f'''
+        select type_id, comments
+        from {coolDB}.plate where plate_id = '{sPlate}'
+        '''
+        cur.execute(sSql)
+        tPlate = cur.fetchall()
+        if len(tPlate) == 0:
+            self.set_status(400)
+            return
+        iPlateType = tPlate[0][0]
+        sOldPlateComment = tPlate[0][1]
+        sLocation = ''
+        logging.info(f'sNewPlateId:{sNewPlateId} sPlate:{sPlate} iPlateType:{iPlateType} sOldPlateComment:{sOldPlateComment}')
+        copyPlateImpl(self, sNewPlateId, iPlateType, sLocation, sOldPlateComment)
+
+        sSql = f'''
+        select well, compound_id, notebook_ref, form, conc, volume
+        from cool_test.config where config_id = '{sPlate}'
+        '''
+        cur.execute(sSql)
+        tPlateContent = cur.fetchall()
+        for well in tPlateContent:
+            try:
+                sConc = int(well[4])
+            except:
+                sConc = 'NULL'
+            #                              well     cmp      batch    form     conc   volume
+            if(copyWell(self, sNewPlateId, well[0], well[1], well[2], well[3], sConc, sVolume)):
+                decreseVolumeInWell(self, sPlate, well[0], well[5], sVolume)
+        logging.info(sNewPlateId)
         jRes =list()
-        jRes.append({"plate_id":'P100036'})
+        jRes.append({"plate_id":sNewPlateId})
         self.write(json.dumps(jRes))
+
 
 
 @jwtauth
