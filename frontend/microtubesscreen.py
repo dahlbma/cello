@@ -36,7 +36,10 @@ class MicrotubesScreen(QMainWindow):
         self.rack_search_btn.clicked.connect(self.search_rack)
         self.rack_export_btn.clicked.connect(self.export_rack_data)
         self.rack_copy_btn.clicked.connect(self.copy_rack)
+        self.rack_copy_btn.setEnabled(False)
         self.copy_volume_eb.setEnabled(False)
+        self.copy_volume_eb.textChanged.connect(self.check_copy_volume)
+
         self.rack_print_list_btn.clicked.connect(self.print_rack_list)
 
         self.rack_table.currentItemChanged.connect(self.rack_moldisplay)
@@ -101,6 +104,16 @@ class MicrotubesScreen(QMainWindow):
             self.create_microtubes_table.setFocus()
         elif page_index == 5:
             self.move_rack_id_eb.setFocus()
+
+    def check_copy_volume(self):
+        sVolume = self.copy_volume_eb.text()
+        try:
+            iVolume = int(sVolume)
+        except:
+            self.rack_copy_btn.setEnabled(False)
+            return
+        if iVolume >= 0:
+            self.rack_copy_btn.setEnabled(True)
 
     def search_microtubes(self):
         self.tubes_batches_table.setRowCount(0);
@@ -318,12 +331,12 @@ class MicrotubesScreen(QMainWindow):
             l = self.rack_search_eb.text().split(" ")
             self.currentRack = l[0]
             self.rack_print_label_btn.setEnabled(True)
-            self.rack_copy_btn.setEnabled(True)
+            #self.rack_copy_btn.setEnabled(True)
             self.rack_print_list_btn.setEnabled(True)
         elif (self.rack_table.rowCount() > 0) and (item is not None):
             self.currentRack = self.rack_table.item(item.row(), 4).text()
             self.rack_print_label_btn.setEnabled(True)
-            self.rack_copy_btn.setEnabled(True)
+            #self.rack_copy_btn.setEnabled(True)
             self.rack_print_list_btn.setEnabled(True)
         else:
             self.currentRack = None

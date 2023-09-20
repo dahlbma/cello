@@ -156,7 +156,7 @@ class PlatesScreen(QMainWindow):
         except:
             self.plate_duplicate_btn.setEnabled(False)
             return
-        if iVolume > 0:
+        if iVolume >= 0:
             self.plate_duplicate_btn.setEnabled(True)
         
     def label_check_plates_input(self):
