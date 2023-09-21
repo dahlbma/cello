@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import QtGui
 from cellolib import *
 from loginscreen import LoginScreen
+import datetime
 
 os_name = platform.system()
 exec_path = ""
@@ -36,7 +37,9 @@ formatter = logging.Formatter('%(name)s:%(message)s')
 ch.setFormatter(formatter)
 
 #file logging
-file=os.path.join(".","cello.log")
+current_datetime = datetime.datetime.now()
+formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+file=os.path.join(".",f"cello_{formatted_datetime}.log")
 fh = logging.FileHandler(file)
 fh.setLevel(level)
 formatter = logging.Formatter('%(asctime)s : %(name)s:%(levelname)s: %(filename)s:%(lineno)d: %(message)s',
