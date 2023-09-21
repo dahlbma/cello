@@ -622,7 +622,6 @@ class DuplicatePlate(tornado.web.RequestHandler):
         iPlateType = tPlate[0][0]
         sOldPlateComment = tPlate[0][1]
         sLocation = ''
-        logging.info(f'sNewPlateId:{sNewPlateId} sPlate:{sPlate} iPlateType:{iPlateType} sOldPlateComment:{sOldPlateComment}')
         copyPlateImpl(self, sNewPlateId, iPlateType, sLocation, sOldPlateComment)
 
         sSql = f'''
