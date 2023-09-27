@@ -240,7 +240,6 @@ class PingDB(tornado.web.RequestHandler):
         if ret == 'error':
             self.set_status(400)
 
-
     def head(self):
         sSql = "SELECT * FROM glass.box_sequence"
         ret = cur.ping(sSql)
@@ -599,7 +598,7 @@ class CreatePlateFromRack(tornado.web.RequestHandler):
             #                           well     cmp      batch    form   conc          volume
             if(copyWell(self, sPlateId, tube[0], tube[1], tube[2], sForm, int(tube[3]), sVolume)):
                 decreseVolumeInTube(self, tube[4], tube[5], sVolume)
-        
+
         jRes =list()
         jRes.append({"plate_id":sPlateId})
         self.write(json.dumps(jRes))
@@ -642,7 +641,6 @@ class DuplicatePlate(tornado.web.RequestHandler):
         jRes =list()
         jRes.append({"plate_id":sNewPlateId})
         self.write(json.dumps(jRes))
-
 
 
 @jwtauth
@@ -766,7 +764,7 @@ class MergePlates(tornado.web.RequestHandler):
                 b.compound_id,
                 t.notebook_ref,
                 'DMSO' form,
-                t.conc,
+                t.conc*1000 conc,
                 t.VOLUME
                 from {microtubeDB}.tube t, {microtubeDB}.matrix_tube mt, {bcpvsDB}.batch b
                 where t.tube_id = mt.tube_id
