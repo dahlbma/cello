@@ -1442,7 +1442,7 @@ def logVialChange(glassDB, sVialId, sLogMessage, sNewPos=None):
     try:
         sSlask = cur.execute(sSql)
     except Exception as e:
-        logging.error("Vial_log error {str(e)}")
+        logging.error(f"Vial_log error {str(e)}")
 
 def getVialPosition(sVialId, glassDB, loctreeDB, bcpvsDB):
     sSql = f"""select IFNULL(v.location, '') location, l.name, IFNULL(v.pos, '') coordinate
