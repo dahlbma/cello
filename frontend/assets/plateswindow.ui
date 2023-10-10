@@ -916,6 +916,13 @@ Plates</string>
               </property>
              </spacer>
             </item>
+            <item row="3" column="2">
+             <widget class="QLineEdit" name="duplicate_volume_eb">
+              <property name="placeholderText">
+               <string>Copy volume nL</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>

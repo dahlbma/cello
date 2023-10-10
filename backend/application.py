@@ -143,6 +143,76 @@ def getNewRackId(microtubeDB):
     return sRack
 
 
+def copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateComment):
+    glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+    sNewplateName = f'Copy of {sOldPlateComment}'
+    sSql = f"""
+    insert into {coolDB}.plate
+    (plate_id,
+    config_id,
+    type_id,
+    comments,
+    created_date,
+    updated_date,
+    loc_id)
+    values (
+    '{sPlateId}',
+    '{sPlateId}',
+    {iPlateType},
+    '{sNewplateName}',
+    now(),
+    now(),
+    '{sLocation}')"""
+
+    cur.execute(sSql)
+
+
+def copyWell(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
+    glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+    
+    sSql = f'''insert into {coolDB}.config
+    (config_id, well, compound_id, notebook_ref, form, conc, volume)
+    values
+    ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', {sConc}, '{sVolume}')
+    '''
+    try:
+        cur.execute(sSql)
+        return True
+    except:
+        return False
+
+def decreseVolumeInWell(self, sPlate, sWell, sOldVolume, sVolumeToSubtract):
+    glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+    try:
+        fNewVolume = float(sOldVolume) - float(sVolumeToSubtract)
+    except:
+        # The source volume is NULL so we fail to calculate the new volume
+        return
+    sSql = f'''
+    update {coolDB}.config set volume = '{fNewVolume}'
+    where config_id = '{sPlate}'
+    and well = '{sWell}'
+    '''
+    cur.execute(sSql)
+    
+
+def decreseVolumeInTube(self, sTube, sOldVolume, sVolumeToSubtract):
+    glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+    try:
+        iNewVolume = int(sOldVolume) - int(sVolumeToSubtract)
+    except:
+        # The source volume is NULL so we fail to calculate the new volume
+        return
+    fNewVolume = float(iNewVolume)/1000000
+    fNewVolume= f'{fNewVolume:.8f}'
+    sSql = f'''
+    update {microtubeDB}.tube
+    set volume = {fNewVolume}
+    where tube_id = '{sTube}'
+    '''
+    cur.execute(sSql)
+
+
 class home(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.redirect('/vialdb/listFiles')
@@ -169,7 +239,6 @@ class PingDB(tornado.web.RequestHandler):
         ret = cur.ping(sSql)
         if ret == 'error':
             self.set_status(400)
-
 
     def head(self):
         sSql = "SELECT * FROM glass.box_sequence"
@@ -503,6 +572,76 @@ class CreatePlatesFromLabel(tornado.web.RequestHandler):
         self.write(res)
 
 
+@jwtauth
+class CreatePlateFromRack(tornado.web.RequestHandler):
+    def get(self, sRack, sVolume):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        # This is the type_id in the db for 96 well plates
+        sPlateId = getNewPlateId(coolDB)
+        iPlateType = 1
+        sLocation = ''
+        sOldPlateComment = sRack
+        sForm = 'DMSO'
+
+        copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateComment)
+
+        sSql = f'''
+        select mt.position as well, b.compound_id, b.notebook_ref, t.conc*1000 as conc, t.tube_id, volume*1000000
+        from {microtubeDB}.matrix_tube mt, {bcpvsDB}.batch b, {microtubeDB}.tube t
+        where mt.tube_id = t.tube_id
+        and t.notebook_ref = b.notebook_ref
+        and matrix_id = '{sRack}'
+        '''
+        cur.execute(sSql)
+        tMicrotubes = cur.fetchall()
+        for tube in tMicrotubes:
+            #                           well     cmp      batch    form   conc          volume
+            if(copyWell(self, sPlateId, tube[0], tube[1], tube[2], sForm, int(tube[3]), sVolume)):
+                decreseVolumeInTube(self, tube[4], tube[5], sVolume)
+
+        jRes =list()
+        jRes.append({"plate_id":sPlateId})
+        self.write(json.dumps(jRes))
+
+
+@jwtauth
+class DuplicatePlate(tornado.web.RequestHandler):
+    def get(self, sPlate, sVolume):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        sNewPlateId = getNewPlateId(coolDB)
+        sSql = f'''
+        select type_id, comments
+        from {coolDB}.plate where plate_id = '{sPlate}'
+        '''
+        cur.execute(sSql)
+        tPlate = cur.fetchall()
+        if len(tPlate) == 0:
+            self.set_status(400)
+            return
+        iPlateType = tPlate[0][0]
+        sOldPlateComment = tPlate[0][1]
+        sLocation = ''
+        copyPlateImpl(self, sNewPlateId, iPlateType, sLocation, sOldPlateComment)
+
+        sSql = f'''
+        select well, compound_id, notebook_ref, form, conc, volume
+        from cool_test.config where config_id = '{sPlate}'
+        '''
+        cur.execute(sSql)
+        tPlateContent = cur.fetchall()
+        for well in tPlateContent:
+            try:
+                sConc = int(well[4])
+            except:
+                sConc = 'NULL'
+            #                              well     cmp      batch    form     conc   volume
+            if(copyWell(self, sNewPlateId, well[0], well[1], well[2], well[3], sConc, sVolume)):
+                decreseVolumeInWell(self, sPlate, well[0], well[5], sVolume)
+        logging.info(sNewPlateId)
+        jRes =list()
+        jRes.append({"plate_id":sNewPlateId})
+        self.write(json.dumps(jRes))
+
 
 @jwtauth
 class CreatePlates(tornado.web.RequestHandler):
@@ -625,7 +764,7 @@ class MergePlates(tornado.web.RequestHandler):
                 b.compound_id,
                 t.notebook_ref,
                 'DMSO' form,
-                t.conc,
+                t.conc*1000 conc,
                 t.VOLUME
                 from {microtubeDB}.tube t, {microtubeDB}.matrix_tube mt, {bcpvsDB}.batch b
                 where t.tube_id = mt.tube_id
@@ -845,7 +984,7 @@ class VerifyPlate(tornado.web.RequestHandler):
             where matrix_id = '{sPlate}'
             """
         else:
-            sError = 'Plate not found'
+            sError = 'Plate not found {sPlate}'
             self.set_status(400)
             self.finish(sError)
             return
@@ -853,7 +992,7 @@ class VerifyPlate(tornado.web.RequestHandler):
         cur.execute(sSql)
         tRes = cur.fetchall()
         if len(tRes) == 0:
-            sError = 'Plate not found'
+            sError = f'Plate not found {sPlate}'
             self.set_status(400)
             self.finish(sError)
             return
@@ -872,7 +1011,7 @@ class GetPlate(tornado.web.RequestHandler):
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         if len(tRes) == 0:
-            sError = 'Plate not found'
+            sError = f'Plate not found {sPlate}'
             self.set_status(400)
             self.finish(sError)
             logging.error(sError)
@@ -1303,7 +1442,7 @@ def logVialChange(glassDB, sVialId, sLogMessage, sNewPos=None):
     try:
         sSlask = cur.execute(sSql)
     except Exception as e:
-        logging.error("Vial_log error {str(e)}")
+        logging.error(f"Vial_log error {str(e)}")
 
 def getVialPosition(sVialId, glassDB, loctreeDB, bcpvsDB):
     sSql = f"""select IFNULL(v.location, '') location, l.name, IFNULL(v.pos, '') coordinate
@@ -1599,6 +1738,31 @@ class PrintRack(tornado.web.RequestHandler):
     def get(self, sRack):
         logging.info("Printing label for rack " + sRack)
         doPrintRack(sRack)
+
+
+@jwtauth
+class PrintRackList(tornado.web.RequestHandler):
+    def get(self, sRack):
+        logging.info("Printing labels for all contents in rack " + sRack)
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+
+        sSql = f"""select
+        t.notebook_ref as batchId, b.compound_id
+        from {microtubeDB}.tube t, {microtubeDB}.v_matrix_tube mt, {microtubeDB}.v_matrix m,
+        {bcpvsDB}.batch b
+        where
+        t.notebook_ref = b.notebook_ref and
+        t.tube_id = mt.tube_id and
+        m.matrix_id = mt.matrix_id and
+        mt.matrix_id = '{sRack}'"""
+        try:
+            sSlask = cur.execute(sSql)
+            tRes = cur.fetchall()
+        except Exception as e:
+            logging.info("Error: " + str(e) + ' problem with rack:' + sRack)
+            return
+        for row in tRes:
+            doPrint(row[1], row[0], "", "", "")
 
 
 @jwtauth

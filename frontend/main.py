@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import QtGui
 from cellolib import *
 from loginscreen import LoginScreen
+import datetime
 
 os_name = platform.system()
 exec_path = ""
@@ -36,7 +37,9 @@ formatter = logging.Formatter('%(name)s:%(message)s')
 ch.setFormatter(formatter)
 
 #file logging
-file=os.path.join(".","cello.log")
+current_datetime = datetime.datetime.now()
+formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
+file=os.path.join(".",f"cello_{formatted_datetime}.log")
 fh = logging.FileHandler(file)
 fh.setLevel(level)
 formatter = logging.Formatter('%(asctime)s : %(name)s:%(levelname)s: %(filename)s:%(lineno)d: %(message)s',
@@ -46,6 +49,31 @@ fh.setFormatter(formatter)
 logger.addHandler(ch)
 logger.addHandler(fh)
 
+
+####################################################################
+### Delete old log-files
+directory_path = os.path.dirname(os.path.realpath(__file__))
+
+# Get the current date and time
+current_datetime = datetime.datetime.now()
+# Calculate the time threshold (3 days ago)
+threshold_datetime = current_datetime - datetime.timedelta(days=3)
+# List all files in the directory
+file_list = os.listdir(directory_path)
+
+# Iterate through the files and delete .log files older than 3 days
+for file_name in file_list:
+    file_path = os.path.join(directory_path, file_name)
+    
+    # Check if the file has a .log extension and if it's older than 3 days
+    if file_name.endswith(".log") and datetime.datetime.fromtimestamp(os.path.getctime(file_path)) < threshold_datetime:
+        try:
+            logging.getLogger().info(f"Deleting: {file_name}")
+            os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting {file_name}: {str(e)}")
+###
+####################################################################
 
 v_path = os.path.join(".", "ver.dat")
 version = ""

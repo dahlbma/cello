@@ -62,6 +62,11 @@ class PlatesScreen(QMainWindow):
         self.plate_print_btn.clicked.connect(self.printPlate)
         self.plate_print_btn.setEnabled(False)
 
+        self.plate_duplicate_btn.clicked.connect(self.duplicatePlate)
+        self.plate_duplicate_btn.setEnabled(False)
+        self.duplicate_volume_eb.textChanged.connect(self.check_duplicate_volume)
+        self.duplicate_volume_eb.setEnabled(False)
+        
         self.plate_table.currentItemChanged.connect(self.plate_moldisplay)
 
         self.upload_populated = False
@@ -113,6 +118,7 @@ class PlatesScreen(QMainWindow):
                 return
             elif page_index == 2:
                 self.check_plate_search_input()
+                self.check_duplicate_volume()
             else:
                 return
 
@@ -143,6 +149,16 @@ class PlatesScreen(QMainWindow):
         else:
             self.new_plates_save_btn.setEnabled(False)
 
+    def check_duplicate_volume(self):
+        sVolume = self.duplicate_volume_eb.text()
+        try:
+            iVolume = int(sVolume)
+        except:
+            self.plate_duplicate_btn.setEnabled(False)
+            return
+        if iVolume >= 0:
+            self.plate_duplicate_btn.setEnabled(True)
+        
     def label_check_plates_input(self):
         sPlateId = self.label_to_plate_id_eb.text()
         sPlateId = sPlateId.rstrip()
@@ -215,6 +231,8 @@ class PlatesScreen(QMainWindow):
             self.plate_comment_btn.setEnabled(False)
             self.plate_table.setRowCount(0)
             self.plate_print_btn.setEnabled(False)
+            self.plate_duplicate_btn.setEnabled(False)
+            self.duplicate_volume_eb.setText('')
             self.setDiscard(False)
 
     def plateSearch(self, plate):
@@ -245,7 +263,8 @@ class PlatesScreen(QMainWindow):
             self.setDiscard(False)
             self.setDiscard(True)
             self.plate_print_btn.setEnabled(True)
-            self.plate_duplicate_btn.setEnabled(True)
+            #self.plate_duplicate_btn.setEnabled(True)
+            self.duplicate_volume_eb.setEnabled(True)
         except Exception as e:
             self.plate_comment_eb.setText("")
             self.update_plate_location_cb.setCurrentText("")
@@ -259,14 +278,18 @@ class PlatesScreen(QMainWindow):
                 self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
                 self.plate_comment_eb.setEnabled(True)
                 self.plate_comment_btn.setEnabled(True)
-                self.plate_duplicate_btn.setEnabled(True)
+                self.plate_print_btn.setEnabled(True)
+                #self.plate_duplicate_btn.setEnabled(True)
+                self.duplicate_volume_eb.setEnabled(True)
                 logging.getLogger(self.mod_name).info(f"empty plate, no data received")
             else:
                 self.plate_display.setHtml("")
                 self.platesearch_error_lab.setText(res)
                 self.plate_comment_eb.setEnabled(False)
                 self.plate_comment_btn.setEnabled(False)
+                self.plate_print_btn.setEnabled(False)
                 self.plate_duplicate_btn.setEnabled(False)
+                self.duplicate_volume_eb.setEnabled(False)
                 logging.getLogger(self.mod_name).info(f"search returned {res}")
             self.plate_data = None
             self.plate_table.setRowCount(0)
@@ -313,6 +336,20 @@ class PlatesScreen(QMainWindow):
     def printPlate(self):
         plate = self.plate_search_eb.text()
         dbInterface.printPlateLabel(self.token, plate)
+
+    def duplicatePlate(self):
+        plate = self.plate_search_eb.text()
+        sVolume = self.duplicate_volume_eb.text()
+        res = dbInterface.duplicatePlate(self.token, plate, sVolume)
+        try:
+            p = json.loads(res)
+        except:
+            logging.error(f"duplicate plate {plate} returned bad response: <{res}>")
+            return
+        self.plate_search_eb.setText(p[0]['plate_id'])
+        self.plate_search_btn.setFocus()
+        self.plate_search_btn.click()
+
 
     def setDiscard(self, state):
         if state:

@@ -215,7 +215,7 @@ def chart_html(data, size, pf='_s'):
                 col = int(parts[1]) - 1
 
             try:
-                if well['compound_id'] == 'CTRL':
+                if well['compound_id'].startswith('CTRL'):
                     chart[row][col] = "green" + pf
                 elif well['compound_id'] == 'DMSO':
                     chart[row][col] = "black" + pf

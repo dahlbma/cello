@@ -357,25 +357,9 @@
           </item>
           <item row="1" column="1" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="1">
-             <spacer name="horizontalSpacer_6">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Maximum</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>100</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
             <item row="2" column="1">
              <layout class="QGridLayout" name="gridLayout_18">
-              <item row="0" column="0">
+              <item row="1" column="0">
                <widget class="QPushButton" name="rack_copy_btn">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -397,7 +381,7 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
+              <item row="3" column="0">
                <widget class="QPushButton" name="rack_print_list_btn">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -421,24 +405,38 @@
               </item>
              </layout>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_2">
-              <property name="maximumSize">
+            <item row="0" column="1">
+             <spacer name="horizontalSpacer_6">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Maximum</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
                <size>
-                <width>16777215</width>
-                <height>30</height>
+                <width>100</width>
+                <height>20</height>
                </size>
               </property>
-              <property name="font">
-               <font>
-                <pointsize>15</pointsize>
-               </font>
+             </spacer>
+            </item>
+            <item row="2" column="5">
+             <widget class="QLabel" name="rack_not_found_lab">
+              <property name="minimumSize">
+               <size>
+                <width>15</width>
+                <height>15</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">color:red</string>
               </property>
               <property name="text">
-               <string>Search for Rack</string>
+               <string/>
               </property>
-              <property name="wordWrap">
-               <bool>false</bool>
+              <property name="textInteractionFlags">
+               <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
               </property>
              </widget>
             </item>
@@ -522,22 +520,37 @@
               </item>
              </layout>
             </item>
-            <item row="2" column="2">
-             <widget class="QLabel" name="rack_not_found_lab">
-              <property name="minimumSize">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="maximumSize">
                <size>
-                <width>15</width>
-                <height>15</height>
+                <width>16777215</width>
+                <height>30</height>
                </size>
               </property>
-              <property name="styleSheet">
-               <string notr="true">color:red</string>
+              <property name="font">
+               <font>
+                <pointsize>15</pointsize>
+               </font>
               </property>
               <property name="text">
-               <string/>
+               <string>Search for Rack</string>
               </property>
-              <property name="textInteractionFlags">
-               <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+              <property name="wordWrap">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="4">
+             <widget class="QLineEdit" name="copy_volume_eb">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="placeholderText">
+               <string>Copy volume in nL</string>
               </property>
              </widget>
             </item>
@@ -814,8 +827,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>393</width>
-                 <height>532</height>
+                 <width>398</width>
+                 <height>546</height>
                 </rect>
                </property>
                <layout class="QGridLayout" name="gridLayout_13">
