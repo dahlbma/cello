@@ -444,11 +444,11 @@
              <enum>Qt::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Expanding</enum>
+             <enum>QSizePolicy::Preferred</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>400</width>
+              <width>250</width>
               <height>20</height>
              </size>
             </property>
@@ -674,7 +674,7 @@
               <item row="1" column="0">
                <widget class="QLineEdit" name="copy_volume_eb">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -686,6 +686,12 @@
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="rack_not_found_lab">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>15</width>
@@ -704,6 +710,13 @@
                </widget>
               </item>
              </layout>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="rack_id_lab">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

@@ -249,6 +249,8 @@ class MicrotubesScreen(QMainWindow):
         if len(rack) < 6:
             self.check_print(None)
             return
+        self.rack_id_lab.setText(rack)
+        self.rack_search_eb.setText('')
         logging.getLogger(self.mod_name).info(f"microtubes rack search for [{rack}]")
         res, b = dbInterface.getRack(self.token, rack)
         if b == False:
