@@ -245,6 +245,7 @@ class PlatesScreen(QMainWindow):
             self.setDiscard(False)
             self.setDiscard(True)
             self.plate_print_btn.setEnabled(True)
+            self.plate_duplicate_btn.setEnabled(True)
         except Exception as e:
             self.plate_comment_eb.setText("")
             self.update_plate_location_cb.setCurrentText("")
@@ -258,16 +259,17 @@ class PlatesScreen(QMainWindow):
                 self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
                 self.plate_comment_eb.setEnabled(True)
                 self.plate_comment_btn.setEnabled(True)
+                self.plate_duplicate_btn.setEnabled(True)
                 logging.getLogger(self.mod_name).info(f"empty plate, no data received")
             else:
                 self.plate_display.setHtml("")
                 self.platesearch_error_lab.setText(res)
                 self.plate_comment_eb.setEnabled(False)
                 self.plate_comment_btn.setEnabled(False)
+                self.plate_duplicate_btn.setEnabled(False)
                 logging.getLogger(self.mod_name).info(f"search returned {res}")
             self.plate_data = None
             self.plate_table.setRowCount(0)
-            self.plate_print_btn.setEnabled(False)
         QApplication.restoreOverrideCursor()
     
     def setPlateTableData(self, data):
