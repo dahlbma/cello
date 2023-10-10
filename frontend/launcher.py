@@ -79,7 +79,8 @@ class LauncherScreen(QDialog):
             return -1
         elif match == 1:
             #update needed
-            
+            # send notification
+            send_msg('Updated Version', f"New version information:\n{info['notes']}")
             try: 
                 bin_r = dbInterface.getCelloBinary(os_name)
                 
