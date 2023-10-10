@@ -18,6 +18,7 @@ class Worker(QObject):
         else:
             self.finished.emit()
 
+#progressbar
 class PopUpProgress(QWidget):
 
     def __init__(self, sHeader = ""):
@@ -42,7 +43,7 @@ class PopUpProgress(QWidget):
     def on_count_changed(self, value):
         self.pbar.setValue(value)
 
-
+#sortable table items
 class QCustomTableWidgetItem (QTableWidgetItem):
     def __init__ (self, value):
         super(QCustomTableWidgetItem, self).__init__(value)
@@ -55,7 +56,7 @@ class QCustomTableWidgetItem (QTableWidgetItem):
         else:
             return QTableWidgetItem.__lt__(self, other)
 
-
+# navigation between top-level sections
 def gotoSearch(self):
     resize_window(self)
     self.window().setCurrentIndex(1)
@@ -86,7 +87,7 @@ def gotoPlates(self):
     self.window().widget(5).new_n_plates_sb.setFocus()
     return
 
-
+#custom notification toolbox
 def send_msg(title, text, icon=QMessageBox.Information, e=None):
     msg = QMessageBox()
     msg.setWindowTitle(title)
@@ -107,6 +108,7 @@ def send_msg(title, text, icon=QMessageBox.Information, e=None):
             cb_msg.setText(clipboard.text()+" \n\ncopied to clipboard!")
             cb_msg.exec_()
 
+#gets asset path from app execution path/pyinstaller package
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -140,6 +142,7 @@ def export_table(table):
         clipboard.setText(csv)
         send_msg("Export data", "Data copied to clipboard!")
 
+#better UX, steps between rows in input table, for scanning multiple barcodes
 def getNextFreeRow(table, row, col, entireRowFree=False, fromSame=False):
     start = 1
     if fromSame:
@@ -157,6 +160,7 @@ def getNextFreeRow(table, row, col, entireRowFree=False, fromSame=False):
                 return r, col
     return -1, -1
 
+# plate_to_html 1 / 4, parses plate/rack data and returns html
 def plate_to_html(data, size1, resultdata, size2):
     html = chart_html(data, size1, "_s")
     optional = ""
@@ -171,20 +175,10 @@ def plate_to_html(data, size1, resultdata, size2):
         return ""
     if size2 != None:
         blob_size2 = {'96':8, '384':8, '1536':2}[str(size2)]
-
-        ############################
-        # Mats added the next two lines. blob_size2 is undefined if I don't do this, and the application crashes
-    #else:
-    #    blob_size2 = {'96':8, '384':8, '1536':2}[str(size1)]
-
-        # End dirty fix
-        ###########################
-    # assemble 2 bodies, with optional prefaced with "to", which should enable separate sizes for each text body
-    #return chart_lambda(blob_size1)(html, optional, size=blob_size1)
-    #print(f"bs1:{blob_size1}, bs2:{blob_size2}")
     outtext = chart2(blob_size1, blob_size2)(html, optional)
     return outtext
 
+# plate_to_html 2 / 4, helper function, parses plate/rack data to 2d string array
 def chart_html(data, size, pf='_s'):
     try:
         scale = {'96':1, '384':2, '1536':4}[str(size)]
@@ -237,6 +231,7 @@ def chart_html(data, size, pf='_s'):
         html += "</br>"
     return html
 
+# plate_to_html 3 / 4, deprecated version, use chart2 instead
 def chart_lambda(blob_size = 8):
 
     return lambda x, y, size: f"""<!DOCTYPE html><html><head><style>
@@ -276,6 +271,7 @@ def chart_lambda(blob_size = 8):
     {y}
     </div></body></html>"""
 
+# plate_to_html 4 / 4, helper function, parses formatted string array to html output
 def chart2(blob_size1 = 8, blob_size2 = 8):
     return lambda x, y: f"""<!DOCTYPE html><html><head><style>
     .red_s {"{"}
@@ -346,6 +342,7 @@ def chart2(blob_size1 = 8, blob_size2 = 8):
     </div>
     </body></html>"""
 
+# transforms source plates indices to larger merge target 
 def disp_tran(quad, data, size):
         mult = 1 if size == 96 else 2 # no need to display anything larger than 4*384 / 1536
         shiftAlpha = 0

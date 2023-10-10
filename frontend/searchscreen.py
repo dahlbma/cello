@@ -18,7 +18,6 @@ class SearchScreen(QMainWindow):
         self.mod_name = "search"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/searchwindow.ui"), self)
-        #self.window().setWindowTitle("Search")
 
         self.centralwidget.setProperty("test", test)
 
@@ -55,7 +54,8 @@ class SearchScreen(QMainWindow):
 
         self.pool_scheme_to_cb_btn.clicked.connect(self.scheme_to_clipboard)
         self.pool_scheme_to_file_btn.clicked.connect(self.scheme_to_file)
-
+    
+    # capture certain keypresses in certain tabs
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.search_tab_wg.currentIndex() == 1:
@@ -64,9 +64,10 @@ class SearchScreen(QMainWindow):
             elif self.search_tab_wg.currentIndex() == 2:
                 self.search_batches()
                 return
-            else: # tab 0, no btn
+            else:
                 return
 
+    # set focus and do visual housekeeping
     def tabChanged(self):
         page_index = self.search_tab_wg.currentIndex()
         self.structure_lab.clear()
@@ -140,7 +141,7 @@ class SearchScreen(QMainWindow):
         if v_n > 5000:
             send_msg("Vial Search", f'Searching for {v_n} vials.\nThis might take a few minutes.\nPlease wait.\nPress OK.')
         res = dbInterface.getManyVials(self.token, vials)
-        # change to get single vial at a time for progress bar
+        # change to get single vial at a time for progress bar TODO
         QApplication.restoreOverrideCursor()
         self.multvial_data = None
         try:
@@ -241,7 +242,7 @@ class SearchScreen(QMainWindow):
         self.batch_table.setRowCount(0)
         self.batch_table.setRowCount(len(data))
         self.batch_table.setSortingEnabled(False)
-        for n in range(len(data)): # row n
+        for n in range(len(data)):
             try:
                 if f"{data[n]['boxId']}" == "Not found":
                     newItem = QTableWidgetItem(f"{data[n]['vialId']}")
@@ -313,6 +314,7 @@ class SearchScreen(QMainWindow):
         self.pool_gen_btn.setEnabled(True)
         self.pool_gen_btn.setFocus()
 
+    # take a file/list of batch ids and generates a pooling scheme based on input parameters m & n
     def generate_pool_scheme(self):
         with open(self.pool_ids_fname[0], 'r') as f:
             batch_ids = f.readlines()
@@ -351,12 +353,12 @@ class SearchScreen(QMainWindow):
             for id in range(n):
                 subs[id] = [id, k]
 
-            # init return list and nieghbor graph
+            # init return list and neighbor graph
             wells = []
             G = nx.Graph()
             G.add_nodes_from([sub[0] for sub in subs])
 
-            # INIT PBAR # pbar = tqdm(total=int((k/m)*n))
+            # INIT PBAR
             iTickInterval = 1
             if n > 100:
                 iTickInterval = int(n / 100)
@@ -389,7 +391,6 @@ class SearchScreen(QMainWindow):
                     while not found:
                         spins += 1
                         if (loops > threshold):
-                            #print(f"hit threshold, subs left: {subs.size}")
                             th_hit += 1
                             found = True
                             continue
@@ -425,7 +426,6 @@ class SearchScreen(QMainWindow):
                 if len(wells) > int(math.ceil((k/m)*n)) or \
                     (len(wells) > k and (len(wells[-1]) < m and len(wells[-2]) < m)):
                     reshuffles += 1
-                    #print(f"reshuffle #: {reshuffles}")
                     extra = len(wells) - int(math.ceil((k/m)*n))
                     # redo extra + m*reshuffles finished wells
                     put_back = wells[-(extra + (m*reshuffles)):]
@@ -453,7 +453,7 @@ class SearchScreen(QMainWindow):
             self.pool_scheme_to_file_btn.setEnabled(True)
 
     def put_ok(self, G, w, id):
-        ids = [sub for sub in w]#[sub[0] for sub in w]
+        ids = [sub for sub in w]
         if all(id not in G[i] for i in ids) and (id not in ids):
             return True
         else:

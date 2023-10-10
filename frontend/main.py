@@ -7,6 +7,7 @@ from cellolib import *
 from loginscreen import LoginScreen
 import datetime
 
+#setup
 os_name = platform.system()
 exec_path = ""
 if os_name == 'Windows':
@@ -15,7 +16,7 @@ if os_name == 'Windows':
     myappid = 'cello.vial.microtubes'
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-
+#init error handler
 def error_handler(etype, value, tb):
     err_msg = "".join(traceback.format_exception(etype, value, tb))
     logging.getLogger().error(f"\n{err_msg}")
@@ -75,6 +76,7 @@ for file_name in file_list:
 ###
 ####################################################################
 
+#get app version
 v_path = os.path.join(".", "ver.dat")
 version = ""
 if os.path.exists(v_path):

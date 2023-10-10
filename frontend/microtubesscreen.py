@@ -16,7 +16,6 @@ class MicrotubesScreen(QMainWindow):
         self.mod_name = "microtubes"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/microtubeswindow.ui"), self)
-        #self.window().setWindowTitle("Microtubes")
 
         self.centralwidget.setProperty("test", test)
 
@@ -71,7 +70,7 @@ class MicrotubesScreen(QMainWindow):
         self.move_box_id_eb.returnPressed.connect(self.moveRackStep2)
         self.move_box_id_eb.setEnabled(False)
 
-
+    # capture certain keypresses in certain tabs
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.microtubes_tab_wg.currentIndex() == 0:
@@ -81,7 +80,7 @@ class MicrotubesScreen(QMainWindow):
                 self.search_rack()
                 return
 
-
+    # set focus and do visual housekeeping
     def tabChanged(self):
         page_index = self.microtubes_tab_wg.currentIndex()
         self.structure_lab.clear()
@@ -333,12 +332,12 @@ class MicrotubesScreen(QMainWindow):
             l = self.rack_search_eb.text().split(" ")
             self.currentRack = l[0]
             self.rack_print_label_btn.setEnabled(True)
-            #self.rack_copy_btn.setEnabled(True)
+            self.rack_copy_btn.setEnabled(True)
             self.rack_print_list_btn.setEnabled(True)
         elif (self.rack_table.rowCount() > 0) and (item is not None):
             self.currentRack = self.rack_table.item(item.row(), 4).text()
             self.rack_print_label_btn.setEnabled(True)
-            #self.rack_copy_btn.setEnabled(True)
+            self.rack_copy_btn.setEnabled(True)
             self.rack_print_list_btn.setEnabled(True)
         else:
             self.currentRack = None
@@ -636,7 +635,7 @@ class MicrotubesScreen(QMainWindow):
 
     def moveRackStep2(self):
         pattern = '^[a-zA-Z]{2}[0-9]{5}$'
-        rack_id = self.move_rack_id_eb.text() #should be OK
+        rack_id = self.move_rack_id_eb.text()
         box_id = self.move_box_id_eb.text()
         self.move_status_lab.clear()
         if re.match(pattern, box_id):

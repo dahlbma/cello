@@ -15,7 +15,6 @@ class BoxesScreen(QMainWindow):
         self.mod_name = "boxes"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/boxeswindow.ui"), self)
-        #self.window().setWindowTitle("Boxes")
 
         self.centralwidget.setProperty("test", test)
 
@@ -87,6 +86,7 @@ class BoxesScreen(QMainWindow):
         self.freebox_table.cellDoubleClicked.connect(self.showFreeBox)
         self.freebox_export_btn.clicked.connect(self.export_freebox_table)
 
+    # capture certain keypresses in certain tabs
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.boxes_tab_wg.currentIndex() == 0:
@@ -96,6 +96,7 @@ class BoxesScreen(QMainWindow):
             else:
                 return
 
+    # set focus and do visual housekeeping
     def tabChanged(self):
         page_index = self.boxes_tab_wg.currentIndex()
         self.structure_lab.clear()
@@ -112,6 +113,7 @@ class BoxesScreen(QMainWindow):
     def locationInput(self, js):
         return [js['NAME'], js['type'], js['LOC_ID']]
 
+    # populate box tree
     def init_boxes_tree(self):
         #get top level nodes
         r = dbInterface.getLocationChildren(self.token, "root")
@@ -222,8 +224,6 @@ class BoxesScreen(QMainWindow):
             self.add_location_barcode = None
 
     def check_move_input(self):
-        #pattern = '^[a-zA-Z]{2}[0-9]{5}$'
-        #t = re.sub("[^0-9a-zA-Z]+", " ", self.move_location_eb.text())
         if (self.move_box_lab.text() != "") and \
             (self.move_location_eb.text() != ""):
             self.move_box_btn.setEnabled(True)

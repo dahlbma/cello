@@ -1,7 +1,11 @@
 import requests
 import json
 
+# CHANGE THIS
+# database base URL
 baseUrl = 'https://esox3.scilifelab.se/vialdb/'
+
+# communication handles, check database handler in /backend/ for request handling details
 
 def listify(data, addBlank=True):
     res = data.content.decode()
@@ -47,7 +51,7 @@ def getVersion():
 def uploadVersionNo(token, ver_no):
     r = requests.post(f'{baseUrl}uploadVersionNo',
                       data = {'ver_no':ver_no},
-                      headers = {'token':token}) #get file version
+                      headers = {'token':token}) #set file version
     if r.status_code != 200:
         return r.content.decode(), False
     else:

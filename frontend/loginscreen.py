@@ -22,7 +22,7 @@ class LoginScreen(QMainWindow):
         saDatabases = None
         try:
             saDatabases = dbInterface.getDatabase()
-        except Exception as e:
+        except Exception as e: # If we can't reach database we have nothing to do.
             send_msg("Connection Error",
                      f"Cello has encountered a fatal error:\n\n{str(e)}\n\nPlease restart Cello.",
                      icon=QMessageBox.Critical, e=e)
@@ -34,7 +34,6 @@ class LoginScreen(QMainWindow):
             self.loginfunction()
     
     def loginfunction(self):
-        
         user = self.usernamefield.text()
         password = self.passwordfield.text()
         database = self.server_cb.currentText()
@@ -42,7 +41,7 @@ class LoginScreen(QMainWindow):
             self.errorlabel.setText("Please input all fields")
         else:
             self.errorlabel.setText("")
-        
+    
         try:
             r = dbInterface.login(user, password, database)
         except Exception as e:

@@ -14,7 +14,6 @@ class VialsScreen(QMainWindow):
         self.mod_name = "vials"
         logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/vialswindow.ui"), self)
-        #self.window().setWindowTitle("Vials")
 
         self.centralwidget.setProperty("test", test)
 
@@ -42,7 +41,7 @@ class VialsScreen(QMainWindow):
         self.upload_copy_log_btn.clicked.connect(self.copyLog)
         self.upload_copy_log_btn.setEnabled(False)
 
-
+    # capture certain keypresses in certain tabs
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             if self.vials_tab_wg.currentIndex() == 0:
@@ -50,6 +49,7 @@ class VialsScreen(QMainWindow):
             else:
                 return
 
+    # set focus and do visual housekeeping
     def tabChanged(self):
         page_index = self.vials_tab_wg.currentIndex()
         if page_index == 0:
@@ -131,7 +131,6 @@ class VialsScreen(QMainWindow):
                 self.edit_vial_error_lab.setText(res)
             self.edit_dilution_eb.setText(str(res[0]['dilution_factor']))
             self.edit_vial_error_lab.setText('')
-            #dbInterface.printVialLabel(self.token, self.edit_vial_id_eb.text())
             self.check_vial_search_input()
         except Exception as e:
             logging.getLogger(self.mod_name).error(str(e))

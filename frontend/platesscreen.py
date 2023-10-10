@@ -41,7 +41,6 @@ class PlatesScreen(QMainWindow):
 
         locations = ['Compound Center', "CC Freezer A", "CC Freezer B", "Sent to User"]
         self.plate_location_cb.addItems(locations)
-        #locations.insert(0, ' ') # is this even necessary or safe?
         self.update_plate_location_cb.addItems(locations)
 
         self.label_to_plates_save_btn.clicked.connect(self.createPlatesFromLabel)
@@ -110,7 +109,7 @@ class PlatesScreen(QMainWindow):
         validator = QIntValidator(0, 1000, self)
         self.merge_volume_eb.setValidator(validator)
 
-
+    # capture certain keypresses in certain tabs
     def keyPressEvent(self, event):
         page_index = self.plates_tab_wg.currentIndex()
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
@@ -122,6 +121,7 @@ class PlatesScreen(QMainWindow):
             else:
                 return
 
+    # set focus and do visual housekeeping
     def tabChanged(self):
         page_index = self.plates_tab_wg.currentIndex()
         self.structure_lab.clear()
@@ -140,7 +140,6 @@ class PlatesScreen(QMainWindow):
         elif page_index == 4:
             self.join_q1_eb.setFocus()
             self.showMergePlates()
-            #self.move_focus(0, self.ok_arr)
 
     def check_plates_input(self):
         if (self.new_plates_type_cb.currentText() != ' ') and \
@@ -274,7 +273,6 @@ class PlatesScreen(QMainWindow):
                 self.plate_comment_eb.setText(info[0]['comments'])
                 self.update_plate_location_cb.setCurrentText(info[0]['loc_id'])
                 self.platesearch_error_lab.setText(f"Plate size: {info[0]['wells']}")
-                #self.plate_display.setHtml("")
                 self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
                 self.plate_comment_eb.setEnabled(True)
                 self.plate_comment_btn.setEnabled(True)
@@ -405,7 +403,6 @@ class PlatesScreen(QMainWindow):
                 f.seek(0)
                 reader = csv.reader(f, dialect)
                 self.path_lab.setText(fname[0])
-                #self.upload_file_btn.setEnabled(True)
                 self.upload_pbar.setValue(0)
                 self.upload_pbar.hide()
                 data = list(reader)
@@ -735,7 +732,7 @@ class PlatesScreen(QMainWindow):
             ((self.join_q1_eb.text() != "") or \
             (self.join_q2_eb.text() != "") or \
             (self.join_q3_eb.text() != "") or \
-            (self.join_q4_eb.text() != "")) # at least one (1) q# and result is non-empty
+            (self.join_q4_eb.text() != "")) # at least one (1) q and result is non-empty
         
         if self.mod_arr[1] != 0:
             self.size_arr[1], self.ok_arr[1] = \
@@ -801,11 +798,6 @@ class PlatesScreen(QMainWindow):
             (self.dom_size*4 == self.size_arr[0]) # sizes match from parts to result, etc
         if (not targetSizeOK) and (self.dom_size != -1):
             self.merge_status_append("Size mismatch between source and target plates.\n")
-        
-        #if (not sizesMatchingOK) or (not targetSizeOK): # show source info if there are errors
-        #    self.merge_status_append(f"\nQ1:{self.plate_ids[1]} size: {self.size_arr[1]}\nQ2:{self.plate_ids[2]} size: {self.size_arr[2]}\nQ3:{self.plate_ids[3]} size: {self.size_arr[3]}\nQ4:{self.plate_ids[4]} size: {self.size_arr[4]}")
-        #    if not targetSizeOK: # only print target info when relevant
-        #        self.merge_status_append(f"\nTarget:{self.plate_ids[0]} size: {self.size_arr[0]}")
 
         volumeOK = (self.merge_volume_eb.text() != "")
         
