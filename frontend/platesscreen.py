@@ -263,7 +263,7 @@ class PlatesScreen(QMainWindow):
             self.setDiscard(False)
             self.setDiscard(True)
             self.plate_print_btn.setEnabled(True)
-            #self.plate_duplicate_btn.setEnabled(True)
+            self.plate_duplicate_btn.setEnabled(True)
             self.duplicate_volume_eb.setEnabled(True)
         except Exception as e:
             self.plate_comment_eb.setText("")
@@ -279,7 +279,7 @@ class PlatesScreen(QMainWindow):
                 self.plate_comment_eb.setEnabled(True)
                 self.plate_comment_btn.setEnabled(True)
                 self.plate_print_btn.setEnabled(True)
-                #self.plate_duplicate_btn.setEnabled(True)
+                self.plate_duplicate_btn.setEnabled(True)
                 self.duplicate_volume_eb.setEnabled(True)
                 logging.getLogger(self.mod_name).info(f"empty plate, no data received")
             else:
