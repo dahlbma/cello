@@ -106,7 +106,7 @@ class PlatesScreen(QMainWindow):
 
         self.merge_status_tb_init = 1
 
-        validator = QIntValidator(0, 1000, self)
+        validator = QIntValidator(0, 1000000, self)
         self.merge_volume_eb.setValidator(validator)
 
     # capture certain keypresses in certain tabs
