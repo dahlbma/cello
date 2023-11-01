@@ -199,7 +199,7 @@ def decreseVolumeInWell(self, sPlate, sWell, sOldVolume, sVolumeToSubtract):
 def decreseVolumeInTube(self, sTube, sOldVolume, sVolumeToSubtract):
     glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
     try:
-        iNewVolume = int(sOldVolume) - int(sVolumeToSubtract)
+        iNewVolume = int(sOldVolume) - int(int(sVolumeToSubtract)/1000)
     except:
         # The source volume is NULL so we fail to calculate the new volume
         return
@@ -586,7 +586,7 @@ class CreatePlateFromRack(tornado.web.RequestHandler):
         copyPlateImpl(self, sPlateId, iPlateType, sLocation, sOldPlateComment)
 
         sSql = f'''
-        select mt.position as well, b.compound_id, b.notebook_ref, t.conc*1000 as conc, t.tube_id, volume*1000000
+        select mt.position as well, b.compound_id, b.notebook_ref, IFNULL(t.conc*1000, 10) as conc, t.tube_id, volume*1000000
         from {microtubeDB}.matrix_tube mt, {bcpvsDB}.batch b, {microtubeDB}.tube t
         where mt.tube_id = t.tube_id
         and t.notebook_ref = b.notebook_ref
@@ -595,6 +595,7 @@ class CreatePlateFromRack(tornado.web.RequestHandler):
         cur.execute(sSql)
         tMicrotubes = cur.fetchall()
         for tube in tMicrotubes:
+            
             #                           well     cmp      batch    form   conc          volume
             if(copyWell(self, sPlateId, tube[0], tube[1], tube[2], sForm, int(tube[3]), sVolume)):
                 decreseVolumeInTube(self, tube[4], tube[5], sVolume)
