@@ -394,8 +394,8 @@ def verifyPlate(token, plate):
         return r.content.decode(), 1
 
 
-def createPlates(token, type, name, nr_o_ps, location):
-    r = requests.put(f'{baseUrl}createPlates/{type}/{name}/{nr_o_ps}/{location}',
+def createPlates(token, type, name, nr_o_ps, location, sDuplicate):
+    r = requests.put(f'{baseUrl}createPlates/{type}/{name}/{nr_o_ps}/{location}/{sDuplicate}',
                       headers={'token':token})
     if r.status_code != 200:
         return r.content.decode(), False

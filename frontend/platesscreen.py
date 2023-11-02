@@ -178,8 +178,12 @@ class PlatesScreen(QMainWindow):
         location = self.plate_location_cb.currentText()
         name = self.new_plates_comment_eb.text()
         nr_o_ps = self.new_n_plates_sb.value()
+        if self.duplicateLabel_chk.isChecked():
+            sDuplicateLabels = 'duplicate'
+        else:
+            sDuplicateLabels = 'single'
         try:
-            res, status = dbInterface.createPlates(self.token, type, name, nr_o_ps, location)
+            res, status = dbInterface.createPlates(self.token, type, name, nr_o_ps, location, sDuplicateLabels)
             if not status:
                 raise Exception
             self.new_plates_res_lab.setText(res)
