@@ -646,7 +646,7 @@ class DuplicatePlate(tornado.web.RequestHandler):
 
 @jwtauth
 class CreatePlates(tornado.web.RequestHandler):
-    def put(self, sPlateType, sPlateName, sNumberOfPlates, sLocation):
+    def put(self, sPlateType, sPlateName, sNumberOfPlates, sLocation, sDuplicate):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         saNewPlates = dict()
         plateKeys = []
@@ -684,6 +684,9 @@ class CreatePlates(tornado.web.RequestHandler):
             '{sLocation}')"""
             cur.execute(sSql)
             plateKeys.append(sPlateId)
+            if sDuplicate == 'duplicate':
+                logging.info("Duplicating labels")
+                doPrintPlate(sPlateId)
             doPrintPlate(sPlateId)
             plateValues.append(sNewplateName)
         for i in range(len(plateKeys)):
