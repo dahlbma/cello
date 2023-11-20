@@ -685,7 +685,6 @@ class CreatePlates(tornado.web.RequestHandler):
             cur.execute(sSql)
             plateKeys.append(sPlateId)
             if sDuplicate == 'duplicate':
-                logging.info("Duplicating labels")
                 doPrintPlate(sPlateId)
             doPrintPlate(sPlateId)
             plateValues.append(sNewplateName)
