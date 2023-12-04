@@ -179,6 +179,7 @@ def copyWell(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
         cur.execute(sSql)
         return True
     except:
+        logging.info(sSql)        
         return False
 
 def decreseVolumeInWell(self, sPlate, sWell, sOldVolume, sVolumeToSubtract):
@@ -624,9 +625,18 @@ class DuplicatePlate(tornado.web.RequestHandler):
         sLocation = ''
         copyPlateImpl(self, sNewPlateId, iPlateType, sLocation, sOldPlateComment)
 
-        sSql = f'''
-        select well, compound_id, notebook_ref, form, conc, volume
-        from cool_test.config where config_id = '{sPlate}'
+        sSql = f'''SELECT 
+        c.well,
+        compound_id,
+        notebook_ref,
+        c.form,
+        c.conc,
+        c.volume
+        FROM {coolDB}.config c, {coolDB}.plate p, {coolDB}.plating_sequence ps
+        WHERE p.CONFIG_ID = c.CONFIG_ID
+        and p.TYPE_ID = ps.TYPE_ID
+        and c.WELL = ps.WELL and p.plate_id = '{sPlate}'
+	order by ps.seq
         '''
         cur.execute(sSql)
         tPlateContent = cur.fetchall()
@@ -639,6 +649,7 @@ class DuplicatePlate(tornado.web.RequestHandler):
             if(copyWell(self, sNewPlateId, well[0], well[1], well[2], well[3], sConc, sVolume)):
                 decreseVolumeInWell(self, sPlate, well[0], well[5], sVolume)
         logging.info(sNewPlateId)
+        doPrintPlate(sNewPlateId)
         jRes =list()
         jRes.append({"plate_id":sNewPlateId})
         self.write(json.dumps(jRes))
