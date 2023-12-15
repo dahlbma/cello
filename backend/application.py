@@ -11,10 +11,12 @@ import codecs
 from auth import jwtauth
 from rdkit import Chem
 from rdkit.Chem import Draw
+from rdkit.Chem import AllChem
 import mydb
 import config
 import pandas as pd
 from os.path import exists
+
 
 db = mydb.disconnectSafeConnect()
 cur = db.cursor()
@@ -72,6 +74,7 @@ def res_to_json(response, cursor):
 
 def createPngFromMolfile(regno, molfile):
     m = Chem.MolFromMolBlock(molfile)
+    AllChem.Compute2DCoords(m)
     try:
         Draw.MolToFile(m, f'mols/{regno}.png', size=(300, 300))
     except:
