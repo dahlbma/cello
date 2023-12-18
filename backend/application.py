@@ -73,8 +73,14 @@ def res_to_json(response, cursor):
     return to_js
 
 def createPngFromMolfile(regno, molfile):
-    m = Chem.MolFromMolBlock(molfile)
-    AllChem.Compute2DCoords(m)
+    sSql = f'''select bin2mol(moldepict('{molfile}'))
+    '''
+    cur.execute(sSql)
+    try:
+        molfile = cur.fetchall()[0][0]
+        m = Chem.MolFromMolBlock(molfile)
+    except:
+        pass
     try:
         Draw.MolToFile(m, f'mols/{regno}.png', size=(300, 300))
     except:
