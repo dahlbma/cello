@@ -6,6 +6,7 @@ from tornado import web
 import util
 import os
 import application
+import exportSdf
 from tornado.options import define, options
 import logging
 from tornado.log import enable_pretty_logging
@@ -157,6 +158,8 @@ def make_app():
         (r"/login", login),
         (r"/pingDB", application.PingDB),
         (r"/getVersionData", getVersionData),
+        (r"/initiateSdfDownload", exportSdf.InitiateDownload),
+        (r"/addMolfileToSdf/(?P<sTicket>[^\/]+)/(?P<sId>[^\/]+)", exportSdf.AddMolfileToSdf),
         (r"/uploadVersionNo", application.UploadVersionNo),
         (r"/getCelloBinary/(?P<os_name>[^\/]+)", getCelloBinary),
         (r"/getDatabase", application.GetDatabase),
