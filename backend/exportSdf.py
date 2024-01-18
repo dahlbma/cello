@@ -22,12 +22,51 @@ class InitiateDownload(tornado.web.RequestHandler):
 
 class AddMolfileToSdf(tornado.web.RequestHandler):
     def get(self, sTicket, sId):
-        sdfile = f'dist/export/{sTicket}/t.sdf'
-        
-        with open(sdfile, 'a') as file:
-            # Append the string 'test'
-            file.write(f'{sId}\n')
+        sdfile = f'dist/export/{sTicket}/export.sdf'
+        elements = sId.split(',')
 
+        # Add single quotes around each element and join them back together
+        result_string = ','.join(["'" + element + "'" for element in elements])
+
+        sSql = ''
+        if sId[:3].upper() == "CBK":
+            with open(sdfile, 'a') as file:
+                for id in elements:
+                    sSql = f'''
+                    select mol, compound_id from bcpvs.JCMOL_MOLTABLE where compound_id = '{id}'
+'''
+                    cur.execute(sSql)
+                    tRes = cur.fetchall()
+                    if len(tRes) == 1:
+                        sMol = f'''{tRes[0][0]}
+> <COMPOUND_ID>
+{tRes[0][1]}
+$$$$
+'''
+                        file.write(sMol)
+
+        else:
+            with open(sdfile, 'a') as file:
+                for id in elements:
+                    sSql = f'''select mol, m.compound_id, notebook_ref as batch_id from bcpvs.JCMOL_MOLTABLE m, bcpvs.batch b 
+where
+m.compound_id = b.compound_id and 
+notebook_ref = '{id}'
+'''
+                    cur.execute(sSql)
+                    tRes = cur.fetchall()
+                    if len(tRes) == 1:
+                        sMol = f'''{tRes[0][0]}
+> <COMPOUND_ID>
+{tRes[0][1]}
+
+> <BATCH_ID>
+{tRes[0][2]}
+$$$$
+'''
+                        file.write(sMol)
+
+            
         data = {'id': sId}
         self.finish(json.dumps(data))
 

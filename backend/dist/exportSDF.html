@@ -16,105 +16,32 @@
 	line-height: 40px;
 	color: white;
     }
+
+
   </style>
   
   <head>
-    <title>Read Text File</title>
+    <title>Export SDFile</title>
   </head>
  
   <body>
+       <div id="allPage" class="waiting-cursor">
+        <!-- Your content goes here -->
     <div id="Progress">
-      <div id="progressBar">1%</div>
+      <div id="progressBar">0%</div>
     </div>
     <br>
-    <button onclick="progress()">Progress test</button> 
-    <br>
-    
     <input type="file" name="inputfile" id="inputfile">
     <br>
     
     <pre id="output"></pre>
     
-    <script type="text/javascript">
+    <script src="export.js">    </script>
+    <br>
+    <a id="sdfile" href=''></a>
 
-      var lines = ''
-      
-      document.getElementById('inputfile')
-    .addEventListener('change', function () {
-	
-	let fr = new FileReader();
-	fr.onload = function () {
-	    lines = fr.result.split(/[\r\n]+/g);
-	    document.getElementById('output')
-		.textContent = fr.result;
-	}
-	fr.readAsText(this.files[0]);
-    })
+       </div>
 
-
-      var sToken = ''
-      
-      // Creating Our XMLHttpRequest object 
-      let xhr = new XMLHttpRequest();
-      // Making our connection  
-      let url = 'https://esox3.scilifelab.se/vialdb/initiateSdfDownload';
-      xhr.open("GET", url, true);
-      
-      // function execute after request is successful 
-      xhr.onreadystatechange = function () {
-          if (this.readyState == 4 && this.status == 200) {
-              sToken = this.responseText;
-          }
-      }
-      // Sending our request 
-      xhr.send();
-
-      // https://esox3.scilifelab.se/vialdb/initiateSdfDownload
-      // https://esox3.scilifelab.se/vialdb/addMolfileToSdf/977775/test
-
-
-
-      
-      var i = 0;
-      function progress() {
-	  var iCount = 0;
-	  if (i == 0) {
-	      i = 1;
-	      var elem = document.getElementById("progressBar");
-	      var width = 10;
-	      var id = setInterval(frame, 1);
-	      function frame() {
-		  
-		  console.log(lines[iCount])
-		  url = 'https://esox3.scilifelab.se/vialdb/addMolfileToSdf/' + sToken + '/' + lines[iCount]
-		  fetch(url, { method: 'GET' })
-		      .then(Result => Result.json())
-		      .then(string => {
-			  
-		      })
-		      .catch(errorMsg => { console.log(errorMsg); });
-		  
-
-		  
-		  iCount = iCount + 1;
-		  if (width >= 100) {
-		      clearInterval(id);
-		      i = 0;
-		  } else {
-		      width++;
-		      elem.style.width = width + "%";
-		      elem.innerHTML = width  + "%";
-		  }
-	      }
-
-
-	      
-	  }
-      }
-      
-      
-    </script>
-    
   </body>
   
 </html>
