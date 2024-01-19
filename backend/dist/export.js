@@ -24,6 +24,12 @@ document.getElementById('inputfile')
 		    sdfileElement.href = "https://esox3.scilifelab.se/vialdb/dist/export/" + sToken + "/export.sdf";
 		    sdfileElement.textContent = '';
 
+
+		    var errorDiv = document.getElementById('errorDiv');
+		    // Set the display property to 'none' to make it invisible
+		    errorDiv.style.display = 'none';
+
+
 		    progress();
 		}
 	    }
@@ -40,6 +46,7 @@ document.getElementById('inputfile')
 var i = 0;
 var iChunks = 20;
 var iCount = 0;
+var errorString = 'These Ids have no molfile:\n';
 function progress() {
     if (i == 0) {
 	i = 1;
@@ -47,7 +54,6 @@ function progress() {
 	var width = 1;
 	var startIndex = 0;
         var endIndex = Math.min(startIndex + iChunks, lines.length);
-	var errorString = {};
 	
 	function frame() {
             var batch = lines.slice(startIndex, endIndex).join(',');
@@ -58,7 +64,16 @@ function progress() {
 		.then(response => {
 		    var len = Object.keys(response).length;
 		    if (len > 0) {
-			errorString = Object.assign(errorString, response);
+			
+			for (var key in response) {
+			    if (response.hasOwnProperty(key)) {
+				// Print each key-value pair to the console
+				errorString = errorString + key + '\n';
+				console.log(key + ': ' + response[key]);
+			    }
+}
+			//errorString = errorString + JSON.stringify(response, null, 2);
+			//console.log(errorString);
 		    }
 		})
 		.catch(errorMsg => { console.log(errorMsg); });
@@ -71,6 +86,14 @@ function progress() {
 		elem.style.width = width + "%";
 		elem.innerHTML = width  + "%";
 		i = 0;
+		var errorDiv = document.getElementById('errorDiv');
+
+		errorDiv.style.display = 'block';
+		errorDiv.innerHTML = '<pre>' + errorString + '</pre>';
+
+		//console.log(endIndex)
+		//console.log(errorString);
+
 	    } else {
 		elem.style.width = width + "%";
 		elem.innerHTML = Math.floor(width) + "%";
@@ -88,12 +111,12 @@ function progress() {
 		i = 0;
 		iCount = 0;
 		width = 0;
+
+		
 		var sdfileElement = document.getElementById('sdfile');
-		// Update the href attribute
 		sdfileElement.href = "https://esox3.scilifelab.se/vialdb/dist/export/" + sToken + "/export.sdf";
 		sdfileElement.textContent = 'SDFile';
 
-		console.log(errorString);
 	    }
 	}
 	frame(0);
