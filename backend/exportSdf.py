@@ -28,10 +28,14 @@ class AddMolfileToSdf(tornado.web.RequestHandler):
         # Add single quotes around each element and join them back together
         result_string = ','.join(["'" + element + "'" for element in elements])
 
+        sError = dict()
+
         sSql = ''
         if sId[:3].upper() == "CBK":
             with open(sdfile, 'a') as file:
                 for id in elements:
+                    if id =='':
+                        continue
                     sSql = f'''
                     select mol, compound_id from bcpvs.JCMOL_MOLTABLE where compound_id = '{id}'
 '''
@@ -44,10 +48,13 @@ class AddMolfileToSdf(tornado.web.RequestHandler):
 $$$$
 '''
                         file.write(sMol)
-
+                    else:
+                        sError[id] = 'Error'
         else:
             with open(sdfile, 'a') as file:
                 for id in elements:
+                    if id =='':
+                        continue
                     sSql = f'''select mol, m.compound_id, notebook_ref as batch_id from bcpvs.JCMOL_MOLTABLE m, bcpvs.batch b 
 where
 m.compound_id = b.compound_id and 
@@ -65,10 +72,10 @@ notebook_ref = '{id}'
 $$$$
 '''
                         file.write(sMol)
+                    else:
+                        sError[id] = 'Error'
 
-            
-        data = {'id': sId}
-        self.finish(json.dumps(data))
+        self.finish(json.dumps(sError))
 
 '''
 https://esox3.scilifelab.se/vialdb/initiateSdfDownload

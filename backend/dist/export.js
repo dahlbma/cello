@@ -47,17 +47,22 @@ function progress() {
 	var width = 1;
 	var startIndex = 0;
         var endIndex = Math.min(startIndex + iChunks, lines.length);
-
+	var errorString = {};
+	
 	function frame() {
             var batch = lines.slice(startIndex, endIndex).join(',');
 
 	    url = 'https://esox3.scilifelab.se/vialdb/addMolfileToSdf/' + sToken + '/' + batch
 	    fetch(url, { method: 'GET' })
 		.then(Result => Result.json())
-		.then(string => {
+		.then(response => {
+		    var len = Object.keys(response).length;
+		    if (len > 0) {
+			errorString = Object.assign(errorString, response);
+		    }
 		})
 		.catch(errorMsg => { console.log(errorMsg); });
-	    	    
+	    
 	    iCount = iCount + iChunks;
 	    width = (iCount / numberOfElements) *100;
 
@@ -87,6 +92,8 @@ function progress() {
 		// Update the href attribute
 		sdfileElement.href = "https://esox3.scilifelab.se/vialdb/dist/export/" + sToken + "/export.sdf";
 		sdfileElement.textContent = 'SDFile';
+
+		console.log(errorString);
 	    }
 	}
 	frame(0);
