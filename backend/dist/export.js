@@ -59,18 +59,16 @@ function progress() {
 		.catch(errorMsg => { console.log(errorMsg); });
 	    	    
 	    iCount = iCount + iChunks;
-	    width = Math.floor((iCount / numberOfElements) *100);
+	    width = (iCount / numberOfElements) *100;
 
 	    if (width >= 100) {
-		// clearInterval(id);
 		width = 100;
 		elem.style.width = width + "%";
 		elem.innerHTML = width  + "%";
 		i = 0;
 	    } else {
-		//width++;
 		elem.style.width = width + "%";
-		elem.innerHTML = width  + "%";
+		elem.innerHTML = Math.floor(width) + "%";
 	    }
 	    // Recursive call for the next batch if there are more elements
 	    if (endIndex < lines.length) {
