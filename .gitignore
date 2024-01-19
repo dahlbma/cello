@@ -12,6 +12,7 @@ error_msg.txt
 log_cello.txt
 scarabSqlError.txt
 *.xlsx
+*.gz
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
