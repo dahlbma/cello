@@ -17,7 +17,6 @@ import config
 import pandas as pd
 from os.path import exists
 
-
 db = mydb.disconnectSafeConnect()
 cur = db.cursor()
 
