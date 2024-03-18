@@ -66,7 +66,6 @@ $$$$
                 sError[id] = 'No molfile'
     self.finish(json.dumps(sError))
     file.close()
-
     
 
 class InitiateDownload(tornado.web.RequestHandler):

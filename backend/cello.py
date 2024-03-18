@@ -7,6 +7,7 @@ import util
 import os
 import application
 import exportSdf
+import chembl_export
 from tornado.options import define, options
 import logging
 from tornado.log import enable_pretty_logging
@@ -159,6 +160,8 @@ def make_app():
         (r"/pingDB", application.PingDB),
         (r"/getVersionData", getVersionData),
         (r"/initiateSdfDownload", exportSdf.InitiateDownload),
+        (r"/chemblExport/(?P<sRIDX>[^\/]+)/(?P<sBatches>[^\/]+)", chembl_export.ChemblExport),
+        (r"/chemblExport", chembl_export.ChemblExport),
         (r"/addMolfileToSdf/(?P<sTicket>[^\/]+)/(?P<sId>[^\/]+)", exportSdf.AddMolfileToSdf),
         (r"/uploadVersionNo", application.UploadVersionNo),
         (r"/getCelloBinary/(?P<os_name>[^\/]+)", getCelloBinary),
