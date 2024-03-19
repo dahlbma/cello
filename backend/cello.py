@@ -160,7 +160,7 @@ def make_app():
         (r"/pingDB", application.PingDB),
         (r"/getVersionData", getVersionData),
         (r"/initiateSdfDownload", exportSdf.InitiateDownload),
-        (r"/chemblExport/(?P<sRIDX>[^\/]+)/(?P<sBatches>[^\/]+)", chembl_export.ChemblExport),
+        (r"/chemblExport/(?P<sRIDX>[^\/]+)/(?P<project>[^\/]+)/(?P<ELN>[^\/]+)/(?P<sBatches>[^\/]+)", chembl_export.ChemblExport),
         (r"/chemblExport", chembl_export.ChemblExport),
         (r"/addMolfileToSdf/(?P<sTicket>[^\/]+)/(?P<sId>[^\/]+)", exportSdf.AddMolfileToSdf),
         (r"/uploadVersionNo", application.UploadVersionNo),
