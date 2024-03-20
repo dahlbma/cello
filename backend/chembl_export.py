@@ -34,6 +34,30 @@ Sample data:
 EXP-14-BE7698
 Helleday_SAMHD1
 AA0763244 AA1963128 AA0340383
+
+Example of ACTIVITY.tsv file:
+RIDX	Pathogen_Box_Bloggs	Pathogen_Box_Bloggs	Pathogen_Box_Bloggs
+CRIDX	Pathogen_Box_Bloggs	Pathogen_Box_Bloggs	Pathogen_Box_Bloggs
+CRIDX_DOCID
+CRIDX_CHEMBLID
+CIDX	MMV161996	MMV202458	MMV676395
+SRC_ID_CIDX
+AIDX	1	1	1
+TYPE	Inhibition	Inhibition	Inhibition
+ACTION_TYPE	ANTAGONIST	ANTAGONIST	ANTAGONIST
+TEXT_VALUE
+RELATION	=	=	=
+VALUE	0	1	61
+UPPER_VALUE
+UNITS	%	%	%
+SD_PLUS
+SD_MINUS
+ACTIVITY_COMMENT	Not active	Not active	Active
+ACT_ID	PB_FECH_MMV161996	PB_FECH_MMV202458	PB_FECH_MMV676395
+TEOID
+
+
+
 '''
 
 
@@ -80,6 +104,7 @@ class ChemblExport(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         try:
             sRIDX = self.get_argument("RIDX").strip()
+            sAIDX = self.get_argument("AIDX").strip()
             sProject = self.get_argument("project").strip()
             sELN = self.get_argument("ELN").strip()
             sBatches = self.get_argument("batches").strip()
