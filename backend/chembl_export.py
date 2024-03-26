@@ -171,7 +171,8 @@ tRes columns:
             activity_tsv_file.write(f'''{sRIDX}\t{sCRIDX}\t{sCRIDX_DOCID}\t{sCRIDX_CHEMBLID}\t{sCIDX}\t{sSRC_ID_CIDX}\t{sAIDX}\t{sTYPE}\t{sACTION_TYPE}\t{sTEXT_VALUE}\t{sRELATION}\t{sValue}\t{sUPPER_VALUE}\t{sUNITS}\t{sSD_PLUS}\t{sSD_MINUS}\t{sActivityComment}\t{sACT_ID}\t{sTEOID}\n''')
 
         
-def exportFromElnProject(sProject,
+def exportFromElnProject(saCompounds,
+                         sProject,
                          sELN,
                          sRIDX,
                          sAIDX,
@@ -181,6 +182,20 @@ def exportFromElnProject(sProject,
                          compound_record_file,
                          molfile_file,
                          dir_name):
+    sComp = ''
+    sNotTheseCompounds = ''
+    if len(saCompounds) == 1:
+        sComp = f''' '{saCompounds[0]}' '''
+    elif len(saCompounds) > 1:
+        for compound in saCompounds:
+            if sComp == '':
+                sComp = f''' '{compound}' '''
+            else:
+                sComp += f''', '{compound}' '''
+
+    if sComp != '':
+        sNotTheseCompounds = f''' and a.compound_id not in ({sComp}) '''
+
     sSql = f'''select
     a.compound_id,
     compound_batch,
@@ -195,7 +210,8 @@ def exportFromElnProject(sProject,
     from assay.lcb_sp a, bcpvs.JCMOL_MOLTABLE m
     where a.compound_id = m.compound_id
     and a.project = '{sProject}'
-    and a.eln_id = '{sELN}' '''
+    and a.eln_id = '{sELN}'
+    {sNotTheseCompounds}'''
     cur.execute(sSql)
     res = cur.fetchall()
     for row in res:
@@ -240,8 +256,10 @@ class ChemblExport(tornado.web.RequestHandler):
         except:
             logging.error(f"chembl error")
             return
+        '''
         if len(sProject) > 2 and len(sELN) > 2:
             sBatches = ''
+        '''
         saBatches = sBatches.split()
         sMol = ''
         random_number = str(random.randint(0, 1000000))
@@ -254,10 +272,12 @@ class ChemblExport(tornado.web.RequestHandler):
             sHeader = ('CIDX', 'RIDX', 'COMPOUND_NAME', 'COMPOUND_KEY')
 
             compound_record_file.write('\t'.join(map(str, sHeader)) + '\n')
-            if len(saBatches) > 0:
+            if len(saBatches) > 10000000:
                 exportFromBatches(saBatches, sRIDX, compound_record_file, molfile_file)
             elif len(sProject) > 2 and len(sELN) > 2:
-                exportFromElnProject(sProject,
+                saCompounds = saBatches
+                exportFromElnProject(saCompounds,
+                                     sProject,
                                      sELN,
                                      sRIDX,
                                      sAIDX,
