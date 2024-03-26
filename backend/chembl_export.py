@@ -26,7 +26,6 @@ def getMolfile(sCmpId):
 
 $$$$
 '''
-
     return sMol
 
 '''
@@ -73,8 +72,127 @@ def exportFromBatches(saBatches, sRIDX, compound_record_file, molfile_file):
             molfile_file.write(sMol)
 
 
-def exportFromElnProject(sProject, sELN, sRIDX, compound_record_file, molfile_file):
-    sSql = f'''select a.compound_id, compound_batch, mol from assay.lcb_sp a, bcpvs.JCMOL_MOLTABLE m
+
+def create_ACTIVITY_tsv(tRes,
+                        sProject,
+                        sELN,
+                        sRIDX,
+                        sAIDX,
+                        sTARGET_TYPE,
+                        sASSAY_TYPE,
+                        sACTION_TYPE,
+                        dir_name):
+    '''
+RIDX
+CRIDX
+CRIDX_DOCID
+CRIDX_CHEMBLID
+CIDX
+SRC_ID_CIDX
+AIDX
+TYPE
+ACTION_TYPE
+TEXT_VALUE
+RELATION
+VALUE
+UPPER_VALUE
+UNITS
+SD_PLUS
+SD_MINUS
+ACTIVITY_COMMENT
+ACT_ID
+TEOID
+
+tRes columns:
+0    compound_id,
+1    compound_batch,
+2    mol,
+3    inhibition,
+4    activation,
+5    hit_description
+
+
+    '''
+    iDataCol = 3
+    sType = 'Inhibition'
+    if tRes[0][3] == None and tRes[0][4] != None:
+        iDataCol = 4
+        sType = 'Activation'
+
+    # sRIDX = 
+    sCRIDX = sRIDX
+    sCRIDX_DOCID = ''
+    sCRIDX_CHEMBLID = ''
+    # sCIDX = 
+    sSRC_ID_CIDX = ''
+    # sAIDX = 
+    sTYPE = sType
+    sACTION_TYPE = sACTION_TYPE
+    sTEXT_VALUE = ''
+    sRELATION = '='
+    # sVALUE = 
+    sUPPER_VALUE = ''
+    sUNITS = '%'
+    sSD_PLUS = ''
+    sSD_MINUS = ''
+    # sACTIVITY_COMMENT = 
+    sACT_ID = ''
+    sTEOID = sELN
+
+        
+    activity_tsv_name = dir_name + "/ACTIVITY.tsv"
+    with open(activity_tsv_name, 'w') as activity_tsv_file:
+        sHeader = (
+            'RIDX',
+            'CRIDX',
+            'CRIDX_DOCID',
+            'CRIDX_CHEMBLID',
+            'CIDX',
+            'SRC_ID_CIDX',
+            'AIDX',
+            'TYPE',
+            'ACTION_TYPE',
+            'TEXT_VALUE',
+            'RELATION',
+            'VALUE',
+            'UPPER_VALUE',
+            'UNITS',
+            'SD_PLUS',
+            'SD_MINUS',
+            'ACTIVITY_COMMENT',
+            'ACT_ID',
+            'TEOID')
+        activity_tsv_file.write('\t'.join(map(str, sHeader)) + '\n')
+
+        for row in tRes:
+            sCIDX = row[0] # COMPOUND_ID
+            sValue = row[iDataCol]
+            sActivityComment = row[5]
+            activity_tsv_file.write(f'''{sRIDX}\t{sCRIDX}\t{sCRIDX_DOCID}\t{sCRIDX_CHEMBLID}\t{sCIDX}\t{sSRC_ID_CIDX}\t{sAIDX}\t{sTYPE}\t{sACTION_TYPE}\t{sTEXT_VALUE}\t{sRELATION}\t{sValue}\t{sUPPER_VALUE}\t{sUNITS}\t{sSD_PLUS}\t{sSD_MINUS}\t{sActivityComment}\t{sACT_ID}\t{sTEOID}\n''')
+
+        
+def exportFromElnProject(sProject,
+                         sELN,
+                         sRIDX,
+                         sAIDX,
+                         sTARGET_TYPE,
+                         sASSAY_TYPE,
+                         sACTION_TYPE,
+                         compound_record_file,
+                         molfile_file,
+                         dir_name):
+    sSql = f'''select
+    a.compound_id,
+    compound_batch,
+    mol,
+    inhibition*100,
+    activation*100,
+    CASE 
+        WHEN hit = 0 THEN 'Not active'
+        WHEN hit = 1 THEN 'Active'
+    END AS hit_description
+
+    from assay.lcb_sp a, bcpvs.JCMOL_MOLTABLE m
     where a.compound_id = m.compound_id
     and a.project = '{sProject}'
     and a.eln_id = '{sELN}' '''
@@ -85,6 +203,7 @@ def exportFromElnProject(sProject, sELN, sRIDX, compound_record_file, molfile_fi
         sBatch = row[1]
         sMol = row[2]
         sMolfile = ''
+        
         if len(sMol) > 5:
             sMolfile = f'''{sMol}
 > <CIDX>
@@ -94,8 +213,15 @@ $$$$
 '''
             compound_record_file.write(f'''{sCmpId}\t{sRIDX}\t{sBatch}\t{sCmpId}\n''')
             molfile_file.write(sMolfile)
-        
-            
+    create_ACTIVITY_tsv(res,
+                        sProject,
+                        sELN,
+                        sRIDX,
+                        sAIDX,
+                        sTARGET_TYPE,
+                        sASSAY_TYPE,
+                        sACTION_TYPE,
+                        dir_name)
 
 
 class ChemblExport(tornado.web.RequestHandler):
@@ -107,6 +233,9 @@ class ChemblExport(tornado.web.RequestHandler):
             sAIDX = self.get_argument("AIDX").strip()
             sProject = self.get_argument("project").strip()
             sELN = self.get_argument("ELN").strip()
+            sTARGET_TYPE = self.get_argument("TARGET_TYPE").strip()
+            sASSAY_TYPE = self.get_argument("ASSAY_TYPE").strip()
+            sACTION_TYPE = self.get_argument("ACTION_TYPE").strip()
             sBatches = self.get_argument("batches").strip()
         except:
             logging.error(f"chembl error")
@@ -128,15 +257,102 @@ class ChemblExport(tornado.web.RequestHandler):
             if len(saBatches) > 0:
                 exportFromBatches(saBatches, sRIDX, compound_record_file, molfile_file)
             elif len(sProject) > 2 and len(sELN) > 2:
-                exportFromElnProject(sProject, sELN, sRIDX, compound_record_file, molfile_file)
+                exportFromElnProject(sProject,
+                                     sELN,
+                                     sRIDX,
+                                     sAIDX,
+                                     sTARGET_TYPE,
+                                     sASSAY_TYPE,
+                                     sACTION_TYPE,
+                                     compound_record_file,
+                                     molfile_file,
+                                     dir_name)
+
+        assay_tsv_name = dir_name + "/ASSAY.tsv"
+        with open(assay_tsv_name, 'w') as assay_tsv_file:
+            sHeader = (
+                'AIDX',
+                'RIDX',
+                'ASSAY_DESCRIPTION',
+                'ASSAY_TYPE',
+                'ASSAY_ORGANISM',
+                'ASSAY_STRAIN',
+                'ASSAY_TAX_ID',
+                'ASSAY_TISSUE',
+                'ASSAY_CELL_TYPE',
+                'ASSAY_SUBCELLULAR_FRACTION',
+                'ASSAY_SOURCE',
+                'TARGET_TYPE',
+                'TARGET_NAME',
+                'TARGET_ACCESSION',
+                'TARGET_ORGANISM',
+                'TARGET_TAX_ID')
+            # sAIDX =
+            # sRIDX =
+            sASSAY_DESCRIPTION = ''
+            # sASSAY_TYPE =
+            sASSAY_ORGANISM = ''
+            sASSAY_STRAIN = ''
+            sASSAY_TAX_ID = ''
+            sASSAY_TISSUE = ''
+            sASSAY_CELL_TYPE = ''
+            sASSAY_SUBCELLULAR_FRACTION = ''
+            sASSAY_SOURCE = ''
+            # sTARGET_TYPE = 
+            sTARGET_NAME = ''
+            sTARGET_ACCESSION = ''
+            sTARGET_ORGANISM = ''
+            sTARGET_TAX_ID = ''
+            assay_tsv_file.write('\t'.join(map(str, sHeader)) + '\n')
+            assay_tsv_file.write(f'''{sAIDX}\t{sRIDX}\t{sASSAY_DESCRIPTION}\t{sASSAY_TYPE}\t{sASSAY_ORGANISM}\t{sASSAY_STRAIN}\t{sASSAY_TAX_ID}\t{sASSAY_TISSUE}\t{sASSAY_CELL_TYPE}\t{sASSAY_SUBCELLULAR_FRACTION}\t{sASSAY_SOURCE}\t{sTARGET_TYPE}\t{sTARGET_NAME}\t{sTARGET_ACCESSION}\t{sTARGET_ORGANISM}\t{sTARGET_TAX_ID}\n''')
+        
+
+        reference_tsv_name = dir_name + "/REFERENCE.tsv"
+        with open(reference_tsv_name, 'w') as reference_tsv_file:
+            sHeader = (
+                'RIDX',
+                'PUBMED_ID',
+                'JOURNAL_NAME',
+                'YEAR',
+                'VOLUME',
+                'ISSUE',
+                'FIRST_PAGE',
+                'LAST_PAGE',
+                'REF_TYPE',
+                'TITLE',
+                'DOI',
+                'PATENT_ID',
+                'ABSTRACT',
+                'AUTHORS')
+            reference_tsv_file.write('\t'.join(map(str, sHeader)) + '\n')
+            reference_tsv_file.write(f'''{sRIDX}\t\t\t\t\t\t\t\t\t\t\t\t\t\n''')
+
+
+        assay_param_tsv_name = dir_name + "/ASSAY_PARAM.tsv"
+        with open(assay_param_tsv_name, 'w') as assay_param_tsv_file:
+            sHeader = (
+                'AIDX',
+                'TYPE',
+                'RELATION',
+                'VALUE',
+                'UNITS',
+                'TEXT_VALUE',
+                'COMMENTS')
+
+            assay_param_tsv_file.write('\t'.join(map(str, sHeader)) + '\n')
+            assay_param_tsv_file.write(f'''{sAIDX}\t\t\t\t\t\t\n''')
+
             
-        zip_filepath = os.path.join(dir_name, "COMP.zip")
+        zip_filepath = os.path.join(dir_name, "ChEMBL_deposit.zip")
 
         with zipfile.ZipFile(zip_filepath, 'w') as zipf:
             zipf.write(os.path.join(dir_name, "COMPOUND_RECORD.tsv"), arcname="COMPOUND_RECORD.tsv")
             zipf.write(os.path.join(dir_name, "COMPOUND_CTAB.sdf"), arcname="COMPOUND_CTAB.sdf")
+            zipf.write(os.path.join(dir_name, "ACTIVITY.tsv"), arcname="ACTIVITY.tsv")
+            zipf.write(os.path.join(dir_name, "ASSAY.tsv"), arcname="ASSAY.tsv")
+            zipf.write(os.path.join(dir_name, "REFERENCE.tsv"), arcname="REFERENCE.tsv")
+            zipf.write(os.path.join(dir_name, "ASSAY_PARAM.tsv"), arcname="ASSAY_PARAM.tsv")
 
         
-
-        self.write(json.dumps(f'''<a href=https://esox3.scilifelab.se/vialdb/dist/export/{random_number}/COMP.zip>COMP.zip</a>'''))
+        self.write(json.dumps(f'''<a href=https://esox3.scilifelab.se/vialdb/dist/export/{random_number}/ChEMBL_deposit.zip>ChEMBL_deposit.zip</a>'''))
 
