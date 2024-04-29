@@ -81,9 +81,9 @@
        </widget>
       </item>
       <item row="1" column="0" colspan="6">
-       <widget class="QTabWidget" name="plates_tab_wg">
+       <widget class="QTabWidget" name="CreatePlatemap_tab">
         <property name="currentIndex">
-         <number>0</number>
+         <number>5</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -2145,6 +2145,51 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
           </item>
          </layout>
         </widget>
+        <widget class="QWidget" name="tab">
+         <attribute name="title">
+          <string>Create Platemap</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_7">
+              <item>
+               <widget class="QTextEdit" name="platemap_tb">
+                <property name="verticalScrollBarPolicy">
+                 <enum>Qt::ScrollBarAlwaysOn</enum>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="createPlatemap_btn">
+                <property name="text">
+                 <string>Create Platemap</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_6">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -2256,7 +2301,7 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
   <tabstop>upload_file_btn</tabstop>
   <tabstop>upload_plates_table</tabstop>
   <tabstop>upload_export_btn</tabstop>
-  <tabstop>plates_tab_wg</tabstop>
+  <tabstop>CreatePlatemap_tab</tabstop>
   <tabstop>goto_vials_btn</tabstop>
   <tabstop>goto_plates_btn</tabstop>
   <tabstop>goto_microtubes_btn</tabstop>

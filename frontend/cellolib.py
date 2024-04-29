@@ -1,4 +1,3 @@
-import imp
 import sys, requests, json, os, subprocess, platform, shutil, datetime, traceback, logging, dbInterface, re
 from unittest import result
 from PyQt5.QtGui import QImage, QPixmap
