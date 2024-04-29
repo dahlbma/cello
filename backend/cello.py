@@ -204,6 +204,7 @@ def make_app():
         (r"/createRacks/(?P<sNumberOfRacks>[^\/]+)", application.CreateRacks),
         (r"/uploadWellInformation", application.UploadWellInformation),
         (r"/mergePlates", application.MergePlates),
+        (r"/getPlateForPlatemap/(?P<sPlate>[^\/]+)", application.GetPlateForPlatemap),
         (r"/getPlate/(?P<sPlate>[^\/]+)", application.GetPlate),
         (r"/setPlateType/(?P<sPlate>[^\/]+)/(?P<sPlateType>[^\/]+)", application.SetPlateType),
         (r"/verifyPlate/(?P<sPlate>[^\/]+)", application.VerifyPlate),

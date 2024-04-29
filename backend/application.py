@@ -1023,6 +1023,30 @@ class VerifyPlate(tornado.web.RequestHandler):
 
 
 @jwtauth
+class GetPlateForPlatemap(tornado.web.RequestHandler):
+    def get(self, sPlate):
+        sSql = f'''select p.plate_id PLATE,
+        c.well WELL,
+        IF(c.notebook_ref='CTRL', 'POS', c.notebook_ref) DRUG_NAME,
+        c.CONC CONCENTRATION, volume
+        from cool.config c, cool.plate p
+        where p.plate_id = '{sPlate}' and p.config_id = c.config_id
+        '''
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) > 0:
+            try:
+                self.finish(json.dumps(res_to_json(tRes, cur), indent=4))
+            except Exception as e:
+                print(str(e))
+        else:
+            sError = f"Plate not found {sPlate}"
+            logging.error(sError)
+            self.set_status(400)
+            self.finish(sError)
+
+
+@jwtauth
 class GetPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
         sPlate = sPlate.rstrip()
