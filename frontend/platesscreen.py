@@ -150,53 +150,24 @@ class PlatesScreen(QMainWindow):
         columns = ['Platt ID', 'Well', 'Compound ID', 'Batch nr', 'Conc mM', 'volume nL']
         platemapDf = pd.DataFrame(columns=columns)
 
-
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog  # Use the native file dialog
-        directory_dialog = QFileDialog()
-        directory_dialog.setOptions(options)
-        # Set the file mode to DirectoryOnly to allow selecting directories only
-        directory_dialog.setFileMode(QFileDialog.DirectoryOnly)
-
-
         sPlatesText = self.platemap_tb.toPlainText()
         saPlates = sPlatesText.split()
+        iNrOfPlates = 0
         for sPlate in saPlates:
             plate_data, lSuccess = dbInterface.getPlateForPlatemap(self.token, sPlate)
             print(plate_data)
-        
-        '''
-        printPrepLog(self, f'Fetching plate data for plates:')
-        iNrOfPlates = 0
-        for index, row in platesDf.iterrows():
-            df = pd.DataFrame()
-            plate_value = row['plate']
-            plate_data, lSuccess = dbInterface.getPlate(self.token, plate_value)
             if lSuccess:
                 iNrOfPlates += 1
-                printPrepLog(self, f'{plate_value}')
-
                 df = pd.DataFrame(plate_data, columns=columns)
-            else:
-                printPrepLog(self, f'Error getting plate {plate_value} {plate_data}', 'error')
+
             platemapDf = pd.concat([platemapDf if not platemapDf.empty else None, df], ignore_index=True)
-
-            printPrepLog(self, f'Found {iNrOfPlates} plate files')
-
-            excel_filename = 'PLATEMAP.xlsx'
-            full_path = os.path.join(subdirectory_path, excel_filename)
-            platemapDf.to_excel(full_path, index=False)
-            printPrepLog(self, f'Created platemap-file:')
-            printPrepLog(self, f'{full_path}', type='bold')
-
-            return full_path
-
-        '''
-
-
-
-            
-
+        
+        if len(platemapDf) > 1:
+            file_path, _ = QFileDialog.getSaveFileName(self, "Save Platemap", "PLATEMAP", "Excel Files (*.xlsx)")
+            if file_path:
+                # Save the DataFrame as an Excel file
+                platemapDf.to_excel(file_path, index=False)
+                print("DataFrame saved as Excel file:", file_path)
 
             
     def check_plates_input(self):
