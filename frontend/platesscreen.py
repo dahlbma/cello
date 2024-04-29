@@ -159,8 +159,7 @@ class PlatesScreen(QMainWindow):
             if lSuccess:
                 iNrOfPlates += 1
                 df = pd.DataFrame(plate_data, columns=columns)
-
-            platemapDf = pd.concat([platemapDf if not platemapDf.empty else None, df], ignore_index=True)
+                platemapDf = pd.concat([platemapDf if not platemapDf.empty else None, df], ignore_index=True)
         
         if len(platemapDf) > 1:
             file_path, _ = QFileDialog.getSaveFileName(self, "Save Platemap", "PLATEMAP", "Excel Files (*.xlsx)")
