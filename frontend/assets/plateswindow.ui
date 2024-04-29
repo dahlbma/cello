@@ -81,7 +81,7 @@
        </widget>
       </item>
       <item row="1" column="0" colspan="6">
-       <widget class="QTabWidget" name="CreatePlatemap_tab">
+       <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
          <number>5</number>
         </property>
@@ -2301,7 +2301,7 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
   <tabstop>upload_file_btn</tabstop>
   <tabstop>upload_plates_table</tabstop>
   <tabstop>upload_export_btn</tabstop>
-  <tabstop>CreatePlatemap_tab</tabstop>
+  <tabstop>plates_tab_wg</tabstop>
   <tabstop>goto_vials_btn</tabstop>
   <tabstop>goto_plates_btn</tabstop>
   <tabstop>goto_microtubes_btn</tabstop>
