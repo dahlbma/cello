@@ -151,18 +151,27 @@ class PlatesScreen(QMainWindow):
         platemapDf = pd.DataFrame(columns=columns)
 
         sPlatesText = self.platemap_tb.toPlainText()
+        self.platemap_tb.clear()
         saPlates = sPlatesText.split()
         iNrOfPlates = 0
+        pattern = r'^P\d{6}$'
         for sPlate in saPlates:
+            sPlate = sPlate.upper()
+            if re.match(pattern, sPlate):
+                pass
+            else:
+                self.platemap_tb.append(f'{sPlate}: wrong format')
+                continue
+
             plate_data, lSuccess = dbInterface.getPlateForPlatemap(self.token, sPlate)
-            print(plate_data)
             if lSuccess:
                 iNrOfPlates += 1
                 df = pd.DataFrame(plate_data, columns=columns)
                 platemapDf = pd.concat([platemapDf if not platemapDf.empty else None, df], ignore_index=True)
-        
+            else:
+                self.platemap_tb.append(f'{sPlate}: plate not found')
         if len(platemapDf) > 1:
-            file_path, _ = QFileDialog.getSaveFileName(self, "Save Platemap", "PLATEMAP", "Excel Files (*.xlsx)")
+            file_path, _ = QFileDialog.getSaveFileName(self, "Save Platemap", "PLATEMAP.xlsx", "Excel Files (*.xlsx)")
             if file_path:
                 # Save the DataFrame as an Excel file
                 platemapDf.to_excel(file_path, index=False)
