@@ -65,6 +65,11 @@ def getDatabase(parent):
     else:
         return 'glass_test', 'cool_test', 'microtube_test', 'loctree_test', 'bcpvs'
 
+def res2json():
+    result = [list(i) for i in cur.fetchall()]
+    return json.dumps(result)
+
+
 def res_to_json(response, cursor):
     columns = cursor.description()
     to_js = [{columns[index][0]:column for index,
@@ -1025,25 +1030,27 @@ class VerifyPlate(tornado.web.RequestHandler):
 @jwtauth
 class GetPlateForPlatemap(tornado.web.RequestHandler):
     def get(self, sPlate):
-        sSql = f'''select p.plate_id PLATE,
-        c.well WELL,
-        IF(c.notebook_ref='CTRL', 'POS', c.notebook_ref) DRUG_NAME,
-        c.CONC CONCENTRATION, volume
-        from cool.config c, cool.plate p
-        where p.plate_id = '{sPlate}' and p.config_id = c.config_id
+        # Platt ID      Well    Compound ID     Batch nr        Form    Conc (mM)       volume
+
+        sSql = f'''select
+        config_id plate,
+        well,
+        compound_id,
+        notebook_ref batch_id,
+        conc,
+        volume
+        from cool.config where config_id = '{sPlate}'
         '''
         cur.execute(sSql)
-        tRes = cur.fetchall()
-        if len(tRes) > 0:
-            try:
-                self.finish(json.dumps(res_to_json(tRes, cur), indent=4))
-            except Exception as e:
-                print(str(e))
-        else:
-            sError = f"Plate not found {sPlate}"
-            logging.error(sError)
+        res = res2json()
+        
+        if len(res) == 2: # res == '[]'
+            sError = f'Plate not found {sPlate}'
             self.set_status(400)
             self.finish(sError)
+            return
+        
+        self.finish(res)
 
 
 @jwtauth
