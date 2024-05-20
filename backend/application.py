@@ -16,6 +16,7 @@ import mydb
 import config
 import pandas as pd
 from os.path import exists
+from collections import OrderedDict
 
 db = mydb.disconnectSafeConnect()
 cur = db.cursor()
@@ -192,7 +193,7 @@ def copyWell(self, sPlate, sWell, sCompound, sBatch, sForm, sConc, sVolume):
         cur.execute(sSql)
         return True
     except:
-        logging.info(sSql)        
+        logging.info(sSql)
         return False
 
 def decreseVolumeInWell(self, sPlate, sWell, sOldVolume, sVolumeToSubtract):
@@ -2176,76 +2177,153 @@ class VerifyLocation(tornado.web.RequestHandler):
 
 @jwtauth
 class searchBatches(tornado.web.RequestHandler):
+
+    def getVials(self, sId):
+        if sId.startswith('CBK'):
+            sSql = f'''
+            SELECT c.compound_id as compoundId,
+            v.notebook_ref as batchId,
+            v.vial_id vialId,
+            v.pos,
+            l.name as boxDescription,
+            l.path,
+            v.location as boxId,
+            'Vial' loctype
+            FROM {self.glassDB}.vial v,
+            {self.bcpvsDB}.batch c,
+            loctree.v_all_locations l
+            where
+            v.notebook_ref = c.notebook_ref and
+            l.loc_id = v.location and
+            l.name != 'Discarded' and
+            c.compound_id = '{sId}'
+            '''
+        else:
+            sSql = f'''
+            SELECT c.compound_id as compoundId,
+            v.notebook_ref as batchId,
+            v.vial_id vialId,
+            v.pos,
+            v.conc,
+            l.path,
+            l.name as boxDescription,
+            'Vial' loctype
+            FROM {self.glassDB}.vial v,
+            {self.bcpvsDB}.batch c,
+            loctree.v_all_locations l
+            where
+            v.notebook_ref = c.notebook_ref and
+            l.loc_id = v.location and
+            l.name != 'Discarded' and
+            v.notebook_ref = '{sId}'
+            '''
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        return tRes
+        
+        
+    def getMicrotubes(self, sId):
+        if sId.startswith('CBK'):
+            sSql = f'''
+            select b.compound_id,
+            t.notebook_ref,
+            t.tube_id,
+            mt.position,
+            t.conc,
+            m.location,
+            l.name,
+            CONCAT('Microtube ', mt.matrix_id) loctype
+            from microtube.matrix_tube mt, microtube.tube t,
+            microtube.matrix m, {self.bcpvsDB}.batch b, loctree.locations l
+            where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
+            and l.loc_id = m.location
+            and t.notebook_ref = b.notebook_ref and b.compound_id = '{sId}'
+            '''
+        else:
+            sSql = f'''
+            select b.compound_id,
+            t.notebook_ref,
+            t.tube_id,
+            mt.position,
+            t.conc,
+            m.location,
+            l.name,
+            CONCAT('Microtube ', mt.matrix_id) loctype
+            from microtube.matrix_tube mt, microtube.tube t,
+            microtube.matrix m, {self.bcpvsDB}.batch b, loctree.locations l
+            where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
+            and l.loc_id = m.location
+            and t.notebook_ref = b.notebook_ref and t.notebook_ref = '{sId}'
+            '''
+        
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        return tRes
+        
+        
+    def getPlates(self, sId):
+        if sId.startswith('CBK'):
+            sSql = f'''
+            select b.compound_id as compoundId,
+            cc.notebook_ref as batchId,
+            p.plate_id,
+            cc.well,
+            cc.conc,
+            p.comments,
+            p.loc_id,
+            "Plate" loctype
+            FROM {self.coolDB}.config cc, {self.bcpvsDB}.batch b, {self.coolDB}.plate p
+            where cc.notebook_ref = b.notebook_ref
+            and p.plate_id = cc.config_id
+            and p.loc_id != 'Sent to User'
+            and b.compound_id = '{sId}'
+            '''
+        else:
+            sSql = f'''
+            select b.compound_id as compoundId,
+            cc.notebook_ref as batchId,
+            p.plate_id,
+            cc.well,
+            cc.conc,
+            p.comments,
+            p.loc_id,
+            "Plate" loctype
+            FROM {self.coolDB}.config cc, {self.bcpvsDB}.batch b, {self.coolDB}.plate p
+            where cc.notebook_ref = b.notebook_ref
+            and p.plate_id = cc.config_id
+            and p.loc_id != 'Sent to User'
+            and cc.notebook_ref = '{sId}'
+            '''
+            
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        return tRes
+    
+        
     def get(self, sBatches):
-        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
-        sIds = list(set(sBatches.split()))
+        self.glassDB, self.coolDB, self.microtubeDB, self.loctreeDB, self.bcpvsDB = getDatabase(self)
+        
+        sIds = list(OrderedDict.fromkeys(sBatches.split()))
+
         jRes = []
 
         tmpIds = ""
         for sId in sIds:
             tmpIds += "'" + sId + "'"
         stringIds = tmpIds.replace("''", "','")
-        if sIds[0].startswith('CBK') or sIds[0].startswith('SLL'):
-            sSql = f"""
-            SELECT v.notebook_ref as batchId,
-            c.compound_id as compoundId,
-            v.location as boxId,
-            l.name as boxDescription,
-            l.path,
-            v.pos,
-            v.vial_id vialId,
-            c.biological_mw as batchMolWeight
-            FROM {glassDB}.vial v,
-            {bcpvsDB}.batch c,
-            {loctreeDB}.v_all_locations l
-            where
-	    v.notebook_ref = c.notebook_ref and
-            l.loc_id = v.location and
-            c.compound_id = %s
-            """
-        else:
-            sSql = f"""
-            SELECT v.notebook_ref as batchId,
-            c.compound_id as compoundId,
-            v.location as boxId,
-            l.name as boxDescription,
-            l.path,
-            v.pos,
-            v.vial_id vialId,
-            c.biological_mw as batchMolWeight
-            FROM {glassDB}.vial v,
-            {bcpvsDB}.batch c,
-            {loctreeDB}.v_all_locations l
-            where
-	    v.notebook_ref = c.notebook_ref and
-            l.loc_id = v.location and
-            v.notebook_ref = %s
-            """
+        tRes_tot = []
         for sId in sIds:
-            sSlask = cur.execute(sSql, [sId])
-            tRes = cur.fetchall()
-            if len(tRes) == 0:
-                jRes.append({"vialId":sId,
-                             "coordinate":'',
-                             "batchId":'',
-                             "compoundId":'',
-                             "cbkId":'',
-                             "boxId":'Not found',
-                             "batchMolWeight":''})
-                continue
-            #for row in tRes:
-            #    jRes.append({"vialId":row.vial_id,
-            #                 "coordinate":row.coordinate,
-            #                 "batchId":row.batch_id,
-            #                 "compoundId":row.compound_id,
-            #                 "cbkId":row.cbk_id,
-            #                 "boxId":row.box_id,
-            #                 "batchMolWeight":row.batch_formula_weight})
-            #jRes.append(res_to_json(tRes, cur)[0])
-            tmp = res_to_json(tRes, cur)
-            for i in tmp:
-                jRes.append(i)
-        self.finish(json.dumps(jRes))
+
+            tRes1 = self.getMicrotubes(sId)
+            tRes2 = self.getPlates(sId)
+            tRes3 = self.getVials(sId)
+            
+            tRes1 = tRes1 if tRes1 is not None else []
+            tRes2 = tRes2 if tRes2 is not None else []
+            tRes3 = tRes3 if tRes3 is not None else []
+            tRes_tot += tRes1 + tRes2 + tRes3
+
+        self.finish(json.dumps(tRes_tot))
 
 
 @jwtauth
