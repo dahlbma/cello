@@ -77,7 +77,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="search_tab_wg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="onevial_search_tab">
          <attribute name="title">
@@ -722,39 +722,42 @@ Weight</string>
             </attribute>
             <column>
              <property name="text">
-              <string>Vial Id</string>
+              <string>Compound Id</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Box Id</string>
+              <string>Batch</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Coord.</string>
+              <string>Container</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Box Name</string>
+              <string>Pos</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Batch Id</string>
+              <string>Conc</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Compound 
-Id</string>
+              <string>Loc</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>Batch Mol 
-Weight</string>
+              <string>Name</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Path</string>
              </property>
             </column>
            </widget>

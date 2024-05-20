@@ -202,6 +202,11 @@ class SearchScreen(QMainWindow):
                     newItem = QTableWidgetItem(f"{data[n]['dilution']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.multvial_table.setItem(n, 7, newItem)
+
+                    newItem = QTableWidgetItem(f"{data[n]['dilution']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.multvial_table.setItem(n, 8, newItem)
+                    
             except:
                 logging.error(f"search for {data[n]['vialId']} returned bad response: {data[n]}")
         self.multvial_table.setSortingEnabled(True)
@@ -233,18 +238,28 @@ class SearchScreen(QMainWindow):
             self.batch_export_btn.setEnabled(False)
             self.batch_table.setRowCount(0)
             self.structure_lab.clear()
+
         logging.getLogger(self.mod_name).info(f"receieved data")
-        self.setBatchTableData(self.batches_data)
-        self.batch_table.setCurrentCell(0,0)
-        self.batch_export_btn.setEnabled(True)
+        if len(self.batches_data) > 0:
+            self.setBatchTableData(self.batches_data)
+            self.batch_table.setCurrentCell(0,0)
+            self.batch_export_btn.setEnabled(True)
 
     def setBatchTableData(self, data):
         self.batch_table.setRowCount(0)
         self.batch_table.setRowCount(len(data))
         self.batch_table.setSortingEnabled(False)
+
+        keys = ["compound", "batch", "container", "pos", "conc", "loc", "name", "path"]
+        # Convert list of tuples to list of dictionaries
+        result = [dict(zip(keys, row)) for row in data]
+        data = result
+        # AC2239618 AG8135001 BJ1835001 CBK015588 CBK322493
+        # EB_BY7184003 EB_CB1252001 EB_CC0517001 EB_CC0520001
+        
         for n in range(len(data)):
             try:
-                if f"{data[n]['boxId']}" == "Not found":
+                if f"{data[n]['batch']}" == "Not found":
                     newItem = QTableWidgetItem(f"{data[n]['vialId']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 0, newItem)
@@ -256,32 +271,42 @@ class SearchScreen(QMainWindow):
                         self.batch_table.setItem(n, i, newItem)
                         newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 else:
-                    newItem = QTableWidgetItem(f"{data[n]['vialId']}")
+                    newItem = QTableWidgetItem(f"{data[n]['compound']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 0, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['boxId']}")
+                    
+                    newItem = QTableWidgetItem(f"{data[n]['batch']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    newItem.setToolTip(f"{data[n]['boxDescription']}")
                     self.batch_table.setItem(n, 1, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['pos']}")
+                    
+                    newItem = QTableWidgetItem(f"{data[n]['container']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 2, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['boxDescription']}")
+                    
+                    newItem = QTableWidgetItem(f"{data[n]['pos']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
-                    newItem.setToolTip(f"{data[n]['path']}")
+                    newItem.setToolTip(f"{data[n]['pos']}")
                     self.batch_table.setItem(n, 3, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['batchId']}")
+                    
+                    newItem = QTableWidgetItem(f"{data[n]['conc']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 4, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['compoundId']}")
+                    
+                    newItem = QTableWidgetItem(f"{data[n]['loc']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 5, newItem)
-                    newItem = QTableWidgetItem(f"{data[n]['batchMolWeight']}")
+                    
+                    newItem = QTableWidgetItem(f"{data[n]['name']}")
                     newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                     self.batch_table.setItem(n, 6, newItem)
+
+                    newItem = QTableWidgetItem(f"{data[n]['path']}")
+                    newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                    self.batch_table.setItem(n, 7, newItem)
+
             except Exception as e:
                 logging.error(str(e))
-                logging.error(f"search for {data[n]['vialId']} returned bad response: {data[n]}")
+                logging.error(f"search for {data[n]['compound']} returned bad response: {data[n]}")
         self.batch_table.setSortingEnabled(True)
         return
 
