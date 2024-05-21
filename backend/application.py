@@ -2233,8 +2233,8 @@ class searchBatches(tornado.web.RequestHandler):
             m.location,
             l.name,
             CONCAT('Microtube ', mt.matrix_id) loctype
-            from microtube.matrix_tube mt, microtube.tube t,
-            microtube.matrix m, {self.bcpvsDB}.batch b, loctree.locations l
+            from {self.microtubeDB}.matrix_tube mt, {self.microtubeDB}.tube t,
+            {self.microtubeDB}.matrix m, {self.bcpvsDB}.batch b, loctree.locations l
             where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
             and l.loc_id = m.location
             and t.notebook_ref = b.notebook_ref and b.compound_id = '{sId}'
@@ -2249,8 +2249,8 @@ class searchBatches(tornado.web.RequestHandler):
             m.location,
             l.name,
             CONCAT('Microtube ', mt.matrix_id) loctype
-            from microtube.matrix_tube mt, microtube.tube t,
-            microtube.matrix m, {self.bcpvsDB}.batch b, loctree.locations l
+            from {self.microtubeDB}.matrix_tube mt, {self.microtubeDB}.tube t,
+            {self.microtubeDB}.matrix m, {self.bcpvsDB}.batch b, loctree.locations l
             where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
             and l.loc_id = m.location
             and t.notebook_ref = b.notebook_ref and t.notebook_ref = '{sId}'
