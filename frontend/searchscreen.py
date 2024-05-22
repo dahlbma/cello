@@ -37,6 +37,10 @@ class SearchScreen(QMainWindow):
 
         self.batch_search_btn.clicked.connect(self.search_batches)
         self.batch_export_btn.clicked.connect(self.export_batch_table)
+        self.show_plates_cb.setChecked(True)
+        self.show_microtubes_cb.setChecked(False)
+        self.show_vials_cb.setChecked(False)
+
         self.batch_export_btn.setEnabled(False)
         self.batch_table.currentItemChanged.connect(self.batch_moldisplay)
 
@@ -84,7 +88,7 @@ class SearchScreen(QMainWindow):
 
 
     def check_vial_search_input(self):
-        pattern = '^[vV]\d{6,7}$'
+        pattern =r'^[vV]\d{6,7}$'
         t = self.vial_search_eb.text()
         t = t.rstrip()
         if re.match(pattern, t):
@@ -226,10 +230,19 @@ class SearchScreen(QMainWindow):
 
 
     def search_batches(self):
+        self.batch_table.setRowCount(0)
         batches = self.batch_search_eb.text()
         batches = re.sub("[^0-9a-zA-Z_-]+", " ", batches)
         logging.getLogger(self.mod_name).info(f"batches search {batches}")
-        res = dbInterface.getBatches(self.token, batches)
+
+        vials_checked = 'yes' if self.show_vials_cb.isChecked() else 'no'
+        tubes_checked = 'yes' if self.show_microtubes_cb.isChecked() else 'no'
+        plates_checked = 'yes' if self.show_plates_cb.isChecked() else 'no'
+        
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        res = dbInterface.getBatches(self.token, batches, vials_checked, tubes_checked, plates_checked)
+        QApplication.restoreOverrideCursor()
+        
         self.batches_data = None
         try:
             self.batches_data = json.loads(res)

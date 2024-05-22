@@ -198,7 +198,7 @@ def chart_html(data, size, pf='_s'):
                 row = int(ord(info[0]) - ord('A'))
                 col = int(info[1:]) - 1
             else:
-                parts = re.split('(\d+)', info)
+                parts = re.split(r'(\d+)', info)
                 row_c = parts[0]
                 if len(row_c) == 1:
                     row = int(ord(row_c[0]) - ord('A'))

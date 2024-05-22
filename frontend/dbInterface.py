@@ -125,8 +125,8 @@ def getLocationsByStorage(token, storage):
     except:
         return r.content
     
-def getBatches(token, batchIds):
-    r = requests.get(f'{baseUrl}searchBatches/{batchIds}',
+def getBatches(token, batchIds, vials, tubes, plates):
+    r = requests.get(f'{baseUrl}searchBatches/{vials}/{tubes}/{plates}/{batchIds}',
             headers={'token':token})
     try:
         return r.content.decode()
