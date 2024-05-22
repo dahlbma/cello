@@ -211,7 +211,7 @@ def make_app():
         (r"/updatePlateName/(?P<sPlate>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sPlateLocation>[^\/]+)",
          application.UpdatePlateName),
         (r"/batchInfo/(?P<sBatch>[^\/]+)", application.batchInfo),
-        (r"/searchBatches/(?P<sBatches>[^\/]+)", application.searchBatches),
+        (r"/searchBatches/(?P<vials>[^\/]+)/(?P<tubes>[^\/]+)/(?P<plates>[^\/]+)/(?P<sBatches>[^\/]+)", application.searchBatches),
         (r"/searchVials/(?P<sVials>[^\/]+)", application.searchVials),
         (r"/transitVials/(?P<sVials>[^\/]+)", application.TransitVials),
         (r"/printVial/(?P<sVial>[^\/]+)", application.printVial),

@@ -2300,7 +2300,7 @@ class searchBatches(tornado.web.RequestHandler):
         return tRes
     
         
-    def get(self, sBatches):
+    def get(self, vials, tubes, plates, sBatches):
         self.glassDB, self.coolDB, self.microtubeDB, self.loctreeDB, self.bcpvsDB = getDatabase(self)
         
         sIds = list(OrderedDict.fromkeys(sBatches.split()))
@@ -2312,12 +2312,13 @@ class searchBatches(tornado.web.RequestHandler):
             tmpIds += "'" + sId + "'"
         stringIds = tmpIds.replace("''", "','")
         tRes_tot = []
+
         for sId in sIds:
 
-            tRes1 = self.getMicrotubes(sId)
-            tRes2 = self.getPlates(sId)
-            tRes3 = self.getVials(sId)
-            
+            tRes1 = self.getMicrotubes(sId) if tubes == 'yes' else ()
+            tRes2 = self.getPlates(sId) if plates == 'yes' else ()
+            tRes3 = self.getVials(sId) if vials == 'yes' else ()
+
             tRes1 = tRes1 if tRes1 is not None else []
             tRes2 = tRes2 if tRes2 is not None else []
             tRes3 = tRes3 if tRes3 is not None else []
