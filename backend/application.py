@@ -2179,7 +2179,7 @@ class VerifyLocation(tornado.web.RequestHandler):
 class searchBatches(tornado.web.RequestHandler):
 
     def getVials(self, sId):
-        if sId.startswith('CBK'):
+        if sId.startswith('CBK') or sId.startswith('SLL'):
             sSql = f'''
             SELECT c.compound_id as compoundId,
             v.notebook_ref as batchId,
