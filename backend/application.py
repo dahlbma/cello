@@ -2223,7 +2223,7 @@ class searchBatches(tornado.web.RequestHandler):
         
         
     def getMicrotubes(self, sId):
-        if sId.startswith('CBK'):
+        if sId.startswith('CBK') or sId.startswith('SLL'):
             sSql = f'''
             select b.compound_id,
             t.notebook_ref,
@@ -2262,7 +2262,7 @@ class searchBatches(tornado.web.RequestHandler):
         
         
     def getPlates(self, sId):
-        if sId.startswith('CBK'):
+        if sId.startswith('CBK') or sId.startswith('SLL'):
             sSql = f'''
             select b.compound_id as compoundId,
             cc.notebook_ref as batchId,

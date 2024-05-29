@@ -199,7 +199,7 @@ def exportFromElnProject(saCompounds,
     sSql = f'''select
     a.compound_id,
     compound_batch,
-    mol,
+    bin2mol( moldepict(mol) ),
     inhibition*100,
     activation*100,
     CASE 
@@ -211,17 +211,20 @@ def exportFromElnProject(saCompounds,
     where a.compound_id = m.compound_id
     and a.project = '{sProject}'
     and a.eln_id = '{sELN}'
-    {sNotTheseCompounds}'''
+    {sNotTheseCompounds}
+    order by a.compound_id
+    '''
     cur.execute(sSql)
     res = cur.fetchall()
+    sPrevCompId = ''
     for row in res:
         sCmpId = row[0]
         sBatch = row[1]
         sMol = row[2]
         sMolfile = ''
         
-        if len(sMol) > 5:
-            sMolfile = f'''{sMol}
+        if len(sMol) > 5 and sPrevCompId != sCmpId:
+            sMolfile = f'''{sMol.decode('utf-8')}
 > <CIDX>
 {sCmpId}
 
@@ -229,6 +232,8 @@ $$$$
 '''
             compound_record_file.write(f'''{sCmpId}\t{sRIDX}\t{sBatch}\t{sCmpId}\n''')
             molfile_file.write(sMolfile)
+        sPrevCompId = sCmpId
+            
     create_ACTIVITY_tsv(res,
                         sProject,
                         sELN,
