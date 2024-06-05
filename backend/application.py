@@ -64,7 +64,7 @@ def getDatabase(parent):
     elif database == 'DDD':
         return 'ddd_glass', 'ddd_cool', 'ddd_microtube', 'loctree', 'ddd_bcpvs'
     else:
-        return 'glass_test', 'cool_test', 'microtube_test', 'loctree_test', 'bcpvs'
+        return 'glass_test', 'cool_test', 'microtube_test', 'loctree_test', 'bcpvs_test'
 
 def res2json():
     result = [list(i) for i in cur.fetchall()]
@@ -913,32 +913,52 @@ class SetPlateType(tornado.web.RequestHandler):
 
 
 @jwtauth
-class UploadWellInformation(tornado.web.RequestHandler):
+class UploadAccumulatedRows(tornado.web.RequestHandler):
     def post(self):
-        def zfillWell(sWell):
-            alphabet = sWell.rstrip('0123456789')
-            numbers = sWell[len(alphabet):]
-            numbers = str(numbers).zfill(2)
-            return alphabet + numbers
-
-        def checkCmpId(notebook_ref, compound_id):
-            if compound_id.upper() == 'BACKFILL':
-                return True
-            sSql = f'''
-            select compound_id from {bcpvsDB}.batch
-            where notebook_ref = '{notebook_ref}'
-            '''
-            cur.execute(sSql)
-            tRes = cur.fetchall()
-            if len(tRes) == 0:
-                return False
-            if tRes[0][0] != compound_id:
-                return False
-            else:
-                return True
-
-
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        saRows = self.get_argument("rows")
+        saRows = ast.literal_eval(saRows)
+        saError = []
+        for row in saRows:
+            status, sMessage = implUploadWellInformation(self, row)
+            if status != 200:
+                saError.append(row)
+                
+        self.set_header("Content-Type", "application/json")
+        if len(saError) != 0:
+            self.set_status(400)
+        if len(saError) > 0:
+            logging.info(f'Error {saError}')
+            
+        self.finish(json.dumps(saError))
+
+
+def implUploadWellInformation(self, row = None):
+    def zfillWell(sWell):
+        alphabet = sWell.rstrip('0123456789')
+        numbers = sWell[len(alphabet):]
+        numbers = str(numbers).zfill(2)
+        return alphabet + numbers
+
+    def checkCmpId(notebook_ref, compound_id):
+        if compound_id.upper() == 'BACKFILL':
+            return True
+        sSql = f'''
+        select compound_id from {bcpvsDB}.batch
+        where notebook_ref = '{notebook_ref}'
+        '''
+        cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) == 0:
+            return False
+        if tRes[0][0] != compound_id:
+            return False
+        else:
+            return True
+
+
+    glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+    if row == None:
         sPlate = self.get_argument("plate_id")
         sWell = self.get_argument("well")
         sWell = zfillWell(sWell)
@@ -947,51 +967,68 @@ class UploadWellInformation(tornado.web.RequestHandler):
         sForm = self.get_argument("form")
         sConc = self.get_argument("conc")
         sVolume = self.get_argument("volume")
+    else:
+        sPlate = row[0]
+        sWell = row[1]
+        sWell = zfillWell(sWell)
+        sCompound = row[2]
+        sBatch = row[3]
+        sForm = row[4]
+        sConc = row[5]
+        sVolume = row[6]
 
-        if checkCmpId(sBatch, sCompound) == False:
+    if checkCmpId(sBatch, sCompound) == False:
+        self.set_status(400)
+        logging.error(f'CompoundId not found: {sCompound}')
+        return 400, 'Compound id not found'
+
+
+    if sCompound == 'BACKFILL':
+        sSql = f'''select conc, volume from {coolDB}.config
+        where config_id = '{sPlate}' and well = '{sWell}'
+        '''
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        if len(tRes) != 1:
             self.set_status(400)
-            logging.error(f'CompoundId not found: {sCompound}')
-            self.finish('Compound id not found')
+            logging.error(f'Backfill values requires an existing CONC value in the well {sPlate} {sWell}')
+            return 400, str('Backfill values requires an existing CONC value in the well')
+
+        preConc = float(tRes[0][0])
+        preVolume = float(tRes[0][1])
+        sVolume = float(sVolume)
+        sSql = f'''update {coolDB}.config
+        set conc = '{(preConc * float(preVolume))/(preVolume + float(sVolume))}',
+        volume = '{preVolume + float(sVolume)}'
+        where config_id = '{sPlate}' and well = '{sWell}'
+        '''
+        try:
+            cur.execute(sSql)
+        except Exception as e:
+            logging.error(f'Backfill error {str(e)}')
+            return 400, str(e)
+    else:
+        sSql = f'''insert into {coolDB}.config
+        (config_id, well, compound_id, notebook_ref, form, conc, volume)
+        values
+        ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', '{sConc}', '{sVolume}')
+        '''
+        try:
+            cur.execute(sSql)
+        except Exception as e:
+            logging.error(f'Insert well failed: {str(e)}')
+            return 400, str(e)
+    return 200, ''
+        
+
+@jwtauth
+class UploadWellInformation(tornado.web.RequestHandler):
+    def post(self, internalCall = False):
+        if internalCall == True:
             return
-
-
-        if sCompound == 'BACKFILL':
-            sSql = f'''select conc, volume from {coolDB}.config
-            where config_id = '{sPlate}' and well = '{sWell}'
-            '''
-            sSlask = cur.execute(sSql)
-            tRes = cur.fetchall()
-            if len(tRes) != 1:
-                self.set_status(400)
-                logging.error(f'Backfill values requires an existing CONC value in the well {sPlate} {sWell}')
-                self.finish(str('Backfill values requires an existing CONC value in the well'))
-                return
-
-            preConc = float(tRes[0][0])
-            preVolume = float(tRes[0][1])
-            sVolume = float(sVolume)
-            sSql = f'''update {coolDB}.config
-            set conc = '{(preConc * float(preVolume))/(preVolume + float(sVolume))}',
-            volume = '{preVolume + float(sVolume)}'
-            where config_id = '{sPlate}' and well = '{sWell}'
-            '''
-            try:
-                cur.execute(sSql)
-            except Exception as e:
-                logging.error(f'Backfill error {str(e)}')
-                self.set_status(400)
-                self.finish(str(e))
-        else:
-            sSql = f'''insert into {coolDB}.config
-            (config_id, well, compound_id, notebook_ref, form, conc, volume)
-            values
-            ('{sPlate}', '{sWell}', '{sCompound}', '{sBatch}', '{sForm}', '{sConc}', '{sVolume}')
-            '''
-            try:
-                cur.execute(sSql)
-            except Exception as e:
-                self.set_status(400)
-                self.finish(str(e))
+        status, sMessage = implUploadWellInformation(self)
+        self.set_status(status)
+        self.finish(str(sMessage))
 
 
 @jwtauth
@@ -1169,7 +1206,6 @@ class ReadScannedRack(tornado.web.RequestHandler):
                 set matrix_id = NULL, position = NULL
                 where tube_id = '{tRes[0][0]}'"""
                 sSlask = cur.execute(sSql)
-
 
 
         def createRackIfNotFound(sRack):

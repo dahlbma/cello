@@ -379,5 +379,5 @@ class ChemblExport(tornado.web.RequestHandler):
             zipf.write(os.path.join(dir_name, "ASSAY_PARAM.tsv"), arcname="ASSAY_PARAM.tsv")
 
         
-        self.write(json.dumps(f'''<a href=https://esox3.scilifelab.se/vialdb/dist/export/{random_number}/ChEMBL_deposit.zip>ChEMBL_deposit.zip</a>'''))
+        self.write(json.dumps(f'''<a href=https://esox3.scilifelab.se/chemreg/dist/export/{random_number}/ChEMBL_deposit.zip>ChEMBL_deposit.zip</a>'''))
 
