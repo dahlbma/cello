@@ -512,10 +512,15 @@ class PlatesScreen(QMainWindow):
         currentPlate = None
         plateType = self.upload_plate_size_cb.currentText()
         flush = False
+        accumulated_rows = []
+        iAccumulator_count = 0
+        iRowsBatch = 6
         for row in range(self.upload_plates_table.rowCount()):
             QApplication.processEvents()
+            iTickCount += 1
+
             plate_id = self.upload_plates_table.item(row, 0).text()
-            if plate_id != currentPlate:
+            if plate_id != currentPlate and iAccumulator_count > 0:
                 res, ok = dbInterface.setPlateType(self.token, plate_id, plateType)
                 currentPlate = plate_id
                 if ok is False:
@@ -523,6 +528,13 @@ class PlatesScreen(QMainWindow):
                     flush = True
                 else:
                     flush = False
+                    retVal, status = dbInterface.uploadAccumulatedRows(self.token, accumulated_rows)
+                    iAccumulator_count = 0
+                    accumulated_rows = []
+                    
+                    if status is False:
+                        for ro in retVal:
+                            repopulate_data.append(ro)
 
             well = self.upload_plates_table.item(row, 1).text()
             compound_id = self.upload_plates_table.item(row, 2).text()
@@ -538,24 +550,29 @@ class PlatesScreen(QMainWindow):
                     form,
                     conc,
                     volume]
+            accumulated_rows.append(data)
+            iAccumulator_count += 1
             status = False
-            if flush is False:
-                retVal, status = dbInterface.uploadWellInformation(self.token,
-                                                            plate_id,
-                                                            well,
-                                                            compound_id,
-                                                            batch,
-                                                            form,
-                                                            conc,
-                                                            volume)
-            if status is False:
-                repopulate_data.append(data)
-                logging.getLogger(self.mod_name).info(f"Failed with uploadWellInformation Plate: {plate_id} Well: {well} Error: {retVal}")
-            iTickCount += 1
-            if iTickCount == iTicks:
+            if flush is False and iAccumulator_count == iRowsBatch:
+                retVal, status = dbInterface.uploadAccumulatedRows(self.token, accumulated_rows)
+                
+                iAccumulator_count = 0
+                accumulated_rows = []
+                if status is False:
+                    for ro in retVal:
+                        repopulate_data.append(ro)
+                    logging.getLogger(self.mod_name).info(f"Failed with uploadWellInformation Plate: {plate_id} Well: {well} Error: {retVal}")
+            if iTickCount >= iTicks:
                 progress += 1
                 iTickCount = 0
                 self.upload_pbar.setValue(progress)
+
+        if iAccumulator_count != 0:
+            retVal, status = dbInterface.uploadAccumulatedRows(self.token, accumulated_rows)
+            if status is False:
+                for ro in retVal:
+                    repopulate_data.append(ro)
+
         self.upload_pbar.setValue(100)
 
         QApplication.restoreOverrideCursor()

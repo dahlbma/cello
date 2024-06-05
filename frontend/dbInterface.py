@@ -1,5 +1,6 @@
 import requests
 import json
+import ast
 
 # CHANGE THIS
 # database base URL
@@ -451,6 +452,19 @@ def mergePlates(token, q1, q2, q3, q4, target, volume):
                       headers={'token':token})
     if r.status_code != 200:
         return r.content.decode(), False
+    else:
+        return r.content.decode(), True
+
+
+def uploadAccumulatedRows(token, accumulated_rows):
+    json_data = json.dumps(accumulated_rows)
+
+    r = requests.post(f'{baseUrl}uploadAccumulatedRows',
+                      data = {'rows':json_data},
+                      headers={'token':token})
+    if r.status_code != 200:
+        data = ast.literal_eval(r.content.decode())
+        return data, False
     else:
         return r.content.decode(), True
 
