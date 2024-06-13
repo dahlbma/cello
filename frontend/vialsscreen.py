@@ -1,8 +1,8 @@
 import sys, os, logging, re
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import Qt, QRegExp
+from PyQt5.QtGui import QColor, QRegExpValidator
 
 from cellolib import *
 
@@ -40,6 +40,13 @@ class VialsScreen(QMainWindow):
         self.upload_btn.setEnabled(False)
         self.upload_copy_log_btn.clicked.connect(self.copyLog)
         self.upload_copy_log_btn.setEnabled(False)
+
+        regex = QRegExp("^[0-9]*\.?[0-9]*$")
+        validator = QRegExpValidator(regex, self)
+
+        self.edit_tare_eb.setValidator(validator)
+        self.edit_gross_weight_eb.setValidator(validator)
+        self.edit_net_weight_eb.setValidator(validator)
 
     # capture certain keypresses in certain tabs
     def keyPressEvent(self, event):
