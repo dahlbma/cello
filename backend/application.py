@@ -915,7 +915,6 @@ class SetPlateType(tornado.web.RequestHandler):
 @jwtauth
 class UploadAccumulatedRows(tornado.web.RequestHandler):
     def post(self):
-        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         saRows = self.get_argument("rows")
         saRows = ast.literal_eval(saRows)
         saError = []
@@ -928,7 +927,7 @@ class UploadAccumulatedRows(tornado.web.RequestHandler):
         if len(saError) != 0:
             self.set_status(400)
         if len(saError) > 0:
-            logging.info(f'Error {saError}')
+            logging.error(f'Error {saError}')
             
         self.finish(json.dumps(saError))
 

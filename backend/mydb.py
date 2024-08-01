@@ -46,7 +46,7 @@ class DisconnectSafeCursor(object):
 
     def execute(self, *args, **kwargs):
         try:
-            if args[0].lstrip().upper().startswith('SELECT '):
+            if args[0].lstrip().upper().startswith('SELECT'):
                 return self.cursor.execute(*args, **kwargs)
             else:
                 try:
