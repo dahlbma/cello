@@ -1067,17 +1067,29 @@ class VerifyPlate(tornado.web.RequestHandler):
 @jwtauth
 class GetPlateForPlatemap(tornado.web.RequestHandler):
     def get(self, sPlate):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         # Platt ID      Well    Compound ID     Batch nr        Form    Conc (mM)       volume
 
+        #sSql = f'''select
+        #config_id plate,
+        #well,
+        #compound_id,
+        #notebook_ref batch_id,
+        #conc,
+        #volume
+        #from cool.config where config_id = '{sPlate}'
+        #'''
+
         sSql = f'''select
-        config_id plate,
+        c.config_id plate,
         well,
         compound_id,
         notebook_ref batch_id,
         conc,
         volume
-        from cool.config where config_id = '{sPlate}'
+        from {coolDB}.config c, {coolDB}.plate p where p.plate_id = '{sPlate}' and p.config_id = c.config_id
         '''
+        
         cur.execute(sSql)
         res = res2json()
         
