@@ -1070,18 +1070,8 @@ class GetPlateForPlatemap(tornado.web.RequestHandler):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         # Platt ID      Well    Compound ID     Batch nr        Form    Conc (mM)       volume
 
-        #sSql = f'''select
-        #config_id plate,
-        #well,
-        #compound_id,
-        #notebook_ref batch_id,
-        #conc,
-        #volume
-        #from cool.config where config_id = '{sPlate}'
-        #'''
-
         sSql = f'''select
-        c.config_id plate,
+        p.plate_id plate,
         well,
         compound_id,
         notebook_ref batch_id,
@@ -1848,7 +1838,7 @@ class PrintRackList(tornado.web.RequestHandler):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
 
         sSql = f"""select
-        t.notebook_ref as batchId, b.compound_id
+        t.notebook_ref as batchId, b.compound_id, t.conc
         from {microtubeDB}.tube t, {microtubeDB}.v_matrix_tube mt, {microtubeDB}.v_matrix m,
         {bcpvsDB}.batch b
         where
@@ -1863,7 +1853,12 @@ class PrintRackList(tornado.web.RequestHandler):
             logging.info("Error: " + str(e) + ' problem with rack:' + sRack)
             return
         for row in tRes:
-            doPrint(row[1], row[0], "", "", "")
+            sConc = ""
+            try:
+                sConc = int(row[2] * 1000)
+            except:
+                pass
+            doPrint(row[1], row[0], str(sConc), "", "")
 
 
 @jwtauth
