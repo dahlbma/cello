@@ -36,8 +36,11 @@ class DisconnectSafeCursor(object):
         try:
             sScarabErr = self.scarabCursor.execute(*args, **kwargs)
         except Exception as e:
-            scarabLogger.error(str(e))
-            scarabLogger.error(args)
+            if "foreign" in str(e):
+                pass
+            else:
+                scarabLogger.error(str(e))
+                scarabLogger.error(args)
             ret = 'error'
         self.cursor.execute(*args, **kwargs)
 
