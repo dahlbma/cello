@@ -95,7 +95,9 @@ class DisconnectSafeConnection(object):
             host=config.database['host'],
             user=config.database['user'],
             passwd=config.database['password'],
-            database=config.database['db']
+            database=config.database['db'],
+            charset='utf8mb4',  # Use utf8mb4 charset
+            use_unicode=True    # Use Unicode
         )
         self.conn.autocommit(True)
 
@@ -104,7 +106,9 @@ class DisconnectSafeConnection(object):
             host=config.scarabDatabase['host'],
             user=config.scarabDatabase['user'],
             passwd=config.scarabDatabase['password'],
-            database=config.scarabDatabase['db']
+            database=config.scarabDatabase['db'],
+            charset='utf8mb4',  # Use utf8mb4 charset
+            use_unicode=True    # Use Unicode
         )
         self.scarabConn.autocommit(True)
         self.scarabConn.query('SET GLOBAL connect_timeout=28800')
