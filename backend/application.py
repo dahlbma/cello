@@ -2317,7 +2317,7 @@ class searchBatches(tornado.web.RequestHandler):
             FROM {self.coolDB}.config cc, {self.bcpvsDB}.batch b, {self.coolDB}.plate p
             where cc.notebook_ref = b.notebook_ref
             and p.config_id = cc.config_id
-            and p.loc_id != 'Sent to User'
+            and (loc_id <> 'Sent to User' OR loc_id IS NULL)
             and p.DISCARDED is NULL
             and b.compound_id = '{sId}'
             '''
@@ -2334,7 +2334,7 @@ class searchBatches(tornado.web.RequestHandler):
             FROM {self.coolDB}.config cc, {self.bcpvsDB}.batch b, {self.coolDB}.plate p
             where cc.notebook_ref = b.notebook_ref
             and p.config_id = cc.config_id
-            and p.loc_id != 'Sent to User'
+            and (loc_id <> 'Sent to User' OR loc_id IS NULL)
             and p.DISCARDED is NULL
             and cc.notebook_ref = '{sId}'
             '''
