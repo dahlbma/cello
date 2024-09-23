@@ -1784,15 +1784,16 @@ class EditVial(tornado.web.RequestHandler):
 
 def doPrintPlate(sPlate):
     sPlate = sPlate.upper()
+    
     s = f'''
 ^XA
 ^MMT
 ^PW400
 ^LL0064
-^LS0
+^LS-40
 ^BY2,3,43^FT47,48^BCN,,Y,N
 ^FD>:P>{sPlate}^FS
-^FT277,48^A0N,22,25^FH\^FD{sPlate}^FS
+^FT277,48^A0N,22,25^FH\^FD ^FS
 ^PQ1,0,1,Y^XZ
 '''
     f = open('/tmp/file.txt','w')
