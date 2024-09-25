@@ -51,9 +51,17 @@ logger.addHandler(ch)
 logger.addHandler(fh)
 
 
+
+# Loop through the handlers to find the FileHandler and get its filename (path)
+for handler in logger.handlers:
+    if isinstance(handler, logging.FileHandler):
+        log_file_path = handler.baseFilename
+        log_directory = os.path.dirname(log_file_path)
+
+
 ####################################################################
 ### Delete old log-files
-directory_path = os.path.dirname(os.path.realpath(__file__))
+directory_path = log_directory
 
 # Get the current date and time
 current_datetime = datetime.datetime.now()
