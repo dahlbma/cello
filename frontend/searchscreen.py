@@ -240,18 +240,45 @@ class SearchScreen(QMainWindow):
         plates_checked = 'yes' if self.show_plates_cb.isChecked() else 'no'
         
         QApplication.setOverrideCursor(Qt.WaitCursor)
-        res = dbInterface.getBatches(self.token, batches, vials_checked, tubes_checked, plates_checked)
+
+        accumulated_rows = []
+        iAccumulator_count = 0
+        iRowsBatch = 8
+        self.popup = PopUpProgress(f'Searching...')
+        self.popup.show()
+        saBatches = batches.split()
+        iNrOfRows = len(saBatches)
+        iTick = 0
+        rProgressSteps = (iRowsBatch/iNrOfRows)*100
+        
+        sAccuBatches = ''
+        iCount = 0
+        self.batches_data = []
+        for batch in saBatches:
+            iCount += 1
+            sAccuBatches = sAccuBatches + ' ' + batch
+            if iCount == iRowsBatch:
+                res = dbInterface.getBatches(self.token, sAccuBatches, vials_checked, tubes_checked, plates_checked)
+
+                newRows = json.loads(res)
+                for nRow in newRows:
+                    self.batches_data.append(nRow)
+                iCount = 0
+                sAccuBatches = ''
+                iTick += rProgressSteps
+                self.popup.obj.proc_counter(int(iTick))
+                QApplication.processEvents()
+        
+        if sAccuBatches != '':
+            res = dbInterface.getBatches(self.token, sAccuBatches, vials_checked, tubes_checked, plates_checked)
+            newRows = json.loads(res)
+            for nRow in newRows:
+                self.batches_data.append(nRow)
+                  
+        self.popup.obj.proc_counter(100)
+        self.popup.close()
         QApplication.restoreOverrideCursor()
         
-        self.batches_data = None
-        try:
-            self.batches_data = json.loads(res)
-        except:
-            self.batches_data = None
-            self.batch_export_btn.setEnabled(False)
-            self.batch_table.setRowCount(0)
-            self.structure_lab.clear()
-
         logging.getLogger(self.mod_name).info(f"receieved data")
         if len(self.batches_data) > 0:
             self.setBatchTableData(self.batches_data)
