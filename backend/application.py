@@ -1169,6 +1169,9 @@ class UpdateBoxName(tornado.web.RequestHandler):
 class MoveBox(tornado.web.RequestHandler):
     def put(self, sBox, sLocation):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        if sLocation == sBox:
+            self.finish()
+            return
         sSql = f"""
         update {loctreeDB}.locations set parent = '{sLocation}'
         where loc_id = '{sBox}'
