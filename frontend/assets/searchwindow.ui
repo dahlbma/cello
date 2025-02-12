@@ -1046,14 +1046,14 @@ Weight</string>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                   <item>
-                   <widget class="QPushButton" name="createPlateList">
+                   <widget class="QPushButton" name="createPlateList_btn">
                     <property name="text">
                      <string>Add list</string>
                     </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="deletePlateList">
+                   <widget class="QPushButton" name="deletePlateList_btn">
                     <property name="text">
                      <string>Delete</string>
                     </property>
@@ -1078,14 +1078,14 @@ Weight</string>
                 <item>
                  <layout class="QHBoxLayout" name="horizontalLayout_10">
                   <item>
-                   <widget class="QPushButton" name="createBatchList">
+                   <widget class="QPushButton" name="createBatchList_btn">
                     <property name="text">
                      <string>Add list</string>
                     </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="deleteBatchList">
+                   <widget class="QPushButton" name="deleteBatchList_btn">
                     <property name="text">
                      <string>Delete</string>
                     </property>

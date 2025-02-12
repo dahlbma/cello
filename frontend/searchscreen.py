@@ -58,7 +58,15 @@ class SearchScreen(QMainWindow):
 
         self.pool_scheme_to_cb_btn.clicked.connect(self.scheme_to_clipboard)
         self.pool_scheme_to_file_btn.clicked.connect(self.scheme_to_file)
-    
+
+        self.searchBatchesInPlates_btn.clicked.connect(self.searchBatchesInPlates)
+        self.copyBatchesInPlates_btn.clicked.connect(self.copyBatchesInPlates)
+
+        self.createPlateList_btn.clicked.connect(self.createPlateList)
+        self.deletePlateList_btn.clicked.connect(self.deletePlateList)
+        self.createBatchList_btn.clicked.connect(self.createBatchList)
+        self.deleteBatchList_btn.clicked.connect(self.deleteBatchList)
+        
     # capture certain keypresses in certain tabs
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
@@ -127,6 +135,23 @@ class SearchScreen(QMainWindow):
         self.print_label_btn.setEnabled(True)
         displayMolfile(self, vialId)
 
+
+    def createPlateList(self):
+        pass
+    def deletePlateList(self):
+        pass
+    def createBatchList(self):
+        pass
+    def deleteBatchList(self):
+        pass
+
+    def searchBatchesInPlates(self):
+        pass
+    def copyBatchesInPlates(self):
+        pass
+
+
+        
     def discardVial(self):
         vial = self.vial_search_eb.text()
         r = dbInterface.discardVial(self.token, vial)
