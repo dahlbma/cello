@@ -63,8 +63,10 @@ class SearchScreen(QMainWindow):
         self.copyBatchesInPlates_btn.clicked.connect(self.copyBatchesInPlates)
 
         self.createPlateList_btn.clicked.connect(self.createPlateList)
+        self.editPlateList_btn.clicked.connect(self.editPlateList)
         self.deletePlateList_btn.clicked.connect(self.deletePlateList)
         self.createBatchList_btn.clicked.connect(self.createBatchList)
+        self.editBatchList_btn.clicked.connect(self.editBatchList)
         self.deleteBatchList_btn.clicked.connect(self.deleteBatchList)
         
     # capture certain keypresses in certain tabs
@@ -138,9 +140,14 @@ class SearchScreen(QMainWindow):
 
     def createPlateList(self):
         pass
+    def editPlateList(self):
+        pass
     def deletePlateList(self):
         pass
+    
     def createBatchList(self):
+        pass
+    def editBatchList(self):
         pass
     def deleteBatchList(self):
         pass
