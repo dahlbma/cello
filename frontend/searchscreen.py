@@ -1,7 +1,9 @@
 import re, sys, os, logging
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QListWidget, QDialog
 from PyQt5.QtCore import Qt
+
+from myList import MyListClass
 
 import math
 import numpy as np
@@ -63,9 +65,12 @@ class SearchScreen(QMainWindow):
         self.copyBatchesInPlates_btn.clicked.connect(self.copyBatchesInPlates)
 
         self.createPlateList_btn.clicked.connect(self.createPlateList)
+        self.platesList.setSelectionMode(QListWidget.SingleSelection)
         self.editPlateList_btn.clicked.connect(self.editPlateList)
         self.deletePlateList_btn.clicked.connect(self.deletePlateList)
+        
         self.createBatchList_btn.clicked.connect(self.createBatchList)
+        self.batchesList.setSelectionMode(QListWidget.SingleSelection)
         self.editBatchList_btn.clicked.connect(self.editBatchList)
         self.deleteBatchList_btn.clicked.connect(self.deleteBatchList)
         
@@ -139,21 +144,56 @@ class SearchScreen(QMainWindow):
 
 
     def createPlateList(self):
-        pass
+        self.my_list_dialog = MyListClass(self)  # Pass self (MainWindow) as parent
+
+        # Make dialog modal
+        self.my_list_dialog.setModal(True)
+
+        # Show the dialog and get the result (if needed)
+        result = self.my_list_dialog.exec_()  # Returns QDialog.Accepted or QDialog.Rejected
+
+        '''
+        self.dialog = QDialog() # Create a dialog instance
+        self.le = Ui_ListEdit()  # Create an instance of the UI class
+        self.le.setupUi(self.dialog)  # Set up the UI on the dialog
+        self.le.listType_cb.addItem("Batch Id")
+        
+        self.dialog.setModal(True)
+        #self.dialog.setWindowTitle("List Edit")
+        # Show the dialog
+        self.dialog.exec_() # or self.dialog.show() if not modal
+
+        '''
+        self.platesList.addItem('Item')
+
     def editPlateList(self):
         pass
+
     def deletePlateList(self):
-        pass
-    
+        selected_item = self.platesList.currentItem()
+        if selected_item:
+            row = self.platesList.row(selected_item)
+            self.platesList.takeItem(row)
+
+
+
     def createBatchList(self):
-        pass
+        self.batchesList.addItem('Item')
+
     def editBatchList(self):
         pass
-    def deleteBatchList(self):
-        pass
 
+    def deleteBatchList(self):
+        selected_item = self.batchesList.currentItem()
+        if selected_item:
+            row = self.batchesList.row(selected_item)
+            self.batchesList.takeItem(row)
+
+
+    
     def searchBatchesInPlates(self):
         pass
+
     def copyBatchesInPlates(self):
         pass
 
