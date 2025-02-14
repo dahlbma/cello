@@ -71,7 +71,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pastelList_btn">
+        <widget class="QPushButton" name="pasteList_btn">
          <property name="text">
           <string>Paste</string>
          </property>
