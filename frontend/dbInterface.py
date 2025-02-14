@@ -128,7 +128,15 @@ def getLocationsByStorage(token, storage):
         return res
     except:
         return r.content
-    
+
+def validateBatch(token, batchIds, listType):
+    r = requests.get(f'{baseUrl}validateBatches/{batchIds}/{listType}',
+            headers={'token':token}, verify=False)
+    try:
+        return r.content.decode()
+    except:
+        return r.content
+
 def getBatches(token, batchIds, vials, tubes, plates):
     r = requests.get(f'{baseUrl}searchBatches/{vials}/{tubes}/{plates}/{batchIds}',
             headers={'token':token}, verify=False)

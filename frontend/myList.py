@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QListWidget, QDialog, QMessageBox
 from PyQt5.QtCore import Qt, QEvent
 from assets.listEdit import Ui_ListEdit
+from cellolib import *
+
 
 class MyListClass(QDialog):  # Inherit from QDialog
     def __init__(self, parent=None):  # Add parent argument
@@ -81,8 +83,58 @@ class MyListClass(QDialog):  # Inherit from QDialog
         for row in sorted_rows:
             self.ui.list_tab.removeRow(row)
 
+        values = self.get_first_column_values()
+        self.validateValues(values)
 
-    def pasteList(self):  # Example method to get data from the dialog
+
+    def get_first_column_values(self):
+        """Returns a list of all values from the first column of the table."""
+        row_count = self.ui.list_tab.rowCount()
+        first_column_values = []
+
+        for row in range(row_count):
+            item = self.ui.list_tab.item(row, 0)  # Column 0 is the first column
+            if item is not None:  # Check if the cell has an item
+                first_column_values.append(item.text())
+            else:
+                first_column_values.append("")  # Or append None, or handle empty cells as you prefer
+        return first_column_values
+
+
+    def validateValues(self, valueList):
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+
+        accumulated_rows = []
+        iAccumulator_count = 0
+        iRowsBatch = 10
+        self.popup = PopUpProgress(f'Validating list...')
+        self.popup.show()
+        iNrOfRows = len(valueList)
+        iTick = 0
+        iCount = 0
+        rProgressSteps = (iRowsBatch/iNrOfRows)*100
+        sAccuBatches = ''
+        listType = self.ui.listType_cb.currentText()
+        
+        for value in valueList:
+            iCount += 1
+            sAccuBatches = sAccuBatches + ' ' + value
+            if iCount == iRowsBatch:
+                res = dbInterface.validateBatch(self.parent.token, sAccuBatches, listType)
+                iCount = 0
+                sAccuBatches = ''
+                iTick += rProgressSteps
+                self.popup.obj.proc_counter(int(iTick))
+                QApplication.processEvents()
+        if sAccuBatches != '':
+            res = dbInterface.validateBatch(self.parent.token, sAccuBatches, listType)
+
+        self.popup.obj.proc_counter(100)
+        self.popup.close()
+        QApplication.restoreOverrideCursor()
+
+
+    def pasteList(self):
         clipboard = QApplication.clipboard()
         text = clipboard.text()
         text = text.replace(",", " ")
@@ -104,11 +156,14 @@ class MyListClass(QDialog):  # Inherit from QDialog
                     self.ui.list_tab.setItem(row_index, 1, status)  # Column 1 is the status
 
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Error pasting data: {e}") # Show a message box
+                QMessageBox.critical(self, "Error", f"Error pasting data: {e}")
                 print(f"Error pasting data: {e}")
         else:
-            QMessageBox.information(self, "Information", "Clipboard is empty.") # Show a message box
+            QMessageBox.information(self, "Information", "Clipboard is empty.")
             print("Clipboard is empty.")
+
+        values = self.get_first_column_values()
+        self.validateValues(values)
 
 
     def saveList(self):
