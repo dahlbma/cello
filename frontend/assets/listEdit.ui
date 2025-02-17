@@ -71,9 +71,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pasteList_btn">
+        <widget class="QPushButton" name="insertList_btn">
          <property name="text">
-          <string>Paste</string>
+          <string>Insert</string>
          </property>
         </widget>
        </item>

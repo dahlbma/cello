@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDi
 from PyQt5.QtCore import Qt, QEvent
 from assets.listEdit import Ui_ListEdit
 from cellolib import *
-
+import re
 
 class MyListClass(QDialog):  # Inherit from QDialog
     def __init__(self, parent=None):  # Add parent argument
@@ -14,7 +14,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
         self.setWindowTitle("List Edit")
         self.ui.listType_cb.addItem("Batch Id")
         self.ui.saveList_btn.clicked.connect(self.saveList)
-        self.ui.pasteList_btn.clicked.connect(self.pasteList)
+        self.ui.insertList_btn.clicked.connect(self.insertList)
         self.ui.list_tab.installEventFilter(self)  # Install event filter
 
         # listName_eb list anme edit box 
@@ -134,6 +134,14 @@ class MyListClass(QDialog):  # Inherit from QDialog
         QApplication.restoreOverrideCursor()
 
 
+
+    def insertList(self):
+        print('Inserting')
+        clipboard = QApplication.clipboard()
+        text = clipboard.text()
+        text = text.replace(",", " ")
+
+        
     def pasteList(self):
         clipboard = QApplication.clipboard()
         text = clipboard.text()
@@ -150,6 +158,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
                 self.ui.list_tab.setRowCount(row_count)
                 for row_index, token in enumerate(tokens):
                     token = "".join(c for c in token if not c.isspace())
+                    token = re.sub(r'\W+', '', token)
                     status = QTableWidgetItem("Unchecked")
                     item = QTableWidgetItem(token)
                     self.ui.list_tab.setItem(row_index, 0, item)  # Column 0 is the first column
