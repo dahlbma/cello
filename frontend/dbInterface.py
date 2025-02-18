@@ -134,8 +134,10 @@ def validateBatch(token, batchIds, listType):
     r = requests.get(f'{baseUrl}validateBatches/{batchIds}/{listType}',
             headers={'token':token}, verify=False)
     try:
-        return r.content.decode()
+        data = ast.literal_eval(r.content.decode())
+        return data
     except:
+        print('Failed decode')
         return r.content
 
 def getBatches(token, batchIds, vials, tubes, plates):

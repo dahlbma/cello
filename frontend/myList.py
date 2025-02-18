@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QListWidget, QDialog, QMessageBox
 from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtGui import QColor
 from assets.listEdit import Ui_ListEdit
 from cellolib import *
 import re
@@ -14,10 +15,11 @@ class MyListClass(QDialog):  # Inherit from QDialog
         self.setWindowTitle("List Edit")
         self.ui.listType_cb.addItem("Batch Id")
         self.ui.saveList_btn.clicked.connect(self.saveList)
+        self.ui.saveList_btn.setEnabled(False)
         self.ui.insertList_btn.clicked.connect(self.insertList)
         self.ui.list_tab.installEventFilter(self)  # Install event filter
 
-        # listName_eb list anme edit box 
+        # listName_eb list name edit box 
         # list_tab   table for batches
 
     def eventFilter(self, obj, event):
@@ -33,6 +35,26 @@ class MyListClass(QDialog):  # Inherit from QDialog
                 self.delete_selected_rows()
                 return True
         return super().eventFilter(obj, event)
+
+    def all_status_ok(self):
+        """Checks if all values in the second column of the table are 'Ok'.
+
+            Returns:
+            True if all values are 'Ok', False otherwise.
+        """
+        row_count = self.ui.list_tab.rowCount()
+
+        if row_count == 0:  # Handle empty table case.
+            self.ui.saveList_btn.setEnabled(False)
+            return False # Or True, depending on your application logic
+
+        for row in range(row_count):
+            item = self.ui.list_tab.item(row, 1)  # Column 1 is the second column
+            if item is None or item.text() != 'Ok': # Check for None or not "Ok"
+                self.ui.saveList_btn.setEnabled(False)
+                return False  # Found a value that is not 'Ok' or cell is empty
+        self.ui.saveList_btn.setEnabled(True)
+        return True  # All values are 'Ok'
 
 
     def copy_selected_cells(self):
@@ -84,8 +106,8 @@ class MyListClass(QDialog):  # Inherit from QDialog
             self.ui.list_tab.removeRow(row)
 
         values = self.get_first_column_values()
-        self.validateValues(values)
-
+        #self.validateValues(values)
+        self.all_status_ok()
 
     def get_first_column_values(self):
         """Returns a list of all values from the first column of the table."""
@@ -103,7 +125,6 @@ class MyListClass(QDialog):  # Inherit from QDialog
 
     def validateValues(self, valueList):
         QApplication.setOverrideCursor(Qt.WaitCursor)
-
         accumulated_rows = []
         iAccumulator_count = 0
         iRowsBatch = 10
@@ -116,11 +137,17 @@ class MyListClass(QDialog):  # Inherit from QDialog
         sAccuBatches = ''
         listType = self.ui.listType_cb.currentText()
         
+        saValidatedData = []
         for value in valueList:
             iCount += 1
             sAccuBatches = sAccuBatches + ' ' + value
             if iCount == iRowsBatch:
                 res = dbInterface.validateBatch(self.parent.token, sAccuBatches, listType)
+                for row in res:
+                    if row[1] != 'Ok':
+                        saValidatedData = [row] + saValidatedData
+                    else:
+                        saValidatedData.append(row)
                 iCount = 0
                 sAccuBatches = ''
                 iTick += rProgressSteps
@@ -128,12 +155,16 @@ class MyListClass(QDialog):  # Inherit from QDialog
                 QApplication.processEvents()
         if sAccuBatches != '':
             res = dbInterface.validateBatch(self.parent.token, sAccuBatches, listType)
-
+            for row in res:
+                if row[1] != 'Ok':
+                    saValidatedData = [row] + saValidatedData
+                else:
+                    saValidatedData.append(row)
+                    
         self.popup.obj.proc_counter(100)
         self.popup.close()
         QApplication.restoreOverrideCursor()
-
-
+        return saValidatedData
 
     def insertList(self):
         print('Inserting')
@@ -146,6 +177,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
         clipboard = QApplication.clipboard()
         text = clipboard.text()
         text = text.replace(",", " ")
+        values = []
         if text:
             try:
                 tokens = text.splitlines()  # First try splitting by lines
@@ -159,10 +191,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
                 for row_index, token in enumerate(tokens):
                     token = "".join(c for c in token if not c.isspace())
                     token = re.sub(r'\W+', '', token)
-                    status = QTableWidgetItem("Unchecked")
-                    item = QTableWidgetItem(token)
-                    self.ui.list_tab.setItem(row_index, 0, item)  # Column 0 is the first column
-                    self.ui.list_tab.setItem(row_index, 1, status)  # Column 1 is the status
+                    values.append(token)
 
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Error pasting data: {e}")
@@ -171,9 +200,22 @@ class MyListClass(QDialog):  # Inherit from QDialog
             QMessageBox.information(self, "Information", "Clipboard is empty.")
             print("Clipboard is empty.")
 
-        values = self.get_first_column_values()
-        self.validateValues(values)
+        #values = self.get_first_column_values()
+        validatedValues = self.validateValues(values)
+        
+        for row_index, row in enumerate(validatedValues):
+            status = QTableWidgetItem(row[1])
+            item = QTableWidgetItem(row[0])
+            self.ui.list_tab.setItem(row_index, 0, item)  # Column 0 is the first column
+            self.ui.list_tab.setItem(row_index, 1, status)  # Column 1 is the status
 
+            if row[1] != 'Ok':  # Check if status is NOT 'Ok'
+                for col in range(self.ui.list_tab.columnCount()):  # Color all cells in the row
+                    item = self.ui.list_tab.item(row_index, col)
+                    if item is not None:  # Check if the cell has an item
+                        item.setForeground(QColor("red"))  # Set the foreground (font) color to red
+        self.all_status_ok()
+            
 
     def saveList(self):
         pass
