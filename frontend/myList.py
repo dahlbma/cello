@@ -6,18 +6,22 @@ from cellolib import *
 import re
 
 class MyListClass(QDialog):  # Inherit from QDialog
-    def __init__(self, parent=None):  # Add parent argument
+    def __init__(self, saTypes, parent=None):  # Add parent argument
         super().__init__(parent)  # Initialize parent
         self.parent = parent
         self.ui = Ui_ListEdit()
         self.ui.setupUi(self)
         self.setModal(True)
         self.setWindowTitle("List Edit")
-        self.ui.listType_cb.addItem("Batch Id")
+        for sType in saTypes:
+            self.ui.listType_cb.addItem(sType)
+        self.listNameOk = False
         self.ui.saveList_btn.clicked.connect(self.saveList)
         self.ui.saveList_btn.setEnabled(False)
         self.ui.insertList_btn.clicked.connect(self.insertList)
         self.ui.list_tab.installEventFilter(self)  # Install event filter
+
+        self.ui.listName_eb.textChanged.connect(self.nameChanged)
 
         # listName_eb list name edit box 
         # list_tab   table for batches
@@ -36,6 +40,17 @@ class MyListClass(QDialog):  # Inherit from QDialog
                 return True
         return super().eventFilter(obj, event)
 
+    def nameChanged(self):
+        ebName = self.ui.listName_eb.text()
+        if len(ebName) > 0:
+            lIsNameUnique = dbInterface.checkListName(self.parent.token, ebName)
+        else:
+            return
+        
+        if lIsNameUnique:
+            self.listNameOk = True
+        
+    
     def all_status_ok(self):
         """Checks if all values in the second column of the table are 'Ok'.
 

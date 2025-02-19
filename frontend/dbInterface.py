@@ -130,6 +130,25 @@ def getLocationsByStorage(token, storage):
     except:
         return r.content
 
+
+def checkListName(token, listName):
+    unCookedToken = json.loads(token.decode('utf-8'))
+    username = unCookedToken['user']
+
+    r = requests.get(f'{baseUrl}checkListName/{username}/{listName}',
+                     headers={'token':token}, verify=False)
+    try:
+        res = r.content.decode()
+        res = json.loads(res)
+        retVal = res['msg']
+        if retVal == 'Ok':
+            return True
+        else:
+            return False
+    except:
+        return False
+
+
 def validateBatch(token, batchIds, listType):
     r = requests.get(f'{baseUrl}validateBatches/{batchIds}/{listType}',
             headers={'token':token}, verify=False)

@@ -2,9 +2,7 @@ import re, sys, os, logging
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QListWidget, QDialog
 from PyQt5.QtCore import Qt
-
 from myList import MyListClass
-
 import math
 import numpy as np
 from numpy import random as rng
@@ -147,7 +145,7 @@ class SearchScreen(QMainWindow):
         displayMolfile(self, vialId)
 
     def createPlateList(self):
-        self.my_list_dialog = MyListClass(self)  # Pass self (MainWindow) as parent
+        self.my_list_dialog = MyListClass(['Batch Id', 'Compound Id'], self)  # Pass self (MainWindow) as parent
 
         # Show the dialog and get the result (if needed)
         result = self.my_list_dialog.exec_()  # Returns QDialog.Accepted or QDialog.Rejected
@@ -161,7 +159,6 @@ class SearchScreen(QMainWindow):
         if selected_item:
             row = self.platesList.row(selected_item)
             self.platesList.takeItem(row)
-
 
 
     def createBatchList(self):
