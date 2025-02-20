@@ -233,7 +233,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
                     if item is not None:  # Check if the cell has an item
                         item.setForeground(QColor("red"))  # Set the foreground (font) color to red
         self.all_status_ok()
-            
+
 
     def saveList(self):
         ebName = self.ui.listName_eb.text()

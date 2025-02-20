@@ -102,6 +102,9 @@ class SearchScreen(QMainWindow):
         elif page_index == 2:
             self.batch_search_eb.setFocus()
             self.batch_moldisplay()
+        elif page_index == 4:
+            lists = dbInterface.getLists(self.token, 'Batch Id')
+            print(lists)
 
 
     def check_vial_search_input(self):
@@ -181,7 +184,6 @@ class SearchScreen(QMainWindow):
         pass
 
 
-        
     def discardVial(self):
         vial = self.vial_search_eb.text()
         r = dbInterface.discardVial(self.token, vial)
