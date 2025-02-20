@@ -174,7 +174,6 @@ class SearchScreen(QMainWindow):
             self.batchesList.takeItem(row)
 
 
-    
     def searchBatchesInPlates(self):
         pass
 

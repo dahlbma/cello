@@ -41,10 +41,13 @@ class MyListClass(QDialog):  # Inherit from QDialog
         return super().eventFilter(obj, event)
 
     def nameChanged(self):
+        lIsNameUnique = False
         ebName = self.ui.listName_eb.text()
         if len(ebName) > 0:
             lIsNameUnique = dbInterface.checkListName(self.parent.token, ebName)
         else:
+            self.listNameOk = False
+            self.ui.saveList_btn.setEnabled(False)
             return
         
         if lIsNameUnique:
@@ -68,7 +71,8 @@ class MyListClass(QDialog):  # Inherit from QDialog
             if item is None or item.text() != 'Ok': # Check for None or not "Ok"
                 self.ui.saveList_btn.setEnabled(False)
                 return False  # Found a value that is not 'Ok' or cell is empty
-        self.ui.saveList_btn.setEnabled(True)
+        if self.listNameOk == True:
+            self.ui.saveList_btn.setEnabled(True)
         return True  # All values are 'Ok'
 
 
@@ -78,7 +82,6 @@ class MyListClass(QDialog):  # Inherit from QDialog
         if not selected_ranges:
             QMessageBox.information(self, "Information", "No cells selected.")
             return
-
         copied_text = ""
 
         # Sort ranges to ensure correct order in copied text.
@@ -233,5 +236,6 @@ class MyListClass(QDialog):  # Inherit from QDialog
             
 
     def saveList(self):
-        pass
-
+        ebName = self.ui.listName_eb.text()
+        listType = self.ui.listType_cb.currentText()
+        dbInterface.createList(self.parent.token, ebName, listType)
