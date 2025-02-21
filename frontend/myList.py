@@ -49,10 +49,10 @@ class MyListClass(QDialog):  # Inherit from QDialog
             self.listNameOk = False
             self.ui.saveList_btn.setEnabled(False)
             return
-        
-        if lIsNameUnique:
+        if lIsNameUnique == True:
             self.listNameOk = True
-        
+        else:
+            self.listNameOk = False
     
     def all_status_ok(self):
         """Checks if all values in the second column of the table are 'Ok'.
@@ -184,6 +184,39 @@ class MyListClass(QDialog):  # Inherit from QDialog
         QApplication.restoreOverrideCursor()
         return saValidatedData
 
+
+    def saveListValues(self, valueList, listId):
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        accumulated_rows = []
+        iAccumulator_count = 0
+        iRowsBatch = 10
+        self.popup = PopUpProgress(f'Saving list...')
+        self.popup.show()
+        iNrOfRows = len(valueList)
+        iTick = 0
+        iCount = 0
+        rProgressSteps = (iRowsBatch/iNrOfRows)*100
+        sAccuBatches = ''
+        listType = self.ui.listType_cb.currentText()
+        
+        saValidatedData = []
+        for value in valueList:
+            iCount += 1
+            sAccuBatches = sAccuBatches + ' ' + value
+            if iCount == iRowsBatch:
+                res = dbInterface.saveListElements(self.parent.token, sAccuBatches, listId)
+                iCount = 0
+                sAccuBatches = ''
+                iTick += rProgressSteps
+                self.popup.obj.proc_counter(int(iTick))
+                QApplication.processEvents()
+        if sAccuBatches != '':
+            res = dbInterface.saveListElements(self.parent.token, sAccuBatches, listId)
+                    
+        self.popup.obj.proc_counter(100)
+        self.popup.close()
+        QApplication.restoreOverrideCursor()
+
     def insertList(self):
         print('Inserting')
         clipboard = QApplication.clipboard()
@@ -218,7 +251,6 @@ class MyListClass(QDialog):  # Inherit from QDialog
             QMessageBox.information(self, "Information", "Clipboard is empty.")
             print("Clipboard is empty.")
 
-        #values = self.get_first_column_values()
         validatedValues = self.validateValues(values)
         
         for row_index, row in enumerate(validatedValues):
@@ -238,4 +270,8 @@ class MyListClass(QDialog):  # Inherit from QDialog
     def saveList(self):
         ebName = self.ui.listName_eb.text()
         listType = self.ui.listType_cb.currentText()
-        dbInterface.createList(self.parent.token, ebName, listType)
+        listId = dbInterface.createList(self.parent.token, ebName, listType)
+        if listId != 'NotOk':
+            valueList = self.get_first_column_values()
+            self.saveListValues(valueList, listId)
+        self.accept()

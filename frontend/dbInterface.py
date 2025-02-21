@@ -163,6 +163,25 @@ def checkListName(token, listName):
         return False
 
 
+def saveListElements(token, accuElements, listId):
+    unCookedToken = json.loads(token.decode('utf-8'))
+    username = unCookedToken['user']
+
+    r = requests.put(f'{baseUrl}saveListElements/{accuElements}/{listId}',
+                     headers={'token':token}, verify=False)
+    try:
+        res = r.content.decode()
+        res = json.loads(res)
+        print(res)
+        retVal = res['msg']
+        if retVal != 'NotOk':
+            return retVal
+        else:
+            return False
+    except:
+        return False
+
+    
 def createList(token, listName, listType):
     unCookedToken = json.loads(token.decode('utf-8'))
     username = unCookedToken['user']
@@ -173,8 +192,8 @@ def createList(token, listName, listType):
         res = r.content.decode()
         res = json.loads(res)
         retVal = res['msg']
-        if retVal == 'Ok':
-            return True
+        if retVal != 'NotOk':
+            return retVal
         else:
             return False
     except:
@@ -201,6 +220,16 @@ def deleteList(token, listName):
 
 def validateBatch(token, batchIds, listType):
     r = requests.get(f'{baseUrl}validateBatches/{batchIds}/{listType}',
+            headers={'token':token}, verify=False)
+    try:
+        data = ast.literal_eval(r.content.decode())
+        return data
+    except:
+        print('Failed decode')
+        return r.content
+
+def saveBatchList(token, batchIds, listId):
+    r = requests.get(f'{baseUrl}saveBatchList/{batchIds}/{listId}',
             headers={'token':token}, verify=False)
     try:
         data = ast.literal_eval(r.content.decode())

@@ -1,6 +1,6 @@
 import re, sys, os, logging
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QListWidget, QDialog
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QListWidget, QDialog, QListWidgetItem
 from PyQt5.QtCore import Qt
 from myList import MyListClass
 import math
@@ -62,6 +62,7 @@ class SearchScreen(QMainWindow):
         #####################
         ### Search lists of batches in lists of plates
         self.searchBatchesInPlates_btn.clicked.connect(self.searchBatchesInPlates)
+        self.searchBatchesInPlates_btn.setEnabled(False)
         self.copyBatchesInPlates_btn.clicked.connect(self.copyBatchesInPlates)
 
         self.createPlateList_btn.clicked.connect(self.createPlateList)
@@ -73,6 +74,12 @@ class SearchScreen(QMainWindow):
         self.batchesList.setSelectionMode(QListWidget.SingleSelection)
         self.editBatchList_btn.clicked.connect(self.editBatchList)
         self.deleteBatchList_btn.clicked.connect(self.deleteBatchList)
+
+        self.batchesList.itemClicked.connect(self.batch_list_clicked)
+        self.platesList.itemClicked.connect(self.plate_list_clicked)
+        self.twoValidListsSelected = False
+        self.current_batch_list = None
+        self.current_plate_list = None
         #
         #####################
         
@@ -103,8 +110,7 @@ class SearchScreen(QMainWindow):
             self.batch_search_eb.setFocus()
             self.batch_moldisplay()
         elif page_index == 4:
-            lists = dbInterface.getLists(self.token, 'Batch Id')
-            print(lists)
+            self.populateLists()
 
 
     def check_vial_search_input(self):
@@ -147,12 +153,62 @@ class SearchScreen(QMainWindow):
         self.print_label_btn.setEnabled(True)
         displayMolfile(self, vialId)
 
-    def createPlateList(self):
-        self.my_list_dialog = MyListClass(['Batch Id', 'Compound Id'], self)  # Pass self (MainWindow) as parent
 
-        # Show the dialog and get the result (if needed)
+    def batch_list_clicked(self, item):
+        """Retrieves and prints the associated pk when an item is clicked."""
+        pk = item.data(Qt.UserRole)
+        if pk is not None:
+            self.current_batch_list = pk
+            self.updateSaveButton()
+        else:
+            self.current_batch_list = None
+
+
+    def plate_list_clicked(self, item):
+        """Retrieves and prints the associated pk when an item is clicked."""
+        pk = item.data(Qt.UserRole)
+        if pk is not None:
+            self.current_plate_list = pk
+            self.updateSaveButton()
+        else:
+            self.current_plate_list = None
+
+    def updateSaveButton(self):
+        if self.current_batch_list != None and self.current_plate_list != None:
+            self.searchBatchesInPlates_btn.setEnabled(True)
+
+
+    def populateLists(self):
+
+        def populateThisList(listWidget, lists):
+            user_data = {}  # Dictionary to store data grouped by username
+            for pk, item_name, username in lists:
+                if username not in user_data:
+                    user_data[username] = []
+                user_data[username].append((pk, item_name)) 
+
+            # Populate the QListWidget
+            for username, item_names in user_data.items():
+                listWidget.addItem(username)  # Add username as a header
+                for pk, item_name in item_names:
+                    item = QListWidgetItem("  " + item_name)
+                    item.setData(Qt.UserRole, pk)  # Associate pk with the item
+                    listWidget.addItem(item)
+
+        self.batchesList.clear()
+        self.platesList.clear()
+        batchLists = dbInterface.getLists(self.token, 'Batch Id')
+        plateLists = dbInterface.getLists(self.token, 'Plate Id')
+        print(plateLists)
+        print(batchLists)
+        populateThisList(self.batchesList, batchLists)
+        populateThisList(self.platesList, plateLists)
+
+
+    def createPlateList(self):
+        self.my_list_dialog = MyListClass(['Plate Id'], self)  # Pass self (MainWindow) as parent
         result = self.my_list_dialog.exec_()  # Returns QDialog.Accepted or QDialog.Rejected
-        self.platesList.addItem('Item')
+        self.populateLists()
 
     def editPlateList(self):
         pass
@@ -165,8 +221,10 @@ class SearchScreen(QMainWindow):
 
 
     def createBatchList(self):
-        self.batchesList.addItem('Item')
-
+        self.my_list_dialog = MyListClass(['Batch Id', 'Compound Id'], self)  # Pass self (MainWindow) as parent
+        result = self.my_list_dialog.exec_()  # Returns QDialog.Accepted or QDialog.Rejected
+        self.populateLists()
+        
     def editBatchList(self):
         pass
 
