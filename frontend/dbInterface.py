@@ -218,6 +218,17 @@ def deleteList(token, listName):
         return False
 
 
+def searchLists(token, plateIdPk, batchIdPk):
+    r = requests.get(f'{baseUrl}searchLists/{plateIdPk}/{batchIdPk}',
+            headers={'token':token}, verify=False)
+    try:
+        data = ast.literal_eval(r.content.decode())
+        return data
+    except:
+        print('Failed decode')
+        return False
+
+
 def validateBatch(token, batchIds, listType):
     r = requests.get(f'{baseUrl}validateBatches/{batchIds}/{listType}',
             headers={'token':token}, verify=False)

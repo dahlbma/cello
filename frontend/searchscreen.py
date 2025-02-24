@@ -224,7 +224,8 @@ class SearchScreen(QMainWindow):
         self.my_list_dialog = MyListClass(['Batch Id', 'Compound Id'], self)  # Pass self (MainWindow) as parent
         result = self.my_list_dialog.exec_()  # Returns QDialog.Accepted or QDialog.Rejected
         self.populateLists()
-        
+
+
     def editBatchList(self):
         pass
 
@@ -236,7 +237,24 @@ class SearchScreen(QMainWindow):
 
 
     def searchBatchesInPlates(self):
-        pass
+        selectedPlate = self.platesList.selectedItems()[0]
+        plateIdPk = selectedPlate.data(Qt.UserRole)
+
+        selectedBatch = self.batchesList.selectedItems()[0]
+        batchIdPk = selectedBatch.data(Qt.UserRole)
+
+        data = dbInterface.searchLists(self.token, plateIdPk, batchIdPk)
+        if data == False:
+            return
+        
+        self.batchesInPlates_tab.setRowCount(len(data))  # Set the number of rows
+
+        for row_index, row_data in enumerate(data):
+            for col_index, cell_data in enumerate(row_data):
+                item = QTableWidgetItem(str(cell_data))  # Create a QTableWidgetItem
+                self.batchesInPlates_tab.setItem(row_index, col_index, item)  # Set the item in the table
+
+        
 
     def copyBatchesInPlates(self):
         pass
