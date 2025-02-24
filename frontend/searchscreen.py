@@ -213,6 +213,7 @@ class SearchScreen(QMainWindow):
     def editPlateList(self):
         pass
 
+
     def deletePlateList(self):
         selected_item = self.platesList.currentItem()
         if selected_item:
@@ -227,7 +228,14 @@ class SearchScreen(QMainWindow):
 
 
     def editBatchList(self):
-        pass
+        selectedBatch = self.batchesList.selectedItems()[0]
+        batchIdPk = selectedBatch.data(Qt.UserRole)
+        print(batchIdPk)
+        batchList = dbInterface.getListById(self.token, batchIdPk)
+        dialog = MyListClass(['Batch Id', 'Compound Id'], self)  # Pass self (MainWindow) as parent
+        dialog.editList(batchIdPk)
+        result = dialog.exec_()
+
 
     def deleteBatchList(self):
         selected_item = self.batchesList.currentItem()
@@ -254,7 +262,6 @@ class SearchScreen(QMainWindow):
                 item = QTableWidgetItem(str(cell_data))  # Create a QTableWidgetItem
                 self.batchesInPlates_tab.setItem(row_index, col_index, item)  # Set the item in the table
 
-        
 
     def copyBatchesInPlates(self):
         pass

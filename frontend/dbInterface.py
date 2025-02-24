@@ -229,6 +229,28 @@ def searchLists(token, plateIdPk, batchIdPk):
         return False
 
 
+def getListById(token, batchIdPk):
+    r = requests.get(f'{baseUrl}getListById/{batchIdPk}',
+            headers={'token':token}, verify=False)
+    try:
+        data = ast.literal_eval(r.content.decode())
+        return data
+    except:
+        print('Failed decode')
+        return False
+
+
+def getListInfoById(token, batchIdPk):
+    r = requests.get(f'{baseUrl}getListInfoById/{batchIdPk}',
+            headers={'token':token}, verify=False)
+    try:
+        data = ast.literal_eval(r.content.decode())
+        return data
+    except:
+        print('Failed decode')
+        return False
+
+
 def validateBatch(token, batchIds, listType):
     r = requests.get(f'{baseUrl}validateBatches/{batchIds}/{listType}',
             headers={'token':token}, verify=False)

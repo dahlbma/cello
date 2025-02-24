@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QFileDialog, QListWidget, QDialog, QMessageBox
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QColor
-from assets.listEdit import Ui_ListEdit
+from assets.listEdit import Ui_ListEdit # Generated with: pyuic5 listEdit.ui -o listEdit.py
 from cellolib import *
 import re
 
@@ -9,10 +9,14 @@ class MyListClass(QDialog):  # Inherit from QDialog
     def __init__(self, saTypes, parent=None):  # Add parent argument
         super().__init__(parent)  # Initialize parent
         self.parent = parent
+        
         self.ui = Ui_ListEdit()
         self.ui.setupUi(self)
         self.setModal(True)
-        self.setWindowTitle("List Edit")
+        if len(saTypes) > 1:
+            self.setWindowTitle("Elements list")
+        else:
+            self.setWindowTitle("Plate list")
         for sType in saTypes:
             self.ui.listType_cb.addItem(sType)
         self.listNameOk = False
@@ -275,3 +279,27 @@ class MyListClass(QDialog):  # Inherit from QDialog
             valueList = self.get_first_column_values()
             self.saveListValues(valueList, listId)
         self.accept()
+
+
+    def editList(self, listId):
+        """Populates the dialog with existing list data."""
+        tableContent = dbInterface.getListById(self.parent.token, listId)
+        listInfo = dbInterface.getListInfoById(self.parent.token, listId)
+
+        
+        print(listInfo)
+        
+        self.ui.listName_eb.setText(listInfo[1])
+
+        # Clear the table before populating it
+        self.ui.list_tab.setRowCount(0)
+
+        if tableContent: # Check if tableContent is not empty.
+            self.ui.list_tab.setRowCount(len(tableContent))
+
+            for row_index, row_data in enumerate(tableContent):
+                for col_index, cell_data in enumerate(row_data):
+                    item = QTableWidgetItem(str(cell_data))
+                    self.ui.list_tab.setItem(row_index, col_index, item)
+
+        self.setWindowTitle("Edit list") # change title to edit list.
