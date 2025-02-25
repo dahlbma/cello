@@ -55,8 +55,10 @@ class MyListClass(QDialog):  # Inherit from QDialog
             return
         if lIsNameUnique == True:
             self.listNameOk = True
+            self.all_status_ok()
         else:
             self.listNameOk = False
+            self.ui.saveList_btn.setEnabled(False)
     
     def all_status_ok(self):
         """Checks if all values in the second column of the table are 'Ok'.
