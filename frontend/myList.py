@@ -17,8 +17,10 @@ class MyListClass(QDialog):  # Inherit from QDialog
             self.setWindowTitle("Elements list")
         else:
             self.setWindowTitle("Plate list")
+        self.currentListType = saTypes[0]
         for sType in saTypes:
             self.ui.listType_cb.addItem(sType)
+        self.ui.listType_cb.currentIndexChanged.connect(self.listTypeChanged)
         self.listNameOk = False
         self.ui.saveList_btn.clicked.connect(self.saveList)
         self.ui.saveList_btn.setEnabled(False)
@@ -234,28 +236,32 @@ class MyListClass(QDialog):  # Inherit from QDialog
         clipboard = QApplication.clipboard()
         text = clipboard.text()
         text = text.replace(",", " ")
-        values = []
+        tokens = []
         if text:
             try:
-                tokens = text.splitlines()  # First try splitting by lines
+                #tokens = text.splitlines()  # First try splitting by lines
                 #if not tokens: # If there were no lines, split by spaces
                 tokens = text.split()
-
-                # 2. Populate the first column
-                row_count = len(tokens)
-                self.ui.list_tab.setRowCount(0) # Clear existing data
-                self.ui.list_tab.setRowCount(row_count)
-                for row_index, token in enumerate(tokens):
-                    token = "".join(c for c in token if not c.isspace())
-                    token = re.sub(r'\W+', '', token)
-                    values.append(token)
-
+                self.populateListTable(tokens)
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Error pasting data: {e}")
-                print(f"Error pasting data: {e}")
+                # Handle the exception
+                print(f"An error occurred: {e}")
+                return
         else:
             QMessageBox.information(self, "Information", "Clipboard is empty.")
             print("Clipboard is empty.")
+            return
+
+
+    def populateListTable(self, tokens):
+        row_count = len(tokens)
+        values = []
+        self.ui.list_tab.setRowCount(0) # Clear existing data
+        self.ui.list_tab.setRowCount(row_count)
+        for row_index, token in enumerate(tokens):
+            token = "".join(c for c in token if not c.isspace())
+            token = re.sub(r'\W+', '', token)
+            values.append(token)
 
         validatedValues = self.validateValues(values)
         
@@ -288,9 +294,6 @@ class MyListClass(QDialog):  # Inherit from QDialog
         tableContent = dbInterface.getListById(self.parent.token, listId)
         listInfo = dbInterface.getListInfoById(self.parent.token, listId)
 
-        
-        print(listInfo)
-        
         self.ui.listName_eb.setText(listInfo[1])
 
         # Clear the table before populating it
@@ -305,3 +308,12 @@ class MyListClass(QDialog):  # Inherit from QDialog
                     self.ui.list_tab.setItem(row_index, col_index, item)
 
         self.setWindowTitle("Edit list") # change title to edit list.
+
+    def listTypeChanged(self, index):
+        selected_text = self.ui.listType_cb.itemText(index)
+        if selected_text != self.currentListType:
+            self.currentListType = selected_text
+            valueList = self.get_first_column_values()
+            if len(valueList) > 0:
+                self.populateListTable(valueList)
+
