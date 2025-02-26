@@ -200,11 +200,11 @@ def createList(token, listName, listType):
         return False
 
 
-def deleteList(token, listName):
+def deleteList(token, listId):
     unCookedToken = json.loads(token.decode('utf-8'))
     username = unCookedToken['user']
 
-    r = requests.put(f'{baseUrl}deleteList/{username}/{listName}',
+    r = requests.put(f'{baseUrl}deleteList/{username}/{listId}',
                      headers={'token':token}, verify=False)
     try:
         res = r.content.decode()

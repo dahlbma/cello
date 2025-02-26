@@ -199,8 +199,6 @@ class SearchScreen(QMainWindow):
         self.platesList.clear()
         batchLists = dbInterface.getLists(self.token, 'Batch Id')
         plateLists = dbInterface.getLists(self.token, 'Plate Id')
-        print(plateLists)
-        print(batchLists)
         populateThisList(self.batchesList, batchLists)
         populateThisList(self.platesList, plateLists)
 
@@ -218,7 +216,9 @@ class SearchScreen(QMainWindow):
         selected_item = self.platesList.currentItem()
         if selected_item:
             row = self.platesList.row(selected_item)
-            self.platesList.takeItem(row)
+            res = dbInterface.deleteList(self.token, self.current_plate_list)
+            if res == True:
+                self.platesList.takeItem(row)
 
 
     def createBatchList(self):
@@ -241,7 +241,9 @@ class SearchScreen(QMainWindow):
         selected_item = self.batchesList.currentItem()
         if selected_item:
             row = self.batchesList.row(selected_item)
-            self.batchesList.takeItem(row)
+            res = dbInterface.deleteList(self.token, self.current_batch_list)
+            if res == True:
+                self.batchesList.takeItem(row)
 
 
     def searchBatchesInPlates(self):
