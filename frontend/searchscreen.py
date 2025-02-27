@@ -2,6 +2,7 @@ import re, sys, os, logging
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QListWidget, QDialog, QListWidgetItem
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QClipboard
 from myList import MyListClass
 import math
 import numpy as np
@@ -278,7 +279,25 @@ class SearchScreen(QMainWindow):
 
 
     def copyBatchesInPlates(self):
-        pass
+        headers = ['Plate', 'Well', 'Batch', 'Compound', 'Plate comment']
+        table = self.batchesInPlates_tab
+        row_count = table.rowCount()
+        col_count = table.columnCount()
+
+        # Start with the header row
+        clipboard_data = '\t'.join(headers) + '\n'
+
+        # Iterate over the table rows
+        for row in range(row_count):
+            row_data = []
+            for col in range(col_count):
+                item = table.item(row, col)
+                row_data.append(item.text() if item else '')  # Handle empty cells
+            clipboard_data += '\t'.join(row_data) + '\n'
+
+        # Copy to clipboard
+        clipboard = QApplication.clipboard()
+        clipboard.setText(clipboard_data)
 
 
     def discardVial(self):
