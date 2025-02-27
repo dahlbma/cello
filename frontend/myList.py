@@ -242,6 +242,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
                 #tokens = text.splitlines()  # First try splitting by lines
                 #if not tokens: # If there were no lines, split by spaces
                 tokens = text.split()
+                tokens = list(dict.fromkeys(tokens))
                 self.populateListTable(tokens)
             except Exception as e:
                 # Handle the exception
