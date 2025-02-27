@@ -209,7 +209,16 @@ class SearchScreen(QMainWindow):
         self.populateLists()
 
     def editPlateList(self):
-        pass
+        try:
+            selectedPlate = self.platesList.selectedItems()[0]
+        except:
+            return
+        plateIdPk = selectedPlate.data(Qt.UserRole)
+        print(plateIdPk)
+        plateList = dbInterface.getListById(self.token, plateIdPk)
+        dialog = MyListClass(['Plate Id'], self)  # Pass self (MainWindow) as parent
+        dialog.editList(plateIdPk)
+        result = dialog.exec_()
 
 
     def deletePlateList(self):
@@ -228,7 +237,10 @@ class SearchScreen(QMainWindow):
 
 
     def editBatchList(self):
-        selectedBatch = self.batchesList.selectedItems()[0]
+        try:
+            selectedBatch = self.batchesList.selectedItems()[0]
+        except:
+            return
         batchIdPk = selectedBatch.data(Qt.UserRole)
         print(batchIdPk)
         batchList = dbInterface.getListById(self.token, batchIdPk)
