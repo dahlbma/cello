@@ -1053,9 +1053,9 @@ Weight</string>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="editPlateList_btn">
+                   <widget class="QPushButton" name="openPlateList_btn">
                     <property name="text">
-                     <string>Edit</string>
+                     <string>Open</string>
                     </property>
                    </widget>
                   </item>
@@ -1092,9 +1092,9 @@ Weight</string>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="editBatchList_btn">
+                   <widget class="QPushButton" name="openBatchList_btn">
                     <property name="text">
-                     <string>Edit</string>
+                     <string>Open</string>
                     </property>
                    </widget>
                   </item>

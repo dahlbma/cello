@@ -68,12 +68,12 @@ class SearchScreen(QMainWindow):
 
         self.createPlateList_btn.clicked.connect(self.createPlateList)
         self.platesList.setSelectionMode(QListWidget.SingleSelection)
-        self.editPlateList_btn.clicked.connect(self.editPlateList)
+        self.openPlateList_btn.clicked.connect(self.openPlateList)
         self.deletePlateList_btn.clicked.connect(self.deletePlateList)
         
         self.createBatchList_btn.clicked.connect(self.createBatchList)
         self.batchesList.setSelectionMode(QListWidget.SingleSelection)
-        self.editBatchList_btn.clicked.connect(self.editBatchList)
+        self.openBatchList_btn.clicked.connect(self.openBatchList)
         self.deleteBatchList_btn.clicked.connect(self.deleteBatchList)
 
         self.batchesList.itemClicked.connect(self.batch_list_clicked)
@@ -209,7 +209,7 @@ class SearchScreen(QMainWindow):
         result = self.my_list_dialog.exec_()  # Returns QDialog.Accepted or QDialog.Rejected
         self.populateLists()
 
-    def editPlateList(self):
+    def openPlateList(self):
         try:
             selectedPlate = self.platesList.selectedItems()[0]
         except:
@@ -218,7 +218,7 @@ class SearchScreen(QMainWindow):
         print(plateIdPk)
         plateList = dbInterface.getListById(self.token, plateIdPk)
         dialog = MyListClass(['Plate Id'], self)  # Pass self (MainWindow) as parent
-        dialog.editList(plateIdPk)
+        dialog.openList(plateIdPk)
         result = dialog.exec_()
 
 
@@ -237,7 +237,7 @@ class SearchScreen(QMainWindow):
         self.populateLists()
 
 
-    def editBatchList(self):
+    def openBatchList(self):
         try:
             selectedBatch = self.batchesList.selectedItems()[0]
         except:
@@ -246,7 +246,7 @@ class SearchScreen(QMainWindow):
         print(batchIdPk)
         batchList = dbInterface.getListById(self.token, batchIdPk)
         dialog = MyListClass(['Batch Id', 'Compound Id'], self)  # Pass self (MainWindow) as parent
-        dialog.editList(batchIdPk)
+        dialog.openList(batchIdPk)
         result = dialog.exec_()
 
 

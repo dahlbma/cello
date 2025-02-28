@@ -28,7 +28,8 @@ class MyListClass(QDialog):  # Inherit from QDialog
         self.ui.list_tab.installEventFilter(self)  # Install event filter
 
         self.ui.listName_eb.textChanged.connect(self.nameChanged)
-
+        self.readOnly = False
+        
         # listName_eb list name edit box 
         # list_tab   table for batches
 
@@ -68,6 +69,10 @@ class MyListClass(QDialog):  # Inherit from QDialog
             Returns:
             True if all values are 'Ok', False otherwise.
         """
+        
+        if self.readOnly == True: # The list is opened in read only mode
+            return False
+        
         row_count = self.ui.list_tab.rowCount()
 
         if row_count == 0:  # Handle empty table case.
@@ -233,6 +238,8 @@ class MyListClass(QDialog):  # Inherit from QDialog
 
         
     def pasteList(self):
+        if self.readOnly == True: # The list is read only
+            return
         clipboard = QApplication.clipboard()
         text = clipboard.text()
         text = text.replace(",", " ")
@@ -290,11 +297,12 @@ class MyListClass(QDialog):  # Inherit from QDialog
         self.accept()
 
 
-    def editList(self, listId):
+    def openList(self, listId):
         """Populates the dialog with existing list data."""
         tableContent = dbInterface.getListById(self.parent.token, listId)
         listInfo = dbInterface.getListInfoById(self.parent.token, listId)
 
+        self.readOnly = True
         self.ui.listName_eb.setText(listInfo[1])
 
         # Clear the table before populating it
@@ -308,7 +316,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
                     item = QTableWidgetItem(str(cell_data))
                     self.ui.list_tab.setItem(row_index, col_index, item)
 
-        self.setWindowTitle("Edit list") # change title to edit list.
+        self.setWindowTitle("Read only list")
 
     def listTypeChanged(self, index):
         selected_text = self.ui.listType_cb.itemText(index)
