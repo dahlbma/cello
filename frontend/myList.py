@@ -77,7 +77,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
 
         if row_count == 0:  # Handle empty table case.
             self.ui.saveList_btn.setEnabled(False)
-            return False # Or True, depending on your application logic
+            return False
 
         for row in range(row_count):
             item = self.ui.list_tab.item(row, 1)  # Column 1 is the second column
