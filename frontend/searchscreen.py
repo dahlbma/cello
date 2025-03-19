@@ -216,7 +216,6 @@ class SearchScreen(QMainWindow):
         except:
             return
         plateIdPk = selectedPlate.data(Qt.UserRole)
-        print(plateIdPk)
         plateList = dbInterface.getListById(self.token, plateIdPk)
         dialog = MyListClass(['Plate Id'], self)  # Pass self (MainWindow) as parent
         dialog.openList(plateIdPk)
@@ -244,7 +243,6 @@ class SearchScreen(QMainWindow):
         except:
             return
         batchIdPk = selectedBatch.data(Qt.UserRole)
-        print(batchIdPk)
         batchList = dbInterface.getListById(self.token, batchIdPk)
         dialog = MyListClass(['Batch Id', 'Compound Id'], self)  # Pass self (MainWindow) as parent
         dialog.openList(batchIdPk)
@@ -474,7 +472,6 @@ class SearchScreen(QMainWindow):
         keys = ["compound", "batch", "container", "pos", "conc", "loc", "name", "path"]
         # Convert list of tuples to list of dictionaries
         result = [dict(zip(keys, row)) for row in data]
-        print(result)
         data = result
         # AC2239618 AG8135001 BJ1835001 CBK015588 CBK322493
         # EB_BY7184003 EB_CB1252001 EB_CC0517001 EB_CC0520001
