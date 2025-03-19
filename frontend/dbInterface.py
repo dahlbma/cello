@@ -172,7 +172,6 @@ def saveListElements(token, accuElements, listId):
     try:
         res = r.content.decode()
         res = json.loads(res)
-        print(res)
         retVal = res['msg']
         if retVal != 'NotOk':
             return retVal
@@ -271,9 +270,10 @@ def saveBatchList(token, batchIds, listId):
         print('Failed decode')
         return r.content
 
-def getBatches(token, batchIds, vials, tubes, plates):
-    r = requests.get(f'{baseUrl}searchBatches/{vials}/{tubes}/{plates}/{batchIds}',
+def getBatches(token, batchIds, vials, tubes, plates, present):
+    r = requests.get(f'{baseUrl}searchBatches/{present}/{vials}/{tubes}/{plates}/{batchIds}',
             headers={'token':token}, verify=False)
+
     try:
         return r.content.decode()
     except:

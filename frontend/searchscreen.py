@@ -36,6 +36,7 @@ class SearchScreen(QMainWindow):
 
         self.mult_vial_search_btn.clicked.connect(self.search_many_vials)
 
+        self.batch_search_notpresent_btn.clicked.connect(self.search_batches_notpresent)
         self.batch_search_btn.clicked.connect(self.search_batches)
         self.batch_export_btn.clicked.connect(self.export_batch_table)
         self.show_plates_cb.setChecked(True)
@@ -402,7 +403,7 @@ class SearchScreen(QMainWindow):
         export_table(self.multvial_table)
 
 
-    def search_batches(self):
+    def search_batches(self, notpresent=False):
         self.batch_table.setRowCount(0)
         batches = self.batch_search_eb.text()
         batches = re.sub("[^0-9a-zA-Z_-]+", " ", batches)
@@ -411,7 +412,13 @@ class SearchScreen(QMainWindow):
         vials_checked = 'yes' if self.show_vials_cb.isChecked() else 'no'
         tubes_checked = 'yes' if self.show_microtubes_cb.isChecked() else 'no'
         plates_checked = 'yes' if self.show_plates_cb.isChecked() else 'no'
+        present = 'yes' if notpresent == False else 'no'
         
+        saBatches = batches.split()
+        iNrOfRows = len(saBatches)
+        if iNrOfRows == 0:
+            return
+
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
         accumulated_rows = []
@@ -419,8 +426,6 @@ class SearchScreen(QMainWindow):
         iRowsBatch = 8
         self.popup = PopUpProgress(f'Searching...')
         self.popup.show()
-        saBatches = batches.split()
-        iNrOfRows = len(saBatches)
         iTick = 0
         rProgressSteps = (iRowsBatch/iNrOfRows)*100
         
@@ -431,7 +436,7 @@ class SearchScreen(QMainWindow):
             iCount += 1
             sAccuBatches = sAccuBatches + ' ' + batch
             if iCount == iRowsBatch:
-                res = dbInterface.getBatches(self.token, sAccuBatches, vials_checked, tubes_checked, plates_checked)
+                res = dbInterface.getBatches(self.token, sAccuBatches, vials_checked, tubes_checked, plates_checked, present)
 
                 newRows = json.loads(res)
                 for nRow in newRows:
@@ -443,7 +448,7 @@ class SearchScreen(QMainWindow):
                 QApplication.processEvents()
         
         if sAccuBatches != '':
-            res = dbInterface.getBatches(self.token, sAccuBatches, vials_checked, tubes_checked, plates_checked)
+            res = dbInterface.getBatches(self.token, sAccuBatches, vials_checked, tubes_checked, plates_checked, present)
             newRows = json.loads(res)
             for nRow in newRows:
                 self.batches_data.append(nRow)
@@ -458,6 +463,9 @@ class SearchScreen(QMainWindow):
             self.batch_table.setCurrentCell(0,0)
             self.batch_export_btn.setEnabled(True)
 
+    def search_batches_notpresent(self):
+        self.search_batches(True)
+    
     def setBatchTableData(self, data):
         self.batch_table.setRowCount(0)
         self.batch_table.setRowCount(len(data))
@@ -466,6 +474,7 @@ class SearchScreen(QMainWindow):
         keys = ["compound", "batch", "container", "pos", "conc", "loc", "name", "path"]
         # Convert list of tuples to list of dictionaries
         result = [dict(zip(keys, row)) for row in data]
+        print(result)
         data = result
         # AC2239618 AG8135001 BJ1835001 CBK015588 CBK322493
         # EB_BY7184003 EB_CB1252001 EB_CC0517001 EB_CC0520001
