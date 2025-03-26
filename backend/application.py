@@ -78,9 +78,9 @@ def res_to_json(response, cursor):
     return to_js
 
 def createPngFromMolfile(regno, molfile):
-    sSql = f'''select bin2mol(moldepict('{molfile}'))
+    sSql = f'''select bin2mol(moldepict(%s))
     '''
-    cur.execute(sSql)
+    cur.execute(sSql, (molfile, ))
     try:
         molfile = cur.fetchall()[0][0]
         m = Chem.MolFromMolBlock(molfile)
@@ -261,6 +261,296 @@ class PingDB(tornado.web.RequestHandler):
         if ret == 'error':
             self.set_status(400)
 
+
+class GetListById(tornado.web.RequestHandler):
+    def get(self, listId):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        sSql = f'''select element, 'Ok' from {coolDB}.list_content where list_id = %s
+        '''
+        try:
+            cur.execute(sSql, (listId, ))
+            tRes = cur.fetchall()
+        except:
+            logging.error(sSql)
+            return
+
+        self.write(json.dumps(tRes))
+
+
+class GetListInfoById(tornado.web.RequestHandler):
+    def get(self, listId):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        sSql = f'''select pk, list_name, list_owner, list_type
+        from {coolDB}.list_table where pk = %s
+        '''
+        
+        try:
+            cur.execute(sSql, (listId, ))
+            tRes = cur.fetchall()
+        except:
+            logging.error(sSql)
+            return
+
+        self.write(json.dumps(tRes[0]))
+
+
+class SaveListElements(tornado.web.RequestHandler):
+    def put(self, accuList, listId):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        saElements = accuList.split()
+
+        for sElement in saElements:
+            sSql = f'''insert into {coolDB}.list_content
+            (list_id, element)
+            values
+            (%s, %s)
+            '''
+            
+            try:
+                cur.execute(sSql, (listId, sElement, ))
+            except:
+                logging.error(sSql)
+
+
+class ValidateBatches(tornado.web.RequestHandler):
+    def get(self, batches, listType):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        saBatches = batches.split()
+
+        if listType == 'Batch Id':
+            sSql = f'''select notebook_ref from {bcpvsDB}.batch where notebook_ref='''
+        elif listType == 'Compound Id':
+            sSql = f'''select compound_id from {bcpvsDB}.compound where compound_id='''
+        elif listType == 'Plate Id':
+            #sSql = f'''select plate_id from {coolDB}.plate where config_id='''
+            sSql = f'''select plate_id from {coolDB}.plate where plate_id='''
+
+            
+        status = 200
+        result = []
+        for sBatch in saBatches:
+            sSqlNew = sSql + f''' '{sBatch}'  '''
+            cur.execute(sSqlNew)
+            res = cur.fetchall()
+            if len(res) == 0:
+                result.append([sBatch, 'Not found'])
+                status = 400
+            else:
+                result.append([sBatch, 'Ok'])
+                #logging.info(res)
+        #self.set_status(status)
+        self.finish(json.dumps(result))
+
+
+@jwtauth
+class GetLists(tornado.web.RequestHandler):
+    def get(self, listType):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        if listType != 'Plate Id':
+            sSql = f'''SELECT list_table.pk,
+    CONCAT(
+        list_table.list_name,
+        ' ',
+        ' (',
+        COUNT(list_content.pk),
+        ' ',
+        list_table.list_type,
+        ')'
+    ) AS combined_string,
+      max(list_table.list_owner)
+FROM
+    cool.list_table
+LEFT JOIN
+    cool.list_content ON list_table.pk = list_content.list_id
+    where cool.list_table.list_type != 'Plate Id'
+GROUP BY
+    list_table.pk
+            '''
+
+        else:
+            sSql = f'''SELECT list_table.pk,
+    CONCAT(
+        list_table.list_name,
+        ' ',
+        ' (',
+        COUNT(list_content.pk),
+        ' ',
+        list_table.list_type,
+        ')'
+    ) AS combined_string,
+      max(list_table.list_owner)
+FROM
+    cool.list_table
+LEFT JOIN
+    cool.list_content ON list_table.pk = list_content.list_id
+    where cool.list_table.list_type = 'Plate Id'
+GROUP BY
+    list_table.pk
+            '''
+            
+        try:
+            #logging.info(sSql)
+            cur.execute(sSql)
+        except Exception as e:
+            logging.info(sSql)
+            sError = str(e)
+            self.set_status(400)
+            self.finish(sError)
+            return
+
+        tRes = cur.fetchall()
+        self.write(json.dumps(tRes))
+
+
+@jwtauth
+class SearchLists(tornado.web.RequestHandler):
+    def get(self, plateListId, batchListId):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+
+        sSql = f'''select list_type from {coolDB}.list_table where pk = '{batchListId}'  '''
+        try:
+            cur.execute(sSql)
+            listType = cur.fetchall()[0][0]
+        except Exception as e:
+            logging.error(sSql)
+            return
+        if listType == 'Batch Id':
+            sSql = f'''
+            SELECT
+            p.plate_id,
+            c.well,
+            c.notebook_ref,
+            c.compound_id,
+            conc,
+            p.comments
+            FROM
+            {coolDB}.config c
+            JOIN
+            {coolDB}.plate p ON p.config_id = c.config_id
+            JOIN
+            {coolDB}.list_content lc1 ON c.notebook_ref = lc1.element AND lc1.list_id = {batchListId}
+            JOIN
+            {coolDB}.list_content lc2 ON p.plate_id = lc2.element AND lc2.list_id = {plateListId}
+            '''
+
+        else:
+            sSql = f'''
+            SELECT
+            p.plate_id,
+            c.well,
+            c.notebook_ref,
+            c.compound_id,
+            conc,
+            p.comments
+            FROM
+            {coolDB}.config c
+            JOIN
+            {coolDB}.plate p ON p.config_id = c.config_id
+            JOIN
+            {coolDB}.list_content lc1 ON c.compound_id = lc1.element AND lc1.list_id = {batchListId}
+            JOIN
+            {coolDB}.list_content lc2 ON p.plate_id = lc2.element AND lc2.list_id = {plateListId}
+            '''
+        try:
+            cur.execute(sSql)
+        except Exception as e:
+            logging.error(sSql)
+            logging.error(str(e))
+            return
+        tRes = cur.fetchall()
+
+        modified_tRes = [tuple([' ' if value is None else value for value in row]) for row in tRes]
+
+        self.write(json.dumps(modified_tRes))
+
+
+@jwtauth
+class CheckListName(tornado.web.RequestHandler):
+    def get(self, userName, listName):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        sSql = f'''select list_name from {coolDB}.list_table
+        where list_name = '{listName}'
+        and list_owner = '{userName}'
+        '''
+        try:
+            #logging.info(sSql)
+            cur.execute(sSql)
+        except Exception as e:
+            logging.info(sSql)
+            sError = str(e)
+            self.set_status(400)
+            self.finish(sError)
+            return
+
+        tRes = cur.fetchall()
+        if len(tRes) != 0:
+            self.write(json.dumps({"msg": "NotOk"}))
+        else:
+            self.write(json.dumps({"msg": "Ok"}))
+
+
+@jwtauth
+class CreateList(tornado.web.RequestHandler):
+    def put(self, userName, listName, listType):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        sSql = f'''insert into {coolDB}.list_table
+        (list_name, list_owner, list_type)
+        values
+        ('{listName}', '{userName}', '{listType}')
+        '''
+        listId = 'NotOk'
+        try:
+            cur.execute(sSql)
+            listId = cur.cursor.lastrowid
+        except Exception as e:
+            logging.error(sSql)
+            logging.error(str(e))
+            self.set_status(400)
+            self.write(json.dumps({"msg": "NotOk"}))
+            return
+
+        self.write(json.dumps({"msg": str(listId)}))
+
+
+@jwtauth
+class DeleteList(tornado.web.RequestHandler):
+    def put(self, userName, listId):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+
+        sSql = f'''select pk from {coolDB}.list_table
+        where 
+        pk = '{listId}' and
+        list_owner = '{userName}'
+        '''
+        try:
+            cur.execute(sSql)
+        except:
+            self.write(json.dumps({"msg": "NotOk"}))
+            return
+
+        tRes = cur.fetchall()
+        if len(tRes) != 1:
+            self.set_status(400)
+            self.write(json.dumps({"msg": "NotOk"}))
+            return
+
+        sSql = f'''delete from {coolDB}.list_table
+        where 
+        pk = '{listId}' and
+        list_owner = '{userName}'
+        '''
+        try:
+            #logging.info(sSql)
+            cur.execute(sSql)
+        except Exception as e:
+            logging.error(sSql)
+            logging.error(str(e))
+            self.set_status(400)
+            self.write(json.dumps({"msg": "NotOk"}))
+            return
+
+        self.write(json.dumps({"msg": "Ok"}))
+        
 
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
@@ -1791,14 +2081,15 @@ def doPrintPlate(sPlate):
     s = f'''
 ^XA
 ^MMT
-^PW400
-^LL0064
-^LS-40
-^BY2,3,43^FT47,48^BCN,,Y,N
+^CFA,20
+^BY2,3,43
+^A0,25,20
+^FO1,20^FD{sPlate}^FS
+^FT100,55^BCN,,N,N
 ^FD>:P>{sPlate}^FS
-^FT277,48^A0N,22,25^FH\^FD ^FS
-^PQ1,0,1,Y^XZ
+^XZ
 '''
+
     f = open('/tmp/file.txt','w')
     f.write(s)
     f.close()
@@ -2301,7 +2592,7 @@ class searchBatches(tornado.web.RequestHandler):
             and l.loc_id = m.location
             and t.notebook_ref = b.notebook_ref and t.notebook_ref = '{sId}'
             '''
-        
+            
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
         return tRes
@@ -2345,9 +2636,10 @@ class searchBatches(tornado.web.RequestHandler):
             
         sSlask = cur.execute(sSql)
         tRes = cur.fetchall()
+        
         return tRes
     
-        
+
     def get(self, vials, tubes, plates, sBatches):
         self.glassDB, self.coolDB, self.microtubeDB, self.loctreeDB, self.bcpvsDB = getDatabase(self)
         
@@ -2375,6 +2667,180 @@ class searchBatches(tornado.web.RequestHandler):
         self.finish(json.dumps(tRes_tot))
 
 
+@jwtauth
+class searchBatchess(tornado.web.RequestHandler):
+
+    def getVials(self, sId, present):
+        if sId.startswith('CBK') or sId.startswith('SLL'):
+            sSql = f'''
+            SELECT c.compound_id as compoundId,
+            v.notebook_ref as batchId,
+            v.vial_id vialId,
+            v.pos,
+            l.name as boxDescription,
+            l.path,
+            v.location as boxId,
+            'Vial' loctype
+            FROM {self.glassDB}.vial v,
+            {self.bcpvsDB}.batch c,
+            loctree.v_all_locations l
+            where
+            v.notebook_ref = c.notebook_ref and
+            l.loc_id = v.location and
+            l.name != 'Discarded' and
+            c.compound_id = '{sId}'
+            '''
+        else:
+            sSql = f'''
+            SELECT c.compound_id as compoundId,
+            v.notebook_ref as batchId,
+            v.vial_id vialId,
+            v.pos,
+            v.conc,
+            l.path,
+            l.name as boxDescription,
+            'Vial' loctype
+            FROM {self.glassDB}.vial v,
+            {self.bcpvsDB}.batch c,
+            loctree.v_all_locations l
+            where
+            v.notebook_ref = c.notebook_ref and
+            l.loc_id = v.location and
+            l.name != 'Discarded' and
+            v.notebook_ref = '{sId}'
+            '''
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+
+        if present == 'no':
+            if len(tRes) == 0:
+                tRes = ((sId, '', '', '', '', '', '', ''),)
+            else:
+                return ()
+
+        return tRes
+        
+        
+    def getMicrotubes(self, sId, present):
+        if sId.startswith('CBK') or sId.startswith('SLL'):
+            sSql = f'''
+            select b.compound_id,
+            t.notebook_ref,
+            t.tube_id,
+            mt.position,
+            t.conc,
+            m.location,
+            l.name,
+            CONCAT('Microtube ', mt.matrix_id) loctype
+            from {self.microtubeDB}.matrix_tube mt, {self.microtubeDB}.tube t,
+            {self.microtubeDB}.matrix m, {self.bcpvsDB}.batch b, loctree.locations l
+            where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
+            and l.loc_id = m.location
+            and t.notebook_ref = b.notebook_ref and b.compound_id = '{sId}'
+            '''
+        else:
+            sSql = f'''
+            select b.compound_id,
+            t.notebook_ref,
+            t.tube_id,
+            mt.position,
+            t.conc,
+            m.location,
+            l.name,
+            CONCAT('Microtube ', mt.matrix_id) loctype
+            from {self.microtubeDB}.matrix_tube mt, {self.microtubeDB}.tube t,
+            {self.microtubeDB}.matrix m, {self.bcpvsDB}.batch b, loctree.locations l
+            where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
+            and l.loc_id = m.location
+            and t.notebook_ref = b.notebook_ref and t.notebook_ref = '{sId}'
+            '''
+
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        if present == 'no':
+            if len(tRes) == 0:
+                tRes = ((sId, '', '', '', '', '', '', ''),)
+            else:
+                return ()
+        
+        return tRes
+        
+        
+    def getPlates(self, sId, present):
+        if sId.startswith('CBK') or sId.startswith('SLL'):
+            sSql = f'''
+            select b.compound_id as compoundId,
+            cc.notebook_ref as batchId,
+            p.plate_id,
+            cc.well,
+            cc.conc,
+            p.comments,
+            p.loc_id,
+            "Plate" loctype
+            FROM {self.coolDB}.config cc, {self.bcpvsDB}.batch b, {self.coolDB}.plate p
+            where cc.notebook_ref = b.notebook_ref
+            and p.config_id = cc.config_id
+            and (loc_id <> 'Sent to User' OR loc_id IS NULL)
+            and p.DISCARDED is NULL
+            and b.compound_id = '{sId}'
+            '''
+        else:
+            sSql = f'''
+            select b.compound_id as compoundId,
+            cc.notebook_ref as batchId,
+            p.plate_id,
+            cc.well,
+            cc.conc,
+            p.comments,
+            p.loc_id,
+            "Plate" loctype
+            FROM {self.coolDB}.config cc, {self.bcpvsDB}.batch b, {self.coolDB}.plate p
+            where cc.notebook_ref = b.notebook_ref
+            and p.config_id = cc.config_id
+            and (loc_id <> 'Sent to User' OR loc_id IS NULL)
+            and p.DISCARDED is NULL
+            and cc.notebook_ref = '{sId}'
+            '''
+            
+        sSlask = cur.execute(sSql)
+        tRes = cur.fetchall()
+        if present == 'no':
+            if len(tRes) == 0:
+                tRes = ((sId, '', '', '', '', '', '', ''),)
+            else:
+                return ()
+        
+        return tRes
+    
+
+    def get(self, present, vials, tubes, plates, sBatches):
+        self.glassDB, self.coolDB, self.microtubeDB, self.loctreeDB, self.bcpvsDB = getDatabase(self)
+        
+        sIds = list(OrderedDict.fromkeys(sBatches.split()))
+
+        jRes = []
+
+        tmpIds = ""
+        for sId in sIds:
+            tmpIds += "'" + sId + "'"
+        stringIds = tmpIds.replace("''", "','")
+        tRes_tot = []
+
+        for sId in sIds:
+
+            tRes1 = self.getMicrotubes(sId, present) if tubes == 'yes' else ()
+            tRes2 = self.getPlates(sId, present) if plates == 'yes' else ()
+            tRes3 = self.getVials(sId, present) if vials == 'yes' else ()
+
+            tRes1 = tRes1 if tRes1 is not None else []
+            tRes2 = tRes2 if tRes2 is not None else []
+            tRes3 = tRes3 if tRes3 is not None else []
+            tRes_tot += tRes1 + tRes2 + tRes3
+
+        self.finish(json.dumps(tRes_tot))
+
+
+        
 @jwtauth
 class DeleteLocation(tornado.web.RequestHandler):
     def put(self, sLocation):

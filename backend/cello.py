@@ -71,7 +71,9 @@ class login(tornado.web.RequestHandler):
         }
         jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
         self.write({'token': jwt_token,
-                    'database': database})
+                    'database': database,
+                    'user': username}
+        )
         logging.info(f'Login: {username} Database: {database}')
 
     def get(self):
@@ -210,7 +212,17 @@ def make_app():
         (r"/updatePlateName/(?P<sPlate>[^\/]+)/(?P<sPlateName>[^\/]+)/(?P<sPlateLocation>[^\/]+)",
          application.UpdatePlateName),
         (r"/batchInfo/(?P<sBatch>[^\/]+)", application.batchInfo),
+        (r"/createList/(?P<userName>[^\/]+)/(?P<listName>[^\/]+)/(?P<listType>[^\/]+)", application.CreateList),
+        (r"/deleteList/(?P<userName>[^\/]+)/(?P<listId>[^\/]+)", application.DeleteList),
+        (r"/getListById/(?P<listId>[^\/]+)", application.GetListById),
+        (r"/getListInfoById/(?P<listId>[^\/]+)", application.GetListInfoById),
+        (r"/getLists/(?P<listType>[^\/]+)", application.GetLists),
+        (r"/checkListName/(?P<userName>[^\/]+)/(?P<listName>[^\/]+)", application.CheckListName),
+        (r"/saveListElements/(?P<accuList>[^\/]+)/(?P<listId>[^\/]+)", application.SaveListElements),
+        (r"/searchLists/(?P<plateListId>[^\/]+)/(?P<batchListId>[^\/]+)", application.SearchLists),
+        (r"/validateBatches/(?P<batches>[^\/]+)/(?P<listType>[^\/]+)", application.ValidateBatches),
         (r"/searchBatches/(?P<vials>[^\/]+)/(?P<tubes>[^\/]+)/(?P<plates>[^\/]+)/(?P<sBatches>[^\/]+)", application.searchBatches),
+        (r"/searchBatches/(?P<present>[^\/]+)/(?P<vials>[^\/]+)/(?P<tubes>[^\/]+)/(?P<plates>[^\/]+)/(?P<sBatches>[^\/]+)", application.searchBatchess),
         (r"/searchVials/(?P<sVials>[^\/]+)", application.searchVials),
         (r"/transitVials/(?P<sVials>[^\/]+)", application.TransitVials),
         (r"/printVial/(?P<sVial>[^\/]+)", application.printVial),
