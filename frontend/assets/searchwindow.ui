@@ -77,7 +77,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="search_tab_wg">
         <property name="currentIndex">
-         <number>2</number>
+         <number>4</number>
         </property>
         <widget class="QWidget" name="onevial_search_tab">
          <attribute name="title">
@@ -1040,6 +1040,18 @@ Weight</string>
                  <layout class="QHBoxLayout" name="horizontalLayout_11">
                   <item>
                    <widget class="QPushButton" name="createPlateList_btn">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>200</width>
+                      <height>0</height>
+                     </size>
+                    </property>
                     <property name="text">
                      <string>Add</string>
                     </property>
@@ -1079,6 +1091,18 @@ Weight</string>
                  <layout class="QHBoxLayout" name="horizontalLayout_10">
                   <item>
                    <widget class="QPushButton" name="createBatchList_btn">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>200</width>
+                      <height>0</height>
+                     </size>
+                    </property>
                     <property name="text">
                      <string>Add</string>
                     </property>
