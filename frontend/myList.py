@@ -304,9 +304,12 @@ class MyListClass(QDialog):  # Inherit from QDialog
         tableContent = dbInterface.getListById(self.parent.token, listId)
         listInfo = dbInterface.getListInfoById(self.parent.token, listId)
 
+        sType = listInfo[3]
+        sUsername = listInfo[2]
+        sListName = listInfo[1]
         print(listInfo)
         try:
-            iIndex = self.saTypes.index(listInfo[3])
+            iIndex = self.saTypes.index(sType)
             self.listTypeChanged(iIndex)
             self.ui.listType_cb.setCurrentIndex(iIndex)
         except:
@@ -315,12 +318,12 @@ class MyListClass(QDialog):  # Inherit from QDialog
         unCookedToken = json.loads(self.parent.token.decode('utf-8'))
         username = unCookedToken['user']
 
-        if username != listInfo[2]:
+        if username != sUsername:
             self.readOnly = True
         else:
             self.readOnly = False
 
-        self.ui.listName_eb.setText(listInfo[1])
+        self.ui.listName_eb.setText(sListName)
 
         # Clear the table before populating it
         self.ui.list_tab.setRowCount(0)
@@ -336,7 +339,6 @@ class MyListClass(QDialog):  # Inherit from QDialog
         self.setWindowTitle("Read only list")
 
     def listTypeChanged(self, index):
-        print(index)
         selected_text = self.ui.listType_cb.itemText(index)
         if selected_text != self.currentListType:
             self.currentListType = selected_text
