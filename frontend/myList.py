@@ -9,7 +9,8 @@ class MyListClass(QDialog):  # Inherit from QDialog
     def __init__(self, saTypes, parent=None):  # Add parent argument
         super().__init__(parent)  # Initialize parent
         self.parent = parent
-        
+
+        self.saTypes = saTypes
         self.ui = Ui_ListEdit()
         self.ui.setupUi(self)
         self.setModal(True)
@@ -238,6 +239,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
 
         
     def pasteList(self):
+        
         if self.readOnly == True: # The list is read only
             return
         clipboard = QApplication.clipboard()
@@ -302,7 +304,22 @@ class MyListClass(QDialog):  # Inherit from QDialog
         tableContent = dbInterface.getListById(self.parent.token, listId)
         listInfo = dbInterface.getListInfoById(self.parent.token, listId)
 
-        self.readOnly = True
+        print(listInfo)
+        try:
+            iIndex = self.saTypes.index(listInfo[3])
+            self.listTypeChanged(iIndex)
+            self.ui.listType_cb.setCurrentIndex(iIndex)
+        except:
+            return
+
+        unCookedToken = json.loads(self.parent.token.decode('utf-8'))
+        username = unCookedToken['user']
+
+        if username != listInfo[2]:
+            self.readOnly = True
+        else:
+            self.readOnly = False
+
         self.ui.listName_eb.setText(listInfo[1])
 
         # Clear the table before populating it
@@ -319,6 +336,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
         self.setWindowTitle("Read only list")
 
     def listTypeChanged(self, index):
+        print(index)
         selected_text = self.ui.listType_cb.itemText(index)
         if selected_text != self.currentListType:
             self.currentListType = selected_text
