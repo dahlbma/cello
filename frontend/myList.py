@@ -25,12 +25,16 @@ class MyListClass(QDialog):  # Inherit from QDialog
         self.listNameOk = False
         self.ui.saveList_btn.clicked.connect(self.saveList)
         self.ui.saveList_btn.setEnabled(False)
-        self.ui.insertList_btn.clicked.connect(self.insertList)
+        self.ui.updateList_btn.setEnabled(False)
+        self.ui.updateList_btn.clicked.connect(self.updateList)
         self.ui.list_tab.installEventFilter(self)  # Install event filter
 
         self.ui.listName_eb.textChanged.connect(self.nameChanged)
         self.readOnly = False
-        
+        self.editMode = False
+        self.listId = None
+
+        self.saCurrentTokens = []
         # listName_eb list name edit box 
         # list_tab   table for batches
 
@@ -84,9 +88,13 @@ class MyListClass(QDialog):  # Inherit from QDialog
             item = self.ui.list_tab.item(row, 1)  # Column 1 is the second column
             if item is None or item.text() != 'Ok': # Check for None or not "Ok"
                 self.ui.saveList_btn.setEnabled(False)
+                self.ui.updateList_btn.setEnabled(False)
                 return False  # Found a value that is not 'Ok' or cell is empty
-        if self.listNameOk == True:
+        if self.listNameOk == True and self.editMode == False:
             self.ui.saveList_btn.setEnabled(True)
+        if self.editMode == True:
+            self.ui.saveList_btn.setEnabled(False)
+            self.ui.updateList_btn.setEnabled(True)
         return True  # All values are 'Ok'
 
 
@@ -159,7 +167,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
         QApplication.setOverrideCursor(Qt.WaitCursor)
         accumulated_rows = []
         iAccumulator_count = 0
-        iRowsBatch = 10
+        iRowsBatch = 12
         self.popup = PopUpProgress(f'Validating list...')
         self.popup.show()
         iNrOfRows = len(valueList)
@@ -216,6 +224,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
         saValidatedData = []
         for value in valueList:
             iCount += 1
+            self.saCurrentTokens.append(value)
             sAccuBatches = sAccuBatches + ' ' + value
             if iCount == iRowsBatch:
                 res = dbInterface.saveListElements(self.parent.token, sAccuBatches, listId)
@@ -227,15 +236,11 @@ class MyListClass(QDialog):  # Inherit from QDialog
         if sAccuBatches != '':
             res = dbInterface.saveListElements(self.parent.token, sAccuBatches, listId)
                     
+        QApplication.processEvents()
         self.popup.obj.proc_counter(100)
+        self.popup.on_thread_finished()
         self.popup.close()
         QApplication.restoreOverrideCursor()
-
-    def insertList(self):
-        print('Inserting')
-        clipboard = QApplication.clipboard()
-        text = clipboard.text()
-        text = text.replace(",", " ")
 
         
     def pasteList(self):
@@ -245,16 +250,14 @@ class MyListClass(QDialog):  # Inherit from QDialog
         clipboard = QApplication.clipboard()
         text = clipboard.text()
         text = text.replace(",", " ")
-        tokens = []
+        tokens = self.saCurrentTokens
         if text:
             try:
-                #tokens = text.splitlines()  # First try splitting by lines
-                #if not tokens: # If there were no lines, split by spaces
-                tokens = text.split()
-                tokens = list(dict.fromkeys(tokens))
+                for token in text.split():
+                    tokens.append(token)
+                tokens = list(dict.fromkeys(tokens))  # Removes duplicates (using the dict functionality)
                 self.populateListTable(tokens)
             except Exception as e:
-                # Handle the exception
                 print(f"An error occurred: {e}")
                 return
         else:
@@ -289,6 +292,13 @@ class MyListClass(QDialog):  # Inherit from QDialog
         self.all_status_ok()
 
 
+    def updateList(self):
+        dbInterface.deleteListElements(self.parent.token, self.listId)
+        valueList = self.get_first_column_values()
+        self.saveListValues(valueList, self.listId)
+        self.accept()
+
+        
     def saveList(self):
         ebName = self.ui.listName_eb.text()
         listType = self.ui.listType_cb.currentText()
@@ -302,16 +312,19 @@ class MyListClass(QDialog):  # Inherit from QDialog
     def openList(self, listId):
         """Populates the dialog with existing list data."""
         tableContent = dbInterface.getListById(self.parent.token, listId)
+        for row in tableContent:
+            self.saCurrentTokens.append(row[0])
         listInfo = dbInterface.getListInfoById(self.parent.token, listId)
 
+        self.listId = listId
         sType = listInfo[3]
         sUsername = listInfo[2]
         sListName = listInfo[1]
-        print(listInfo)
         try:
             iIndex = self.saTypes.index(sType)
             self.listTypeChanged(iIndex)
             self.ui.listType_cb.setCurrentIndex(iIndex)
+            self.editMode = True
         except:
             return
 
@@ -324,7 +337,6 @@ class MyListClass(QDialog):  # Inherit from QDialog
             self.readOnly = False
 
         self.ui.listName_eb.setText(sListName)
-
         # Clear the table before populating it
         self.ui.list_tab.setRowCount(0)
 

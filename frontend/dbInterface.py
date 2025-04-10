@@ -217,6 +217,24 @@ def deleteList(token, listId):
         return False
 
 
+def deleteListElements(token, listId):
+    unCookedToken = json.loads(token.decode('utf-8'))
+    username = unCookedToken['user']
+
+    r = requests.put(f'{baseUrl}deleteListElements/{username}/{listId}',
+                     headers={'token':token}, verify=False)
+    try:
+        res = r.content.decode()
+        res = json.loads(res)
+        retVal = res['msg']
+        if retVal == 'Ok':
+            return True
+        else:
+            return False
+    except:
+        return False
+
+    
 def searchLists(token, plateIdPk, batchIdPk):
     r = requests.get(f'{baseUrl}searchLists/{plateIdPk}/{batchIdPk}',
             headers={'token':token}, verify=False)

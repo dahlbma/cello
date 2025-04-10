@@ -52,9 +52,9 @@ class Ui_ListEdit(object):
         self.saveList_btn = QtWidgets.QPushButton(ListEdit)
         self.saveList_btn.setObjectName("saveList_btn")
         self.horizontalLayout_3.addWidget(self.saveList_btn)
-        self.insertList_btn = QtWidgets.QPushButton(ListEdit)
-        self.insertList_btn.setObjectName("insertList_btn")
-        self.horizontalLayout_3.addWidget(self.insertList_btn)
+        self.updateList_btn = QtWidgets.QPushButton(ListEdit)
+        self.updateList_btn.setObjectName("updateList_btn")
+        self.horizontalLayout_3.addWidget(self.updateList_btn)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.verticalLayout_2.addLayout(self.verticalLayout)
 
@@ -71,4 +71,4 @@ class Ui_ListEdit(object):
         item = self.list_tab.horizontalHeaderItem(1)
         item.setText(_translate("ListEdit", "Status"))
         self.saveList_btn.setText(_translate("ListEdit", "Save"))
-        self.insertList_btn.setText(_translate("ListEdit", "Insert"))
+        self.updateList_btn.setText(_translate("ListEdit", "Update"))

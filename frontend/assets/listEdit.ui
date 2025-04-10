@@ -71,9 +71,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="insertList_btn">
+        <widget class="QPushButton" name="updateList_btn">
          <property name="text">
-          <string>Insert</string>
+          <string>Update</string>
          </property>
         </widget>
        </item>

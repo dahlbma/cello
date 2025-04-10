@@ -39,8 +39,22 @@ class PopUpProgress(QWidget):
         self.thread.started.connect(self.obj.proc_counter)
         self.thread.start()
 
+        # Connect the thread finished signal to your cleanup method
+        self.thread.finished.connect(self.on_thread_finished)
+
+
     def on_count_changed(self, value):
         self.pbar.setValue(value)
+
+    def on_thread_finished(self):
+        # Clean up the thread and worker object
+        self.thread.quit()  # Ensure the thread's event loop is stopped
+        self.thread.wait()  # Wait for the thread to finish
+        self.obj.deleteLater()  # Schedule the worker object for deletion
+        self.thread.deleteLater()  # Schedule the thread object for deletion
+        self.close() #Close the popup window.
+
+        
 
 #sortable table items
 class QCustomTableWidgetItem (QTableWidgetItem):
