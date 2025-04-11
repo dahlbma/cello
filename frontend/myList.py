@@ -348,7 +348,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
                     item = QTableWidgetItem(str(cell_data))
                     self.ui.list_tab.setItem(row_index, col_index, item)
 
-        self.setWindowTitle("Read only list")
+        self.setWindowTitle("Edit list")
 
     def listTypeChanged(self, index):
         selected_text = self.ui.listType_cb.itemText(index)
