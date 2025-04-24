@@ -77,7 +77,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="search_tab_wg">
         <property name="currentIndex">
-         <number>4</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="onevial_search_tab">
          <attribute name="title">
@@ -1178,12 +1178,12 @@ Weight</string>
                 </column>
                 <column>
                  <property name="text">
-                  <string>Batch</string>
+                  <string>Compound</string>
                  </property>
                 </column>
                 <column>
                  <property name="text">
-                  <string>Compound</string>
+                  <string>Batch</string>
                  </property>
                 </column>
                 <column>
