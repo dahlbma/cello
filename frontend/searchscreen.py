@@ -278,7 +278,7 @@ class SearchScreen(QMainWindow):
 
 
     def copyBatchesInPlates(self):
-        headers = ['Plate', 'Well', 'Batch', 'Compound', 'Conc', 'Plate comment']
+        headers = ['Plate', 'Well', 'Compound', 'Batch', 'Conc', 'Plate comment']
         table = self.batchesInPlates_tab
         row_count = table.rowCount()
         col_count = table.columnCount()
