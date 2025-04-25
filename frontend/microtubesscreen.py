@@ -465,7 +465,7 @@ class MicrotubesScreen(QMainWindow):
                     except Exception as e:
                         logging.getLogger(self.mod_name).error(f"Move rack failed: {str(e)}")
             except:
-                res_txt += 'Error reading scanned file'
+                res_txt += 'Error reading scanned file\n' + r
                 logging.getLogger(self.mod_name).error(f"readScannedRack failed with response: {r}")
 
         self.update_box_eb.setEnabled(False)
