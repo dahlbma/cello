@@ -1929,6 +1929,7 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
     # To rotate the text for a field below, remove the R in the ^A0R command
     zplVial = """^XA
 ^MMT
+^MD20
 ^PW400
 ^LL0064
 ^LS210
@@ -2437,21 +2438,22 @@ class printBox(tornado.web.RequestHandler):
 
         zplVial = """^XA
 ^MMT
+^MD20
 ^PW400
 ^LL0064
 ^LS210
 ^CFA,20
-^A0,25,20
-^FO300,20^FDBox: %s^FS
-^A0,25,20
-^FO300,45^FDType: %s^FS
-^A0,25,20
-^FO300,70^FD%s^FS
-^A0,25,20
+^A0R,25,20
+^FO320,60^FDBox: %s^FS
+^A0R,25,20
+^FO347,60^FDType: %s^FS
+^A0R,25,20
+^FO371,60^FD%s^FS
+^A0R,25,20
 
 ^FX Third section with barcode.
 ^BY2,3,45
-^FO300,95^BCN^FD%s^FS
+^FO470,60^BCR^FD%s^FS
 ^XZ
 """ % (sBox.upper(), sType, sDescription, sBox.upper())
 
