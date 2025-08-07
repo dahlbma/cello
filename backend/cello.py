@@ -214,6 +214,7 @@ def make_app():
         (r"/batchInfo/(?P<sBatch>[^\/]+)", application.batchInfo),
         (r"/createList/(?P<userName>[^\/]+)/(?P<listName>[^\/]+)/(?P<listType>[^\/]+)", application.CreateList),
         (r"/deleteList/(?P<userName>[^\/]+)/(?P<listId>[^\/]+)", application.DeleteList),
+        (r"/deleteListElements/(?P<userName>[^\/]+)/(?P<listId>[^\/]+)", application.DeleteListElements),
         (r"/getListById/(?P<listId>[^\/]+)", application.GetListById),
         (r"/getListInfoById/(?P<listId>[^\/]+)", application.GetListInfoById),
         (r"/getLists/(?P<listType>[^\/]+)", application.GetLists),

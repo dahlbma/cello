@@ -322,15 +322,14 @@ class ValidateBatches(tornado.web.RequestHandler):
         elif listType == 'Compound Id':
             sSql = f'''select compound_id from {bcpvsDB}.compound where compound_id='''
         elif listType == 'Plate Id':
-            #sSql = f'''select plate_id from {coolDB}.plate where config_id='''
             sSql = f'''select plate_id from {coolDB}.plate where plate_id='''
 
             
         status = 200
         result = []
         for sBatch in saBatches:
-            sSqlNew = sSql + f''' '{sBatch}'  '''
-            cur.execute(sSqlNew)
+            sSqlNew = sSql + ' %s  '
+            cur.execute(sSqlNew, (sBatch,))
             res = cur.fetchall()
             if len(res) == 0:
                 result.append([sBatch, 'Not found'])
@@ -338,7 +337,6 @@ class ValidateBatches(tornado.web.RequestHandler):
             else:
                 result.append([sBatch, 'Ok'])
                 #logging.info(res)
-        #self.set_status(status)
         self.finish(json.dumps(result))
 
 
@@ -389,7 +387,6 @@ GROUP BY
             '''
             
         try:
-            #logging.info(sSql)
             cur.execute(sSql)
         except Exception as e:
             logging.info(sSql)
@@ -406,21 +403,21 @@ GROUP BY
 class SearchLists(tornado.web.RequestHandler):
     def get(self, plateListId, batchListId):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
-
-        sSql = f'''select list_type from {coolDB}.list_table where pk = '{batchListId}'  '''
+        sSql = f'''select list_type from {coolDB}.list_table where pk = %s  '''
         try:
-            cur.execute(sSql)
+            cur.execute(sSql, (batchListId, ))
             listType = cur.fetchall()[0][0]
         except Exception as e:
             logging.error(sSql)
             return
         if listType == 'Batch Id':
+
             sSql = f'''
             SELECT
             p.plate_id,
             c.well,
-            c.notebook_ref,
             c.compound_id,
+            c.notebook_ref,
             conc,
             p.comments
             FROM
@@ -428,18 +425,17 @@ class SearchLists(tornado.web.RequestHandler):
             JOIN
             {coolDB}.plate p ON p.config_id = c.config_id
             JOIN
-            {coolDB}.list_content lc1 ON c.notebook_ref = lc1.element AND lc1.list_id = {batchListId}
+            {coolDB}.list_content lc1 ON c.notebook_ref = lc1.element AND lc1.list_id = %s
             JOIN
-            {coolDB}.list_content lc2 ON p.plate_id = lc2.element AND lc2.list_id = {plateListId}
+            {coolDB}.list_content lc2 ON p.plate_id = lc2.element AND lc2.list_id = %s
             '''
-
         else:
             sSql = f'''
             SELECT
             p.plate_id,
             c.well,
-            c.notebook_ref,
             c.compound_id,
+            c.notebook_ref,
             conc,
             p.comments
             FROM
@@ -447,12 +443,13 @@ class SearchLists(tornado.web.RequestHandler):
             JOIN
             {coolDB}.plate p ON p.config_id = c.config_id
             JOIN
-            {coolDB}.list_content lc1 ON c.compound_id = lc1.element AND lc1.list_id = {batchListId}
+            {coolDB}.list_content lc1 ON c.compound_id = lc1.element AND lc1.list_id = %s
             JOIN
-            {coolDB}.list_content lc2 ON p.plate_id = lc2.element AND lc2.list_id = {plateListId}
+            {coolDB}.list_content lc2 ON p.plate_id = lc2.element AND lc2.list_id = %s
             '''
+            
         try:
-            cur.execute(sSql)
+            cur.execute(sSql, (batchListId, plateListId, ))
         except Exception as e:
             logging.error(sSql)
             logging.error(str(e))
@@ -468,13 +465,13 @@ class SearchLists(tornado.web.RequestHandler):
 class CheckListName(tornado.web.RequestHandler):
     def get(self, userName, listName):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+
         sSql = f'''select list_name from {coolDB}.list_table
-        where list_name = '{listName}'
-        and list_owner = '{userName}'
+        where list_name = %s
+        and list_owner = %s
         '''
         try:
-            #logging.info(sSql)
-            cur.execute(sSql)
+            cur.execute(sSql, (listName, userName, ))
         except Exception as e:
             logging.info(sSql)
             sError = str(e)
@@ -496,11 +493,12 @@ class CreateList(tornado.web.RequestHandler):
         sSql = f'''insert into {coolDB}.list_table
         (list_name, list_owner, list_type)
         values
-        ('{listName}', '{userName}', '{listType}')
+        (%s, %s, %s)
         '''
+        
         listId = 'NotOk'
         try:
-            cur.execute(sSql)
+            cur.execute(sSql, (listName, userName, listType, ))
             listId = cur.cursor.lastrowid
         except Exception as e:
             logging.error(sSql)
@@ -519,11 +517,12 @@ class DeleteList(tornado.web.RequestHandler):
 
         sSql = f'''select pk from {coolDB}.list_table
         where 
-        pk = '{listId}' and
-        list_owner = '{userName}'
+        pk = %s and
+        list_owner = %s
         '''
+
         try:
-            cur.execute(sSql)
+            cur.execute(sSql, (listId, userName, ))
         except:
             self.write(json.dumps({"msg": "NotOk"}))
             return
@@ -536,12 +535,12 @@ class DeleteList(tornado.web.RequestHandler):
 
         sSql = f'''delete from {coolDB}.list_table
         where 
-        pk = '{listId}' and
-        list_owner = '{userName}'
+        pk = %s and
+        list_owner = %s
         '''
+        
         try:
-            #logging.info(sSql)
-            cur.execute(sSql)
+            cur.execute(sSql, (listId, userName, ))
         except Exception as e:
             logging.error(sSql)
             logging.error(str(e))
@@ -550,7 +549,47 @@ class DeleteList(tornado.web.RequestHandler):
             return
 
         self.write(json.dumps({"msg": "Ok"}))
+
+
+@jwtauth
+class DeleteListElements(tornado.web.RequestHandler):
+    def put(self, userName, listId):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+
+        sSql = f'''select pk from {coolDB}.list_table
+        where 
+        pk = %s and
+        list_owner = %s
+        '''
+
+        try:
+            cur.execute(sSql, (listId, userName, ))
+        except:
+            self.write(json.dumps({"msg": "NotOk"}))
+            return
+
+        tRes = cur.fetchall()
+        if len(tRes) != 1:
+            self.set_status(400)
+            self.write(json.dumps({"msg": "NotOk"}))
+            return
+
+        sSql = f'''delete from {coolDB}.list_content
+        where
+        list_id = %s
+        '''
         
+        try:
+            cur.execute(sSql, (listId, ))
+        except Exception as e:
+            logging.error(sSql)
+            logging.error(str(e))
+            self.set_status(400)
+            self.write(json.dumps({"msg": "NotOk"}))
+            return
+
+        self.write(json.dumps({"msg": "Ok"}))
+
 
 @jwtauth
 class AddMicrotube(tornado.web.RequestHandler):
@@ -718,6 +757,7 @@ class getMicroTubes(tornado.web.RequestHandler):
 
         jRes = list()
         for sId in saBatches:
+
             sSql = f"""
 SELECT
  t.notebook_ref AS batchId,
@@ -733,17 +773,17 @@ FROM
  left join {microtubeDB}.v_matrix_tube mt on t.tube_id = mt.tube_id
  left join {microtubeDB}.v_matrix m on m.matrix_id = mt.matrix_id
 where
-t.notebook_ref = '{sId}'
-or b.compound_id = '{sId}'
+t.notebook_ref = %s
+or b.compound_id = %s
             """
-
             try:
-                sSlask = cur.execute(sSql)
+                sSlask = cur.execute(sSql, (sId, sId, ))
                 tRes = cur.fetchall()
             except Exception as e:
                 logging.error("Error: " + str(e) + ' problem with batch:' + sId)
                 return
             if len(tRes) == 0:
+
                 sSql = f"""select
 t.notebook_ref as batchId,
 t.tube_id as tubeId,
@@ -756,11 +796,11 @@ from {microtubeDB}.tube t
 left outer join {microtubeDB}.v_matrix_tube mt on t.tube_id = mt.tube_id
 left outer join {microtubeDB}.v_matrix m on m.matrix_id = mt.matrix_id
 join {bcpvsDB}.batch b on b.notebook_ref = t.notebook_ref and
-t.tube_id = '{sId}'
+t.tube_id = %s
                 """
 
                 try:
-                    sSlask = cur.execute(sSql)
+                    sSlask = cur.execute(sSql, (sId, ))
                     tRes = cur.fetchall()
                 except Exception as e:
                     logging.error("Error: " + str(e) + ' problem with batch:' + sId)
@@ -1367,10 +1407,10 @@ class GetPlateForPlatemap(tornado.web.RequestHandler):
         notebook_ref batch_id,
         conc,
         volume
-        from {coolDB}.config c, {coolDB}.plate p where p.plate_id = '{sPlate}' and p.config_id = c.config_id
+        from {coolDB}.config c, {coolDB}.plate p where p.plate_id = %s and p.config_id = c.config_id
         '''
         
-        cur.execute(sSql)
+        cur.execute(sSql, (sPlate, ))
         res = res2json()
         
         if len(res) == 2: # res == '[]'
@@ -1525,11 +1565,14 @@ class ReadScannedRack(tornado.web.RequestHandler):
             logging.error("Error cant find file1 in the argument list")
             return
 
-        m = re.search("Rack Base Name: (\w\w\d+)", str(file1['body']))
+        #m = re.search("Rack Base Name: (\w\w\d+)", str(file1['body']))
+        m = re.search("Rack Base Name: (MX\d+)", str(file1['body']))
         if m:
             sRackId = m.groups()[0]
         else:
+            self.set_status(400)
             logging.error("Error cant find rack-id in file")
+            self.finish('No valid rack-id found in file')
             return
 
         original_fname = file1['filename']
@@ -1883,30 +1926,31 @@ def getBoxFromDb(sBox, glassDB, loctreeDB, bcpvsDB):
 def doPrint(sCmp, sBatch, sType, sDate, sVial):
     if sType != 'Solid':
         sType = str(sType) + ' mM'
+    # To rotate the text for a field below, remove the R in the ^A0R command
     zplVial = """^XA
 ^MMT
 ^PW400
 ^LL0064
 ^LS210
 ^CFA,20
-^A0,25,20
-^FO300,20^FDCmp: %s^FS
-^A0,25,20
-^FO300,45^FDBatch: %s^FS
-^A0,25,20
-^FO300,70^FDConc: %s^FS
-^A0,25,20
-^FO300,95^FDDate: %s^FS
-^A0,25,20
-^FO300,120^FDVial: %s^FS
+^A0R,25,20
+^FO320,60^FDCmp: %s^FS
+^A0R,25,20
+^FO347,60^FDBatch: %s^FS
+^A0R,25,20
+^FO371,60^FDConc: %s^FS
+^A0R,25,20
+^FO396,60^FDDate: %s^FS
+^A0R,25,20
+^FO418,60^FDVial: %s^FS
 
 ^FX Third section with barcode.
 ^BY2,3,45
-^FO300,142^BCN^FD%s^FS
+^FO470,60^BCR^FD%s^FS
 ^XZ
 """ % (sCmp, sBatch, sType, sDate, sVial, sVial)
 
-
+    
     f = open('/tmp/file.txt','w')
     f.write(zplVial)
     f.close()
