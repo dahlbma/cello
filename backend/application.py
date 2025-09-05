@@ -2126,6 +2126,7 @@ def doPrintPlate(sPlate):
     
     s = f'''
 ^XA
+^PR1
 ^MMT
 ^CFA,20
 ^BY2,3,43
@@ -2440,6 +2441,7 @@ class printBox(tornado.web.RequestHandler):
         sDescription = tRes[0][0]
 
         zplVial = """^XA
+^PR1
 ^MMT
 ^MD20
 ^PW400
