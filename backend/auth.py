@@ -79,18 +79,28 @@ def jwtauth(handler_class):
                 name = s['username']
             except Exception as e:
                 handler._transforms = []
-                logging.error(str(err))
+                logging.error(str(e))
                 handler.set_status(401)
-                handler.write(e.message)
+                handler.write(str(e))
                 handler.finish()
+                return False
 
             return True
 
         def _execute(self, transforms, *args, **kwargs):
+            # Run the auth check and stop early on failure.
             try:
-                require_auth(self, kwargs)
+                auth_ok = require_auth(self, kwargs)
             except Exception:
-                return False
+                # require_auth should already have finished the response
+                # but ensure we don't return a bare False (which Tornado
+                # will attempt to yield and raise BadYieldError).
+                return None
+
+            if auth_ok is False:
+                # authentication failed and response was finished by
+                # require_auth(); do not continue to execute the handler.
+                return None
 
             return handler_execute(self, transforms, *args, **kwargs)
 
