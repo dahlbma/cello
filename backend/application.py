@@ -1928,8 +1928,9 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
         sType = str(sType) + ' mM'
     # To rotate the text for a field below, remove the R in the ^A0R command
     zplVial = """^XA
+^PR1
 ^MMT
-^MD20
+^MD19
 ^PW400
 ^LL0064
 ^LS210
@@ -1955,8 +1956,8 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
     f = open('/tmp/file.txt','w')
     f.write(zplVial)
     f.close()
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
-
+    #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
 
 @jwtauth
 class verifyVial(tornado.web.RequestHandler):
@@ -2129,8 +2130,8 @@ def doPrintPlate(sPlate):
 ^CFA,20
 ^BY2,3,43
 ^A0,25,20
-^FO1,20^FD{sPlate}^FS
-^FT100,55^BCN,,N,N
+^FO230,20^FD{sPlate}^FS
+^FT330,55^BCN,,N,N
 ^FD>:P>{sPlate}^FS
 ^XZ
 '''
@@ -2138,7 +2139,8 @@ def doPrintPlate(sPlate):
     f = open('/tmp/file.txt','w')
     f.write(s)
     f.close()
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
+    #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
+    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
 def doPrintRack(sRack):
@@ -2161,7 +2163,8 @@ def doPrintRack(sRack):
     f = open('/tmp/file.txt','w')
     f.write(s)
     f.close()
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates /tmp/file.txt")
+    #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates /tmp/file.txt")
+    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
 @jwtauth
@@ -2460,7 +2463,8 @@ class printBox(tornado.web.RequestHandler):
         f = open('/tmp/file.txt','w')
         f.write(zplVial)
         f.close()
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+        #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates /tmp/file.txt")
         self.finish("Printed")
 
 
