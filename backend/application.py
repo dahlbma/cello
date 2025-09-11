@@ -383,7 +383,7 @@ LEFT JOIN
     cool.list_content ON list_table.pk = list_content.list_id
     where cool.list_table.list_type = 'Plate Id'
 GROUP BY
-    list_table.pk
+    list_table.pk order by list_name
             '''
             
         try:
@@ -1930,7 +1930,7 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
     zplVial = """^XA
 ^PR1
 ^MMT
-^MD19
+^MD17
 ^PW400
 ^LL0064
 ^LS210
@@ -2126,6 +2126,7 @@ def doPrintPlate(sPlate):
     
     s = f'''
 ^XA
+^MD17
 ^PR1
 ^MMT
 ^CFA,20
@@ -2443,7 +2444,7 @@ class printBox(tornado.web.RequestHandler):
         zplVial = """^XA
 ^PR1
 ^MMT
-^MD20
+^MD17
 ^PW400
 ^LL0064
 ^LS210
