@@ -35,7 +35,7 @@ class MyListClass(QDialog):  # Inherit from QDialog
         self.listId = None
 
         self.saCurrentTokens = []
-        # listName_eb list name edit box 
+        # listName_eb list name edit box
         # list_tab   table for batches
 
     def eventFilter(self, obj, event):
@@ -253,10 +253,13 @@ class MyListClass(QDialog):  # Inherit from QDialog
         tokens = self.saCurrentTokens
         if text:
             try:
+                # Replace current tokens with pasted tokens (preserve order, remove duplicates)
+                new_tokens = []
                 for token in text.split():
-                    tokens.append(token)
-                tokens = list(dict.fromkeys(tokens))  # Removes duplicates (using the dict functionality)
-                self.populateListTable(tokens)
+                    new_tokens.append(token)
+                new_tokens = list(dict.fromkeys(new_tokens))  # Removes duplicates while preserving order
+                self.saCurrentTokens = new_tokens
+                self.populateListTable(self.saCurrentTokens)
             except Exception as e:
                 print(f"An error occurred: {e}")
                 return
@@ -281,6 +284,9 @@ class MyListClass(QDialog):  # Inherit from QDialog
         for row_index, row in enumerate(validatedValues):
             status = QTableWidgetItem(row[1])
             item = QTableWidgetItem(row[0])
+            # Make items non-editable; allow selection and programmatic updates only
+            status.setFlags(status.flags() & ~Qt.ItemIsEditable)
+            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
             self.ui.list_tab.setItem(row_index, 0, item)  # Column 0 is the first column
             self.ui.list_tab.setItem(row_index, 1, status)  # Column 1 is the status
 
@@ -296,6 +302,12 @@ class MyListClass(QDialog):  # Inherit from QDialog
         dbInterface.deleteListElements(self.parent.token, self.listId)
         valueList = self.get_first_column_values()
         self.saveListValues(valueList, self.listId)
+        # refresh lists in parent UI if available
+        try:
+            if self.parent is not None and hasattr(self.parent, 'populateLists'):
+                self.parent.populateLists()
+        except Exception:
+            pass
         self.accept()
 
         
@@ -306,6 +318,12 @@ class MyListClass(QDialog):  # Inherit from QDialog
         if listId != 'NotOk':
             valueList = self.get_first_column_values()
             self.saveListValues(valueList, listId)
+        # refresh lists in parent UI if available
+        try:
+            if self.parent is not None and hasattr(self.parent, 'populateLists'):
+                self.parent.populateLists()
+        except Exception:
+            pass
         self.accept()
 
 
@@ -346,6 +364,8 @@ class MyListClass(QDialog):  # Inherit from QDialog
             for row_index, row_data in enumerate(tableContent):
                 for col_index, cell_data in enumerate(row_data):
                     item = QTableWidgetItem(str(cell_data))
+                    # Make loaded items non-editable
+                    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
                     self.ui.list_tab.setItem(row_index, col_index, item)
 
         self.setWindowTitle("Edit list")
