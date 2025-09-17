@@ -83,10 +83,44 @@ class LauncherScreen(QDialog):
             send_msg('Updated Version', f"New version information:\n{info['notes']}")
             try: 
                 bin_r = dbInterface.getCelloBinary(os_name)
-                
-                with open(exec_path, 'wb') as cello_file:
-                    shutil.copyfileobj(bin_r.raw, cello_file)
+                # Stream download with progress dialog
+                try:
+                    total_length = None
+                    if hasattr(bin_r, 'headers') and bin_r.headers is not None:
+                        total_length = bin_r.headers.get('Content-Length')
+                        if total_length is not None:
+                            total_length = int(total_length)
+
+                    progress = QtWidgets.QProgressDialog("Downloading Cello...", "Cancel", 0, total_length or 0, self)
+                    progress.setWindowTitle("Downloading")
+                    progress.setWindowModality(QtCore.Qt.WindowModal)
+                    progress.setMinimumDuration(0)
+
+                    chunk_size = 8192
+                    downloaded = 0
+                    with open(exec_path, 'wb') as cello_file:
+                        for chunk in bin_r.iter_content(chunk_size=chunk_size):
+                            if chunk:
+                                cello_file.write(chunk)
+                                downloaded += len(chunk)
+                                if total_length:
+                                    progress.setMaximum(total_length)
+                                    progress.setValue(downloaded)
+                                else:
+                                    # If no total_length, use pulsate
+                                    progress.setRange(0, 0)
+                                QApplication.processEvents()
+                                if progress.wasCanceled():
+                                    progress.close()
+                                    raise Exception('Download canceled by user')
+                    progress.close()
                     logging.info("Updated Cello")
+                except Exception as e:
+                    try:
+                        progress.close()
+                    except Exception:
+                        pass
+                    raise
                 
                 os.chmod(exec_path, 0o775)
   
