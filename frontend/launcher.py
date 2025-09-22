@@ -27,7 +27,8 @@ class LauncherScreen(QDialog):
         self.run_cello_btn.setDefault(True)
         self.run_cello_btn.setAutoDefault(True)
 
-        if self.ver_check() == 1: #outdated
+        match, info = self.ver_check()
+        if match == 1: #outdated
             self.status_lab.setText("""Cello is outdated!<br>
             Please <b>'Update Cello'</b> or<br>
             <b>'Run Cello'</b> to Update.""")
@@ -79,8 +80,17 @@ class LauncherScreen(QDialog):
             return -1
         elif match == 1:
             #update needed
-            # send notification
-            send_msg('Updated Version', f"New version information:\n{info['notes']}")
+            # send notification (use safe access for optional fields)
+            notes = ''
+            try:
+                if isinstance(info, dict):
+                    notes = info.get('notes', '')
+                else:
+                    # info might be None or other type
+                    notes = ''
+            except Exception:
+                notes = ''
+            send_msg('Updated Version', f"New version information:\n{notes}")
             try: 
                 bin_r = dbInterface.getCelloBinary(os_name)
                 # Stream download with progress dialog
