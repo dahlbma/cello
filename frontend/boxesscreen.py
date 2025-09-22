@@ -1,4 +1,4 @@
-import sys, os, logging, re
+import logging, re
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget
 from PyQt5.QtWidgets import QTreeWidgetItem, QAbstractItemView
