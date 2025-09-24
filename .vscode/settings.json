@@ -1,0 +1,7 @@
+{
+  // Disable Pylance "reportMissingImports" warnings in this workspace.
+  // See: https://github.com/microsoft/pylance-release/blob/main/TROUBLESHOOTING.md
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "none"
+  }
+}
