@@ -1565,7 +1565,6 @@ class ReadScannedRack(tornado.web.RequestHandler):
             logging.error("Error cant find file1 in the argument list")
             return
 
-        #m = re.search("Rack Base Name: (\w\w\d+)", str(file1['body']))
         m = re.search("Rack Base Name: (MX\d+)", str(file1['body']))
         if m:
             sRackId = m.groups()[0]
