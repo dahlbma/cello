@@ -321,7 +321,8 @@ class MyListClass(QDialog):  # Inherit from QDialog
         # refresh lists in parent UI if available
         try:
             if self.parent is not None and hasattr(self.parent, 'populateLists'):
-                self.parent.populateLists()
+                #self.parent.populateLists()
+                pass
         except Exception:
             pass
         self.accept()
