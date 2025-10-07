@@ -1,7 +1,7 @@
-import sys, os, logging, traceback
+import sys, os, logging, traceback, json, platform, subprocess
 from PyQt5.uic import loadUi
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow, QMessageBox
 from PyQt5 import QtGui
 
 from cellolib import *
@@ -18,7 +18,7 @@ class LauncherScreen(QDialog):
     def __init__(self):
         super(LauncherScreen, self).__init__()
         self.mod_name = "launcher"
-        logger = logging.getLogger(self.mod_name)
+        self.logger = logging.getLogger(self.mod_name)
         loadUi(resource_path("assets/launcher.ui"), self)
         self.update_cello_btn.clicked.connect(self.updatefunction)
         self.update_cello_btn.setDefault(False)
@@ -27,7 +27,12 @@ class LauncherScreen(QDialog):
         self.run_cello_btn.setDefault(True)
         self.run_cello_btn.setAutoDefault(True)
 
-        if self.ver_check() == 1: #outdated
+        # ver_check returns a tuple (status, info)
+        try:
+            v_status, v_info = self.ver_check()
+        except Exception:
+            v_status, v_info = 2, None
+        if v_status == 1: #outdated
             self.status_lab.setText("""Cello is outdated!<br>
             Please <b>'Update Cello'</b> or<br>
             <b>'Run Cello'</b> to Update.""")
@@ -45,10 +50,10 @@ class LauncherScreen(QDialog):
             r = dbInterface.getVersion()
             #turn it into a dict
             info = json.loads(r.content)
-            logger.info(f"recieved {info}")
+            self.logger.info(f"recieved {info}")
         except Exception as e:
             self.status_lab.setText("ERROR no connection")
-            logging.getLogger(self.mod_name).error(str(e))
+            self.logger.error(str(e))
             return 2, None
         if r.status_code == 500:
             return 2, info
@@ -57,11 +62,11 @@ class LauncherScreen(QDialog):
             with open('./ver.dat', 'r') as f:
                 info_dict = json.load(f)
         except Exception as e:
-            logger.error(str(e))
-            #create version file
-            return 1, {"version":"-1"}
+            # If ver.dat can't be read, log and indicate update required
+            self.logger.error(str(e))
+            return 1, {"version": "-1"}
         #check if versions match
-        ok = 0 if info['version'] == info_dict['version'] else 1
+        ok = 0 if info.get('version') == info_dict.get('version') else 1
         #ok is 0 if versions match, 1 if update is needed, 2 if no connection
         return ok, info
 
@@ -80,7 +85,16 @@ class LauncherScreen(QDialog):
         elif match == 1:
             #update needed
             # send notification
-            send_msg('Updated Version', f"New version information:\n{info['notes']}")
+            # Safely access notes, avoid KeyError
+            notes = ''
+            try:
+                if isinstance(info, dict):
+                    notes = info.get('notes') or info.get('note') or 'No notes available'
+                else:
+                    notes = 'No notes available'
+            except Exception:
+                notes = 'No notes available'
+            send_msg('Updated Version', f"New version information:\n{notes}")
             try: 
                 bin_r = dbInterface.getCelloBinary(os_name)
                 # Stream download with progress dialog
