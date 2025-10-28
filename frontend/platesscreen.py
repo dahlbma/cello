@@ -147,7 +147,7 @@ class PlatesScreen(QMainWindow):
 
 
     def createPlatemap(self):
-        columns = ['Platt ID', 'Well', 'Compound ID', 'Batch nr', 'Conc mM', 'volume nL']
+        columns = ['Platt ID', 'Well', 'Compound ID', 'Batch nr', 'Conc mM', 'volume nL', 'Form']
         platemapDf = pd.DataFrame(columns=columns)
 
         sPlatesText = self.platemap_tb.toPlainText()
