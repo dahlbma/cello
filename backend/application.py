@@ -1297,11 +1297,11 @@ def implUploadWellInformation(self, row = None):
         sConc = self.get_argument("conc")
         sVolume = self.get_argument("volume")
     else:
-        sPlate = row[0]
-        sWell = row[1]
+        sPlate = row[0].strip()
+        sWell = row[1].strip()
         sWell = zfillWell(sWell)
-        sCompound = row[2]
-        sBatch = row[3]
+        sCompound = row[2].strip()
+        sBatch = row[3].strip()
         sForm = row[4]
         sConc = row[5]
         sVolume = row[6]
@@ -1405,6 +1405,7 @@ class GetPlateForPlatemap(tornado.web.RequestHandler):
         well,
         compound_id,
         notebook_ref batch_id,
+        form,
         conc,
         volume
         from {coolDB}.config c, {coolDB}.plate p where p.plate_id = %s and p.config_id = c.config_id
