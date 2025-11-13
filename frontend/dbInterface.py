@@ -30,7 +30,7 @@ def login(user, password, database):
     return r
 
 def getDatabase():
-    r = requests.get(f'{baseUrl}getDatabase')
+    r = requests.get(f'{baseUrl}getDatabase', verify=False)
     res = listify(r, False)
     return res
 
