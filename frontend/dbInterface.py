@@ -144,6 +144,15 @@ def getLists(token, listType):
     except:
         return r.content
 
+def getEchoData(token, plateListId, sCtrlPlate, sDMSOplate):
+    r = requests.get(f'{baseUrl}getEchoData/{plateListId}/{sCtrlPlate}/{sDMSOplate}',
+            headers={'token':token}, verify=False)
+    try:
+        res = r.content.decode()
+        res = json.loads(res)
+        return res
+    except:
+        return r.content
 
 def checkListName(token, listName):
     unCookedToken = json.loads(token.decode('utf-8'))

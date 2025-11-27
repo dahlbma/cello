@@ -2,8 +2,8 @@ import sys, os, logging, re, csv
 from unittest import skip
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QLineEdit
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor, QIntValidator, QIcon
+from PyQt5.QtCore import Qt, QRegExp
+from PyQt5.QtGui import QColor, QIntValidator, QIcon, QRegExpValidator
 from PyQt5 import QtWebEngineWidgets
 import pandas as pd
 
@@ -112,6 +112,113 @@ class PlatesScreen(QMainWindow):
 
         validator = QIntValidator(0, 1000000, self)
         self.merge_volume_eb.setValidator(validator)
+
+        #
+        #
+        # Echo spotting tab setup
+        #
+        self.spotInput_lab.setText('')
+        self.spotInputExcel_btn.clicked.connect(self.getSpotInputFromExcel)
+        self.generateSpotfile_btn.clicked.connect(self.generateSpotfile)
+        self.generateSpotfile_btn.setEnabled(False)
+        # Set up validators for plate ID edit boxes (P followed by 6 digits)
+        plate_id_regex = QRegExp('^[Pp][0-9]{6}$')
+        plate_id_validator = QRegExpValidator(plate_id_regex)
+        self.sourceCTRLplate_eb.setValidator(plate_id_validator)
+        self.sourceDMSOplate_eb.setValidator(plate_id_validator)
+        
+        # Set up validator for volume edit box (digits only)
+        volume_validator = QIntValidator(0, 999999999, self)
+        self.userAddedVolume_eb.setValidator(volume_validator)
+        
+        # Set up filter for destination plates QTextEdit (only plate IDs and whitespace)
+        self.destinationPlates_eb.textChanged.connect(self.filterDestinationPlates)
+        self.destinationPlates_eb.textChanged.connect(self.validateSpotfileInputs)
+        
+        # Connect validation to all input fields
+        self.sourceCTRLplate_eb.textChanged.connect(self.validateSpotfileInputs)
+        self.sourceDMSOplate_eb.textChanged.connect(self.validateSpotfileInputs)
+        self.userAddedVolume_eb.textChanged.connect(self.validateSpotfileInputs)
+        
+        plateLists = dbInterface.getLists(self.token, 'Plate Id')
+        # Create formatted entries with username and sort alphabetically
+        # Each entry: (list_id, formatted_name, original_name for sorting)
+        formatted_lists = []
+        for item in plateLists:
+            list_id = item[0]
+            name = item[1]
+            username = item[2]
+            # Extract the part before the parentheses and the count
+            formatted_name = f"{name.rsplit('(', 1)[0].strip()}({name.rsplit('(', 1)[1].strip()[:-1]},  {username})"
+            formatted_lists.append((list_id, formatted_name, name))
+        
+        # Sort by the original name
+        formatted_lists.sort(key=lambda x: x[2])
+        
+        # Add items to combobox and store the list ID as item data
+        for list_id, formatted_name, _ in formatted_lists:
+            self.sourcePlates_cb.addItem(formatted_name, list_id)
+
+    def getSpotInputFromExcel(self):
+        fname = QFileDialog.getOpenFileName(self, 'Select Excel File', 
+                                                '.', "Excel Files (*.xlsx)")
+        if fname[0] != '':
+            self.spotInput_lab.setText(fname[0])
+            self.validateSpotfileInputs()
+
+    def validateSpotfileInputs(self):
+        """Enable generateSpotfile_btn only if all required fields have data"""
+        # Check if all fields have valid data
+        has_destination_plates = len(self.destinationPlates_eb.toPlainText().strip()) > 0
+        has_ctrl_plate = len(self.sourceCTRLplate_eb.text().strip()) == 7  # P + 6 digits
+        has_dmso_plate = len(self.sourceDMSOplate_eb.text().strip()) == 7  # P + 6 digits
+        has_volume = len(self.userAddedVolume_eb.text().strip()) > 0
+        has_excel_file = len(self.spotInput_lab.text().strip()) > 0
+        
+        # Enable button only if all conditions are met
+        if has_destination_plates and has_ctrl_plate and has_dmso_plate and has_volume and has_excel_file:
+            self.generateSpotfile_btn.setEnabled(True)
+        else:
+            self.generateSpotfile_btn.setEnabled(False)
+
+    def generateSpotfile(self):
+        """Generate spotfile by calling the getEchoData endpoint"""
+        try:
+            # Get the plate list ID from the currently selected item in the combobox
+            plateListId = self.sourcePlates_cb.currentData()
+            sCtrlPlate = self.sourceCTRLplate_eb.text().strip()
+            sDMSOplate = self.sourceDMSOplate_eb.text().strip()
+            
+            # Call the dbInterface function
+            result = dbInterface.getEchoData(self.token, plateListId, sCtrlPlate, sDMSOplate)
+            
+            # Handle the result
+            logging.getLogger(self.mod_name).info(f"getEchoData returned: {result}")
+            # TODO: Process the result and generate the spotfile
+            
+        except Exception as e:
+            logging.getLogger(self.mod_name).error(f"generateSpotfile failed: {str(e)}")
+
+    def filterDestinationPlates(self):
+        """Filter QTextEdit to only allow plate IDs (Pxxxxxx) and whitespace"""
+        cursor = self.destinationPlates_eb.textCursor()
+        current_pos = cursor.position()
+        
+        # Get the current text
+        text = self.destinationPlates_eb.toPlainText()
+        
+        # Filter out invalid characters - only keep P/p, digits, and whitespace
+        filtered_text = re.sub(r'[^Pp0-9\s]', '', text)
+        
+        # Only update if text changed
+        if filtered_text != text:
+            self.destinationPlates_eb.blockSignals(True)
+            self.destinationPlates_eb.setPlainText(filtered_text)
+            # Restore cursor position (adjusted for removed characters)
+            new_pos = min(current_pos, len(filtered_text))
+            cursor.setPosition(new_pos)
+            self.destinationPlates_eb.setTextCursor(cursor)
+            self.destinationPlates_eb.blockSignals(False)
 
     # capture certain keypresses in certain tabs
     def keyPressEvent(self, event):
