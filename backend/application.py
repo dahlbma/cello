@@ -1345,7 +1345,7 @@ def implUploadWellInformation(self, row = None):
         try:
             cur.execute(sSql)
         except Exception as e:
-            logging.error(f'Insert well failed: {str(e)}')
+            logging.error(f'Insert well failed: {str(e)} {sSql}')
             return 400, str(e)
     return 200, ''
         
@@ -1360,6 +1360,12 @@ class UploadWellInformation(tornado.web.RequestHandler):
         self.finish(str(sMessage))
 
 
+@jwtauth
+class GetEchoData(tornado.web.RequestHandler):
+    def get(self, plateListId, sCtrlPlate, sDMSOplate):
+        logging.error(f'{sCtrlPlate} {plateListId}')
+
+    
 @jwtauth
 class VerifyPlate(tornado.web.RequestHandler):
     def get(self, sPlate):
