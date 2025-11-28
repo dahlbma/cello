@@ -195,6 +195,7 @@ class PlatesScreen(QMainWindow):
 
     def generateSpotfile(self):
         """Generate spotfile using the Echo calculator"""
+        popup = None
         try:
             # Get input values from UI
             plateListId = self.sourcePlates_cb.currentData()
@@ -213,9 +214,18 @@ class PlatesScreen(QMainWindow):
                 QMessageBox.warning(self, "Input Error", "Please specify destination plates.")
                 return
             
+            # Show progress bar and set busy cursor
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            popup = PopUpProgress('Querying database...')
+            popup.show()
+            popup.obj.proc_counter(10)
+            QApplication.processEvents()
+            
             # Get source data from database
             source_data = dbInterface.getEchoData(self.token, plateListId, sCtrlPlate, sDMSOplate)
             logging.getLogger(self.mod_name).info(f"Retrieved {len(source_data)} source wells")
+            popup.obj.proc_counter(30)
+            QApplication.processEvents()
             
             # Initialize echo calculator
             calculator = EchoSpotCalculator(self.mod_name)
@@ -224,19 +234,27 @@ class PlatesScreen(QMainWindow):
             try:
                 df_order, special_wells, compound_wells = calculator.parse_excel_order(excel_order_path)
                 logging.getLogger(self.mod_name).info(f"Parsed order: {len(df_order)} compounds, {len(special_wells)} special wells, {len(compound_wells)} compound wells")
+                popup.obj.proc_counter(40)
+                QApplication.processEvents()
             except Exception as e:
+                self._close_popup(popup)
+                QApplication.restoreOverrideCursor()
                 QMessageBox.critical(self, "Excel Error", f"Failed to parse Excel file:\n{str(e)}")
                 return
             
             # Parse destination plates
             destination_plates = calculator.parse_destination_plates(destination_plates_text)
             if not destination_plates:
+                self._close_popup(popup)
+                QApplication.restoreOverrideCursor()
                 QMessageBox.warning(self, "Input Error", "No valid destination plate IDs found.")
                 return
             
-            logging.getLogger(self.mod_name).info(f"Processing {len(destination_plates)} destination plates: {destination_plates}")
-            
             # Choose output file
+            self._close_popup(popup)
+            popup = None
+            QApplication.restoreOverrideCursor()
+            
             output_path, _ = QFileDialog.getSaveFileName(
                 self, 
                 "Save Echo Spotfile", 
@@ -247,6 +265,18 @@ class PlatesScreen(QMainWindow):
             if not output_path:
                 return  # User cancelled
             
+            # Show progress for file generation
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            popup = PopUpProgress('Generating Echo spotfile...')
+            popup.show()
+            popup.obj.proc_counter(50)
+            QApplication.processEvents()
+            
+            # Create progress callback for the calculator
+            def progress_callback(percent):
+                popup.obj.proc_counter(int(50 + percent * 0.5))  # Map 0-100 to 50-100
+                QApplication.processEvents()
+            
             # Generate the echo file
             success = calculator.generate_echo_file(
                 order_data=df_order,
@@ -256,8 +286,13 @@ class PlatesScreen(QMainWindow):
                 diluent_vol_ul=diluent_volume,
                 destination_plates=destination_plates,
                 excel_order_path=excel_order_path,
-                output_path=output_path
+                output_path=output_path,
+                progress_callback=progress_callback
             )
+            
+            self._close_popup(popup)
+            popup = None
+            QApplication.restoreOverrideCursor()
             
             if success:
                 QMessageBox.information(self, "Success", f"Echo spotfile generated successfully:\n{output_path}")
@@ -266,10 +301,26 @@ class PlatesScreen(QMainWindow):
                 QMessageBox.critical(self, "Error", "Failed to generate echo spotfile. Check logs for details.")
             
         except ValueError as e:
+            self._close_popup(popup)
+            QApplication.restoreOverrideCursor()
             QMessageBox.warning(self, "Input Error", f"Invalid volume value: {str(e)}")
         except Exception as e:
+            self._close_popup(popup)
+            QApplication.restoreOverrideCursor()
             logging.getLogger(self.mod_name).error(f"generateSpotfile failed: {str(e)}")
             QMessageBox.critical(self, "Error", f"An error occurred:\n{str(e)}")
+
+    def _close_popup(self, popup):
+        """Properly close a PopUpProgress by stopping its thread"""
+        if popup:
+            try:
+                # Stop the thread properly
+                popup.obj.finished.emit()
+                popup.thread.quit()
+                popup.thread.wait()
+                popup.close()
+            except:
+                pass
 
     def filterDestinationPlates(self):
         """Filter QTextEdit to only allow plate IDs (Pxxxxxx) and whitespace"""

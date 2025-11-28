@@ -194,7 +194,8 @@ class EchoSpotCalculator:
         return None, 0
     
     def generate_echo_file(self, order_data, source_data, ctrl_plate, dmso_plate, 
-                          diluent_vol_ul, destination_plates, excel_order_path, output_path):
+                          diluent_vol_ul, destination_plates, excel_order_path, output_path,
+                          progress_callback=None):
         """
         Generate the Echo robot input file.
         
@@ -207,6 +208,7 @@ class EchoSpotCalculator:
             destination_plates: List of destination plate IDs
             excel_order_path: Path to Excel order file (for reading plate layout)
             output_path: Output file path
+            progress_callback: Optional callback function(percent) for progress reporting
             
         Returns:
             bool: True if successful, False otherwise
@@ -220,7 +222,6 @@ class EchoSpotCalculator:
                 return False
             
             self.logger.info(f"Parsed plate layout: {len(special_wells)} special wells, {len(compound_wells)} compound wells")
-            self.logger.info(f"Processing {len(order_data)} compounds for {len(destination_plates)} destination plates")
             
             output_rows = []
             max_transfer_nl = diluent_vol_ul * 1000 * self.MAX_DMSO_PERCENT
@@ -229,7 +230,6 @@ class EchoSpotCalculator:
             
             # Log available source plates and potential DMSO sources for debugging
             unique_plates = set(src['source_plate'] for src in source_data)
-            self.logger.info(f"Available source plates: {sorted(unique_plates)}")
             
             # Look for potential DMSO sources
             potential_dmso = [src for src in source_data 
@@ -245,11 +245,18 @@ class EchoSpotCalculator:
             # Process each destination plate
             compound_idx = 0
             total_compounds = len(order_data)
+            total_wells = total_compounds + (len(special_wells) * len(destination_plates))
+            wells_processed = 0
             
             for plate_num, dest_plate_id in enumerate(destination_plates, 1):
                 # Add special wells (DMSO/CTRL) for this plate
                 self._add_special_wells(output_rows, special_wells, dest_plate_id, 
                                       source_data, ctrl_plate, dmso_plate)
+                wells_processed += len(special_wells)
+                
+                # Report progress
+                if progress_callback:
+                    progress_callback(int((wells_processed / total_wells) * 100))
                 
                 # Add compounds for this plate
                 compounds_added = 0
@@ -267,8 +274,17 @@ class EchoSpotCalculator:
                     
                     compound_idx += 1
                     compounds_added += 1
+                    wells_processed += 1
+                    
+                    # Report progress periodically (every 10 compounds)
+                    if progress_callback and compounds_added % 10 == 0:
+                        progress_callback(int((wells_processed / total_wells) * 100))
                 
                 self.logger.info(f"Plate {plate_num}/{len(destination_plates)}: {compounds_added} compounds added")
+                
+                # Report progress after each plate
+                if progress_callback:
+                    progress_callback(int((wells_processed / total_wells) * 100))
                 
                 # If we've processed all compounds, break
                 if compound_idx >= total_compounds:
@@ -280,7 +296,11 @@ class EchoSpotCalculator:
             
             # Write output file
             if output_rows:
+                if progress_callback:
+                    progress_callback(95)
                 self._write_excel_output(output_rows, output_path)
+                if progress_callback:
+                    progress_callback(100)
                 self.logger.info(f"Echo file created: {output_path}")
                 return True
             else:
@@ -350,10 +370,10 @@ class EchoSpotCalculator:
                     })
             
             elif content.startswith('CTRL'):
-                # Find control compound source
+                # Find control compound source - search across ALL source plates
+                # (controls may be on list plates OR the ctrl_plate)
                 ctrl_sources = [src for src in source_data 
-                              if src['source_plate'] == ctrl_plate and 
-                                 src.get('batch_id', '') == content]
+                              if src.get('batch_id', '') == content]
                 
                 if ctrl_sources:
                     ctrl_src = ctrl_sources[0]
@@ -416,6 +436,37 @@ class EchoSpotCalculator:
             })
             return True
         else:
+            # Determine why it failed and provide helpful error message
+            matches = [src for src in source_data if src['batch_id'] == batch_id]
+            
+            if not matches:
+                error_msg = 'Compound not found in source plates'
+            else:
+                # Get available concentrations
+                available_concs = sorted(set(src['source_conc_mm'] for src in matches), reverse=True)
+                concs_str = ', '.join(f"{c:.3f}" for c in available_concs[:5])  # Show up to 5 concentrations
+                if len(available_concs) > 5:
+                    concs_str += f" (+ {len(available_concs) - 5} more)"
+                
+                # Calculate what concentration we could achieve with the best available source
+                max_transfer_nl = diluent_vol_ul * 1000 * self.MAX_DMSO_PERCENT
+                best_achievable_info = ""
+                
+                if available_concs:
+                    best_conc_mm = available_concs[0]  # Highest concentration
+                    req_vol = self.calculate_transfer_volume(target_nm, best_conc_mm, diluent_vol_ul)
+                    snapped_vol = self.snap_to_droplet_size(req_vol)
+                    
+                    if snapped_vol > max_transfer_nl:
+                        # Source too dilute - calculate what we could achieve with max volume
+                        achievable_nm = (best_conc_mm * 1_000_000 * max_transfer_nl) / (diluent_vol_ul * 1000)
+                        best_achievable_info = f", best achievable: {achievable_nm:.1f} nM using {best_conc_mm:.3f} mM"
+                    elif snapped_vol <= 0:
+                        # Source too concentrated - would need less than one droplet
+                        best_achievable_info = f", {best_conc_mm:.3f} mM is too concentrated"
+                
+                error_msg = f'No valid source conc found (available: {concs_str} mM{best_achievable_info})'
+            
             # Add failed entry
             output_rows.append({
                 'Source plate name': '',
@@ -429,9 +480,9 @@ class EchoSpotCalculator:
                 'Transfer volym (nL)': '',
                 'Final conc (nM)': target_nm,
                 'Source conc (mM)': '',
-                'Exception': 'No valid source concentration found'
+                'Exception': error_msg
             })
-            self.logger.warning(f"Failed to find valid source for {batch_id} at {target_nm} nM")
+            self.logger.warning(f"Failed to find valid source for {batch_id} at {target_nm} nM: {error_msg}")
             return False
     
     def _write_excel_output(self, output_rows, output_path):
