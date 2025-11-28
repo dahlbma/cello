@@ -1,13 +1,14 @@
 import sys, os, logging, re, csv
 from unittest import skip
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QLineEdit
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QLineEdit, QMessageBox
 from PyQt5.QtCore import Qt, QRegExp
 from PyQt5.QtGui import QColor, QIntValidator, QIcon, QRegExpValidator
 from PyQt5 import QtWebEngineWidgets
 import pandas as pd
 
 from cellolib import *
+from echo_calculator import EchoSpotCalculator
 
 class PlatesScreen(QMainWindow):
     from cellolib import gotoSearch, gotoVials, gotoBoxes, gotoMicrotubes
@@ -182,22 +183,82 @@ class PlatesScreen(QMainWindow):
             self.generateSpotfile_btn.setEnabled(False)
 
     def generateSpotfile(self):
-        """Generate spotfile by calling the getEchoData endpoint"""
+        """Generate spotfile using the Echo calculator"""
         try:
-            # Get the plate list ID from the currently selected item in the combobox
+            # Get input values from UI
             plateListId = self.sourcePlates_cb.currentData()
             sCtrlPlate = self.sourceCTRLplate_eb.text().strip()
             sDMSOplate = self.sourceDMSOplate_eb.text().strip()
+            diluent_volume = int(self.userAddedVolume_eb.text().strip())
+            destination_plates_text = self.destinationPlates_eb.toPlainText().strip()
+            excel_order_path = self.spotInput_lab.text().strip()
             
-            # Call the dbInterface function
-            result = dbInterface.getEchoData(self.token, plateListId, sCtrlPlate, sDMSOplate)
+            # Validate inputs
+            if not excel_order_path or not os.path.exists(excel_order_path):
+                QMessageBox.warning(self, "Input Error", "Please select a valid Excel order file.")
+                return
             
-            # Handle the result
-            logging.getLogger(self.mod_name).info(f"getEchoData returned: {result}")
-            # TODO: Process the result and generate the spotfile
+            if not destination_plates_text:
+                QMessageBox.warning(self, "Input Error", "Please specify destination plates.")
+                return
             
+            # Get source data from database
+            source_data = dbInterface.getEchoData(self.token, plateListId, sCtrlPlate, sDMSOplate)
+            logging.getLogger(self.mod_name).info(f"Retrieved {len(source_data)} source wells")
+            
+            # Initialize echo calculator
+            calculator = EchoSpotCalculator(self.mod_name)
+            
+            # Parse Excel order file
+            try:
+                df_order, special_wells, compound_wells = calculator.parse_excel_order(excel_order_path)
+                logging.getLogger(self.mod_name).info(f"Parsed order: {len(df_order)} compounds, {len(special_wells)} special wells, {len(compound_wells)} compound wells")
+            except Exception as e:
+                QMessageBox.critical(self, "Excel Error", f"Failed to parse Excel file:\n{str(e)}")
+                return
+            
+            # Parse destination plates
+            destination_plates = calculator.parse_destination_plates(destination_plates_text)
+            if not destination_plates:
+                QMessageBox.warning(self, "Input Error", "No valid destination plate IDs found.")
+                return
+            
+            logging.getLogger(self.mod_name).info(f"Processing {len(destination_plates)} destination plates: {destination_plates}")
+            
+            # Choose output file
+            output_path, _ = QFileDialog.getSaveFileName(
+                self, 
+                "Save Echo Spotfile", 
+                "echo_spotfile.xlsx", 
+                "Excel Files (*.xlsx);;All Files (*)"
+            )
+            
+            if not output_path:
+                return  # User cancelled
+            
+            # Generate the echo file
+            success = calculator.generate_echo_file(
+                order_data=df_order,
+                source_data=source_data,
+                ctrl_plate=sCtrlPlate,
+                dmso_plate=sDMSOplate,
+                diluent_vol_ul=diluent_volume,
+                destination_plates=destination_plates,
+                excel_order_path=excel_order_path,
+                output_path=output_path
+            )
+            
+            if success:
+                QMessageBox.information(self, "Success", f"Echo spotfile generated successfully:\n{output_path}")
+                logging.getLogger(self.mod_name).info(f"Echo spotfile created: {output_path}")
+            else:
+                QMessageBox.critical(self, "Error", "Failed to generate echo spotfile. Check logs for details.")
+            
+        except ValueError as e:
+            QMessageBox.warning(self, "Input Error", f"Invalid volume value: {str(e)}")
         except Exception as e:
             logging.getLogger(self.mod_name).error(f"generateSpotfile failed: {str(e)}")
+            QMessageBox.critical(self, "Error", f"An error occurred:\n{str(e)}")
 
     def filterDestinationPlates(self):
         """Filter QTextEdit to only allow plate IDs (Pxxxxxx) and whitespace"""

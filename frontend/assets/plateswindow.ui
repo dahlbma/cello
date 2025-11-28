@@ -2238,7 +2238,7 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
                   <item>
                    <widget class="QLabel" name="label_26">
                     <property name="text">
-                     <string>User added volume (µl):</string>
+                     <string>Final assay volume (µl):</string>
                     </property>
                    </widget>
                   </item>
