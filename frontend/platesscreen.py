@@ -141,24 +141,35 @@ class PlatesScreen(QMainWindow):
         self.sourceDMSOplate_eb.textChanged.connect(self.validateSpotfileInputs)
         self.userAddedVolume_eb.textChanged.connect(self.validateSpotfileInputs)
         
-        plateLists = dbInterface.getLists(self.token, 'Plate Id')
-        # Create formatted entries with username and sort alphabetically
-        # Each entry: (list_id, formatted_name, original_name for sorting)
-        formatted_lists = []
-        for item in plateLists:
-            list_id = item[0]
-            name = item[1]
-            username = item[2]
-            # Extract the part before the parentheses and the count
-            formatted_name = f"{name.rsplit('(', 1)[0].strip()}({name.rsplit('(', 1)[1].strip()[:-1]},  {username})"
-            formatted_lists.append((list_id, formatted_name, name))
-        
-        # Sort by the original name
-        formatted_lists.sort(key=lambda x: x[2])
-        
-        # Add items to combobox and store the list ID as item data
-        for list_id, formatted_name, _ in formatted_lists:
-            self.sourcePlates_cb.addItem(formatted_name, list_id)
+        # Load plate lists initially
+        self.loadPlateLists()
+
+    def loadPlateLists(self):
+        """Load plate lists from database and populate the sourcePlates_cb combobox"""
+        try:
+            # Clear existing items
+            self.sourcePlates_cb.clear()
+            
+            plateLists = dbInterface.getLists(self.token, 'Plate Id')
+            # Create formatted entries with username and sort alphabetically
+            # Each entry: (list_id, formatted_name, original_name for sorting)
+            formatted_lists = []
+            for item in plateLists:
+                list_id = item[0]
+                name = item[1]
+                username = item[2]
+                # Extract the part before the parentheses and the count
+                formatted_name = f"{name.rsplit('(', 1)[0].strip()}({name.rsplit('(', 1)[1].strip()[:-1]},  {username})"
+                formatted_lists.append((list_id, formatted_name, name))
+            
+            # Sort by the original name
+            formatted_lists.sort(key=lambda x: x[2])
+            
+            # Add items to combobox and store the list ID as item data
+            for list_id, formatted_name, _ in formatted_lists:
+                self.sourcePlates_cb.addItem(formatted_name, list_id)
+        except Exception as e:
+            logging.getLogger(self.mod_name).error(f"Failed to load plate lists: {str(e)}")
 
     def getSpotInputFromExcel(self):
         fname = QFileDialog.getOpenFileName(self, 'Select Excel File', 
@@ -312,6 +323,9 @@ class PlatesScreen(QMainWindow):
         elif page_index == 4:
             self.join_q1_eb.setFocus()
             self.showMergePlates()
+        elif page_index == 5:
+            # Echo Spotting tab - reload plate lists from database
+            self.loadPlateLists()
 
 
     def createPlatemap(self):

@@ -1373,7 +1373,7 @@ class GetEchoData(tornado.web.RequestHandler):
     c.compound_id, 
     c.CONC as source_conc_mm,
     '384PP_DMSO2' as source_plate_type
-FROM cool.plate p
+FROM {coolDB}.plate p
 INNER JOIN {coolDB}.config c ON p.config_id = c.config_id
 WHERE (p.plate_id IN (
     SELECT element FROM {coolDB}.list_content WHERE list_id = %s)
@@ -1382,7 +1382,7 @@ WHERE (p.plate_id IN (
 AND c.CONC IS NOT NULL 
 AND c.CONC > 0
         '''
-        cur.execute(sSql, (plateListId, sCtrlPlate, plateListId))
+        cur.execute(sSql, (plateListId, sCtrlPlate, sDMSOplate))
         tRes = cur.fetchall()
         self.finish(json.dumps(res_to_json(tRes, cur), indent=4))
 
