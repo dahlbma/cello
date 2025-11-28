@@ -222,6 +222,7 @@ def make_app():
         (r"/saveListElements/(?P<accuList>[^\/]+)/(?P<listId>[^\/]+)", application.SaveListElements),
         (r"/searchLists/(?P<plateListId>[^\/]+)/(?P<batchListId>[^\/]+)", application.SearchLists),
         (r"/getEchoData/(?P<plateListId>[^\/]+)/(?P<sCtrlPlate>[^\/]+)/(?P<sDMSOplate>[^\/]+)", application.GetEchoData),
+        (r"/validateBatches/(?P<batches>[^\/]+)/(?P<listType>[^\/]+)", application.ValidateBatches),
         (r"/searchBatches/(?P<present>[^\/]+)/(?P<vials>[^\/]+)/(?P<tubes>[^\/]+)/(?P<plates>[^\/]+)/(?P<sBatches>[^\/]+)", application.searchBatchess),
         (r"/searchBatches/(?P<vials>[^\/]+)/(?P<tubes>[^\/]+)/(?P<plates>[^\/]+)/(?P<sBatches>[^\/]+)", application.searchBatches),
         (r"/searchBatches/(?P<present>[^\/]+)/(?P<vials>[^\/]+)/(?P<tubes>[^\/]+)/(?P<plates>[^\/]+)/(?P<sBatches>[^\/]+)", application.searchBatchess),
