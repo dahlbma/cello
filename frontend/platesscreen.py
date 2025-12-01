@@ -202,6 +202,8 @@ class PlatesScreen(QMainWindow):
             sCtrlPlate = self.sourceCTRLplate_eb.text().strip()
             sDMSOplate = self.sourceDMSOplate_eb.text().strip()
             diluent_volume = int(self.userAddedVolume_eb.text().strip())
+            dmso_volume = int(self.DMSO_vol_eb.text().strip())
+            ctrl_volume = int(self.CTRL_vol_eb.text().strip())
             destination_plates_text = self.destinationPlates_eb.toPlainText().strip()
             excel_order_path = self.spotInput_lab.text().strip()
             
@@ -278,6 +280,11 @@ class PlatesScreen(QMainWindow):
                 QApplication.processEvents()
             
             # Generate the echo file
+            backfill_enabled = self.backfill_chk.isChecked()
+            logging.getLogger(self.mod_name).info(f"Backfill enabled: {backfill_enabled}")
+            logging.getLogger(self.mod_name).info(f"DMSO volume: {dmso_volume} nL")
+            logging.getLogger(self.mod_name).info(f"CTRL volume: {ctrl_volume} nL")
+            
             success = calculator.generate_echo_file(
                 order_data=df_order,
                 source_data=source_data,
@@ -287,6 +294,9 @@ class PlatesScreen(QMainWindow):
                 destination_plates=destination_plates,
                 excel_order_path=excel_order_path,
                 output_path=output_path,
+                dmso_volume_nl=dmso_volume,
+                ctrl_volume_nl=ctrl_volume,
+                backfill=backfill_enabled,
                 progress_callback=progress_callback
             )
             

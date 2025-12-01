@@ -23,10 +23,11 @@ class EchoSpotCalculator:
     DROPLET_SIZE_NL = 2.5  # Robot droplet size in nL
     DEST_PLATE_TYPE = "384PP_DMSO2"
     MAX_DMSO_PERCENT = 0.01  # 1% limit
-    DMSO_FIXED_VOLUME_NL = 250  # Fixed volume for DMSO transfers in nL
     
     def __init__(self, logger_name="echo_calculator"):
         self.logger = logging.getLogger(logger_name)
+        self.dmso_fixed_volume_nl = 250  # Default DMSO volume, can be overridden
+        self.ctrl_fixed_volume_nl = 250  # Default CTRL volume, can be overridden
     
     def parse_excel_order(self, excel_file_path):
         """
@@ -195,7 +196,7 @@ class EchoSpotCalculator:
     
     def generate_echo_file(self, order_data, source_data, ctrl_plate, dmso_plate, 
                           diluent_vol_ul, destination_plates, excel_order_path, output_path,
-                          progress_callback=None):
+                          dmso_volume_nl=250, ctrl_volume_nl=250, backfill=False, progress_callback=None):
         """
         Generate the Echo robot input file.
         
@@ -208,11 +209,17 @@ class EchoSpotCalculator:
             destination_plates: List of destination plate IDs
             excel_order_path: Path to Excel order file (for reading plate layout)
             output_path: Output file path
+            dmso_volume_nl: Volume for DMSO transfers in nL (default: 250)
+            ctrl_volume_nl: Volume for CTRL transfers in nL (default: 250)
+            backfill: If True, backfill all non-DMSO wells with DMSO to equalize volumes
             progress_callback: Optional callback function(percent) for progress reporting
             
         Returns:
             bool: True if successful, False otherwise
         """
+        # Set DMSO and CTRL volumes for this run
+        self.dmso_fixed_volume_nl = dmso_volume_nl
+        self.ctrl_fixed_volume_nl = ctrl_volume_nl
         try:
             # Parse plate layout from Excel file
             _, special_wells, compound_wells = self.parse_excel_order(excel_order_path)
@@ -294,6 +301,11 @@ class EchoSpotCalculator:
             if compound_idx < total_compounds:
                 self.logger.warning(f"Not all compounds processed: {compound_idx}/{total_compounds}")
             
+            # Apply backfill if requested - calculate and add inline
+            if backfill:
+                self.logger.info("Applying DMSO backfill to equalize well volumes")
+                self._apply_backfill_inline(output_rows, source_data, dmso_plate)
+            
             # Write output file
             if output_rows:
                 if progress_callback:
@@ -346,7 +358,7 @@ class EchoSpotCalculator:
                         'Destination plate name': dest_plate_id,
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
-                        'Transfer volym (nL)': self.DMSO_FIXED_VOLUME_NL,
+                        'Transfer volym (nL)': self.dmso_fixed_volume_nl,
                         'Final conc (nM)': '',
                         'Source conc (mM)': dmso_src['source_conc_mm'],
                         'Exception': ''
@@ -363,7 +375,7 @@ class EchoSpotCalculator:
                         'Destination plate name': dest_plate_id,
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
-                        'Transfer volym (nL)': self.DMSO_FIXED_VOLUME_NL,
+                        'Transfer volym (nL)': self.dmso_fixed_volume_nl,
                         'Final conc (nM)': '',
                         'Source conc (mM)': '',
                         'Exception': error_msg
@@ -386,7 +398,7 @@ class EchoSpotCalculator:
                         'Destination plate name': dest_plate_id,
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
-                        'Transfer volym (nL)': self.DMSO_FIXED_VOLUME_NL,
+                        'Transfer volym (nL)': self.ctrl_fixed_volume_nl,
                         'Final conc (nM)': '',
                         'Source conc (mM)': ctrl_src['source_conc_mm'],
                         'Exception': ''
@@ -401,7 +413,7 @@ class EchoSpotCalculator:
                         'Destination plate name': dest_plate_id,
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
-                        'Transfer volym (nL)': '',
+                        'Transfer volym (nL)': self.ctrl_fixed_volume_nl,
                         'Final conc (nM)': '',
                         'Source conc (mM)': '',
                         'Exception': 'Control compound not found in database'
@@ -484,6 +496,125 @@ class EchoSpotCalculator:
             })
             self.logger.warning(f"Failed to find valid source for {batch_id} at {target_nm} nM: {error_msg}")
             return False
+    
+    def _apply_backfill_inline(self, output_rows, source_data, dmso_plate):
+        """
+        Apply DMSO backfill to equalize volumes across all non-DMSO wells.
+        Inserts backfill rows immediately after the last transfer for each well.
+        
+        Args:
+            output_rows: List of output row dictionaries (modified in place)
+            source_data: List of source plate data
+            dmso_plate: DMSO plate ID for finding DMSO source
+        """
+        # Find DMSO source wells
+        dmso_sources = []
+        if dmso_plate:
+            dmso_sources = [src for src in source_data if src['source_plate'] == dmso_plate]
+        if not dmso_sources:
+            dmso_sources = [src for src in source_data 
+                          if src.get('compound_id', '').upper() == 'DMSO']
+        if not dmso_sources:
+            dmso_sources = [src for src in source_data 
+                          if 'DMSO' in str(src.get('batch_id', '')).upper()]
+        
+        if not dmso_sources:
+            self.logger.error("Cannot apply backfill: No DMSO source found")
+            return
+        
+        dmso_src = dmso_sources[0]  # Use first available DMSO source
+        self.logger.info(f"Using DMSO source: Plate {dmso_src['source_plate']}, Well {dmso_src['source_well']}")
+        
+        # Track volumes and last index for each well
+        well_info = {}  # Key: (dest_plate, dest_well), Value: {'volume': total, 'last_idx': index, 'is_ctrl': bool}
+        
+        for idx, row in enumerate(output_rows):
+            dest_plate = row['Destination plate name']
+            dest_well = row['Destination well']
+            transfer_vol = row['Transfer volym (nL)']
+            sample_id = row['Sample ID']
+            sample_name = row['Sample name']
+            
+            # Skip if this is already a DMSO-only well or has no volume
+            if sample_id == 'DMSO':
+                continue
+            
+            if not transfer_vol or str(transfer_vol).strip() == '':
+                continue
+            
+            try:
+                volume = float(transfer_vol)
+            except (ValueError, TypeError):
+                continue
+            
+            # Check if this is a CTRL well
+            is_ctrl = str(sample_name).startswith('CTRL')
+            
+            key = (dest_plate, dest_well)
+            if key not in well_info:
+                well_info[key] = {'volume': 0, 'last_idx': idx, 'is_ctrl': is_ctrl}
+            
+            well_info[key]['volume'] += volume
+            well_info[key]['last_idx'] = idx  # Track last row for this well
+            # If any transfer to this well is a CTRL, mark it as such
+            if is_ctrl:
+                well_info[key]['is_ctrl'] = True
+        
+        if not well_info:
+            self.logger.warning("No non-DMSO wells found for backfill")
+            return
+        
+        # Find maximum volume among non-CTRL wells only
+        non_ctrl_volumes = [info['volume'] for info in well_info.values() if not info['is_ctrl']]
+        
+        if not non_ctrl_volumes:
+            self.logger.warning("No non-CTRL compound wells found for backfill")
+            return
+        
+        max_volume = max(non_ctrl_volumes)
+        self.logger.info(f"Maximum non-DMSO/non-CTRL well volume: {max_volume} nL")
+        
+        # Create backfill rows with their insertion indices
+        backfill_inserts = []  # List of (insert_after_idx, backfill_row)
+        
+        for (dest_plate, dest_well), info in well_info.items():
+            # Skip CTRL wells - they should not be backfilled
+            if info['is_ctrl']:
+                continue
+            
+            current_volume = info['volume']
+            if current_volume < max_volume:
+                backfill_volume = max_volume - current_volume
+                
+                # Snap to droplet size
+                backfill_volume = self.snap_to_droplet_size(backfill_volume)
+                
+                if backfill_volume > 0:
+                    backfill_row = {
+                        'Source plate name': dmso_src['source_plate'],
+                        'Source Plate type': dmso_src['source_plate_type'],
+                        'Source well': dmso_src['source_well'],
+                        'Sample ID': 'DMSO',
+                        'Sample name': dmso_src.get('batch_id', 'DMSO_backfill'),
+                        'Destination plate name': dest_plate,
+                        'Destination Plate type': self.DEST_PLATE_TYPE,
+                        'Destination well': dest_well,
+                        'Transfer volym (nL)': backfill_volume,
+                        'Final conc (nM)': '',
+                        'Source conc (mM)': dmso_src.get('source_conc_mm', ''),
+                        'Exception': ''
+                    }
+                    backfill_inserts.append((info['last_idx'], backfill_row))
+        
+        # Sort by index in reverse order so we can insert from back to front
+        # (this way indices remain valid as we insert)
+        backfill_inserts.sort(key=lambda x: x[0], reverse=True)
+        
+        # Insert backfill rows
+        for insert_after_idx, backfill_row in backfill_inserts:
+            output_rows.insert(insert_after_idx + 1, backfill_row)
+        
+        self.logger.info(f"Added {len(backfill_inserts)} DMSO backfill transfers inline")
     
     def _write_excel_output(self, output_rows, output_path):
         """Write the output data to Excel file with proper formatting"""

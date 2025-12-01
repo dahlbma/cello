@@ -2274,12 +2274,30 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
                 <item>
                  <widget class="QLabel" name="label_27">
                   <property name="text">
-                   <string>DMSO volume</string>
+                   <string>DMSO volume nL</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QLineEdit" name="DMSO_vol_eb">
+                  <property name="text">
+                   <string>250</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_939">
+                <item>
+                 <widget class="QLabel" name="label_927">
+                  <property name="text">
+                   <string>CTRL volume nL</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="CTRL_vol_eb">
                   <property name="text">
                    <string>250</string>
                   </property>
