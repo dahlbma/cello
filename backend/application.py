@@ -1369,7 +1369,8 @@ class GetEchoData(tornado.web.RequestHandler):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         
         sSql = f'''SELECT
-    p.plate_id as source_plate, 
+    p.plate_id as source_plate,
+    p.plate_subtype,
     c.well as source_well, 
     c.notebook_ref as batch_id, 
     c.compound_id, 
