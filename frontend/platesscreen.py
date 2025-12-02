@@ -39,6 +39,11 @@ class PlatesScreen(QMainWindow):
         self.new_plates_type_cb.addItems(types)
         self.new_plates_type_cb.currentTextChanged.connect(self.check_plates_input)
 
+        source_types = [' ', "384PP_DMSO2", "384PP_AQ_CP", "384LDV_DMSO", "384LDV_AQ_B2", "1536LDV_DMSO"]
+        self.plate_type_cb.addItems(source_types)
+        self.plate_type_cb.currentTextChanged.connect(self.check_plates_input)
+
+
         self.new_plates_comment_eb.textChanged.connect(self.check_plates_input)
 
         locations = ['Compound Center', "CC Freezer A", "CC Freezer B", "Sent to User"]
@@ -455,6 +460,7 @@ class PlatesScreen(QMainWindow):
 
     def createPlates(self):
         type = self.new_plates_type_cb.currentText()
+        subtype = self.plate_type_cb.currentText()
         location = self.plate_location_cb.currentText()
         name = self.new_plates_comment_eb.text()
         nr_o_ps = self.new_n_plates_sb.value()
@@ -463,7 +469,7 @@ class PlatesScreen(QMainWindow):
         else:
             sDuplicateLabels = 'single'
         try:
-            res, status = dbInterface.createPlates(self.token, type, name, nr_o_ps, location, sDuplicateLabels)
+            res, status = dbInterface.createPlates(self.token, type, subtype, name, nr_o_ps, location, sDuplicateLabels)
             if not status:
                 raise Exception
             self.new_plates_res_lab.setText(res)
