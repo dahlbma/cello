@@ -1001,7 +1001,7 @@ class DuplicatePlate(tornado.web.RequestHandler):
 
 @jwtauth
 class CreatePlates(tornado.web.RequestHandler):
-    def put(self, sPlateType, sPlateName, sNumberOfPlates, sLocation, sDuplicate):
+    def put(self, sPlateType, sSubType, sPlateName, sNumberOfPlates, sLocation, sDuplicate):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         saNewPlates = dict()
         plateKeys = []
@@ -1025,6 +1025,7 @@ class CreatePlates(tornado.web.RequestHandler):
             insert into {coolDB}.plate (plate_id,
             config_id,
             type_id,
+            plate_subtype,
             comments,
             created_date,
             updated_date,
@@ -1033,6 +1034,7 @@ class CreatePlates(tornado.web.RequestHandler):
             '{sPlateId}',
             '{sPlateId}',
             {iPlateType},
+            '{sSubType}',
             '{sNewplateName}',
             now(),
             now(),
