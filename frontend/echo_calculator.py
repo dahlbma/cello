@@ -351,7 +351,7 @@ class EchoSpotCalculator:
                     dmso_src = dmso_sources[0]
                     output_rows.append({
                         'Source plate name': dmso_src['source_plate'],
-                        'Source Plate type': dmso_src['source_plate_type'],
+                        'Source Plate type': dmso_src['plate_subtype'],
                         'Source well': dmso_src['source_well'],
                         'Sample ID': 'DMSO',
                         'Sample name': dmso_src['batch_id'],
@@ -391,7 +391,7 @@ class EchoSpotCalculator:
                     ctrl_src = ctrl_sources[0]
                     output_rows.append({
                         'Source plate name': ctrl_src['source_plate'],
-                        'Source Plate type': ctrl_src['source_plate_type'],
+                        'Source Plate type': ctrl_src['plate_subtype'],
                         'Source well': ctrl_src['source_well'],
                         'Sample ID': ctrl_src['compound_id'],
                         'Sample name': content,
@@ -434,7 +434,7 @@ class EchoSpotCalculator:
         if best_source and transfer_vol > 0:
             output_rows.append({
                 'Source plate name': best_source['source_plate'],
-                'Source Plate type': best_source['source_plate_type'],
+                'Source Plate type': best_source['plate_subtype'],
                 'Source well': best_source['source_well'],
                 'Sample ID': compound_id,
                 'Sample name': batch_id,
@@ -592,7 +592,7 @@ class EchoSpotCalculator:
                 if backfill_volume > 0:
                     backfill_row = {
                         'Source plate name': dmso_src['source_plate'],
-                        'Source Plate type': dmso_src['source_plate_type'],
+                        'Source Plate type': dmso_src['plate_subtype'],
                         'Source well': dmso_src['source_well'],
                         'Sample ID': 'DMSO',
                         'Sample name': dmso_src.get('batch_id', 'DMSO_backfill'),
