@@ -1397,7 +1397,11 @@ class VerifyPlate(tornado.web.RequestHandler):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         if re.match("^[pP]{1}[0-9]{6}$", sPlate):
             sSql = f"""
-            select wells, comments, IFNULL(loc_id, " ") loc_id, IFNULL(discarded, 0) discarded
+            select wells,
+            comments,
+            IFNULL(loc_id, " ") loc_id,
+            IFNULL(discarded, 0) discarded,
+            IF(plate_subtype IS NULL, wells, plate_subtype) AS plate_type
             from {coolDB}.plate, {coolDB}.plate_type
             where plate.type_id = plate_type.type_id
             and plate.plate_id ='{sPlate}'
