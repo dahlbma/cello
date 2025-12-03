@@ -28,6 +28,7 @@ class EchoSpotCalculator:
         self.logger = logging.getLogger(logger_name)
         self.dmso_fixed_volume_nl = 250  # Default DMSO volume, can be overridden
         self.ctrl_fixed_volume_nl = 250  # Default CTRL volume, can be overridden
+        self.dmso_source_index = 0  # Track which DMSO source well to use next (round-robin)
     
     def parse_excel_order(self, excel_file_path):
         """
@@ -194,6 +195,52 @@ class EchoSpotCalculator:
         
         return None, 0
     
+    def _collect_dmso_sources(self, source_data, dmso_plate):
+        """
+        Collect all available DMSO source wells for round-robin distribution.
+        
+        Args:
+            source_data: List of source plate data
+            dmso_plate: DMSO plate ID
+            
+        Returns:
+            list: List of DMSO source dictionaries
+        """
+        dmso_sources = []
+        
+        # First try: Look for sources from the specified DMSO plate
+        if dmso_plate:
+            dmso_sources = [src for src in source_data 
+                          if src['source_plate'] == dmso_plate]
+        
+        # Second try: If no sources from dmso_plate, look for DMSO compound_id in any plate
+        if not dmso_sources:
+            dmso_sources = [src for src in source_data 
+                          if src.get('compound_id', '').upper() == 'DMSO']
+        
+        # Third try: Look for any source that might be DMSO (batch_id contains DMSO)
+        if not dmso_sources:
+            dmso_sources = [src for src in source_data 
+                          if 'DMSO' in str(src.get('batch_id', '')).upper()]
+        
+        return dmso_sources
+    
+    def _get_next_dmso_source(self):
+        """
+        Get the next DMSO source well using round-robin distribution.
+        
+        Returns:
+            dict: DMSO source dictionary or None if no sources available
+        """
+        if not self.dmso_sources:
+            return None
+        
+        # Get current source and increment index for next call
+        dmso_src = self.dmso_sources[self.dmso_source_index]
+        self.dmso_source_index = (self.dmso_source_index + 1) % len(self.dmso_sources)
+        
+        return dmso_src
+    
     def generate_echo_file(self, order_data, source_data, ctrl_plate, dmso_plate, 
                           diluent_vol_ul, destination_plates, excel_order_path, output_path,
                           dmso_volume_nl=250, ctrl_volume_nl=250, backfill=False, progress_callback=None):
@@ -220,6 +267,8 @@ class EchoSpotCalculator:
         # Set DMSO and CTRL volumes for this run
         self.dmso_fixed_volume_nl = dmso_volume_nl
         self.ctrl_fixed_volume_nl = ctrl_volume_nl
+        self.dmso_source_index = 0  # Reset DMSO source index for each file generation
+        
         try:
             # Parse plate layout from Excel file
             _, special_wells, compound_wells = self.parse_excel_order(excel_order_path)
@@ -235,19 +284,15 @@ class EchoSpotCalculator:
             
             self.logger.info(f"DMSO limit: Max transfer volume is {max_transfer_nl} nL per well (1% of {diluent_vol_ul} µL)")
             
-            # Log available source plates and potential DMSO sources for debugging
-            unique_plates = set(src['source_plate'] for src in source_data)
+            # Collect all DMSO sources for round-robin distribution
+            self.dmso_sources = self._collect_dmso_sources(source_data, dmso_plate)
             
-            # Look for potential DMSO sources
-            potential_dmso = [src for src in source_data 
-                            if 'DMSO' in str(src.get('compound_id', '')).upper() or 
-                               'DMSO' in str(src.get('batch_id', '')).upper()]
-            if potential_dmso:
-                self.logger.info(f"Found {len(potential_dmso)} potential DMSO sources:")
-                for src in potential_dmso[:3]:  # Log first 3 examples
-                    self.logger.info(f"  - Plate: {src['source_plate']}, Well: {src['source_well']}, Compound: {src.get('compound_id', 'N/A')}, Batch: {src.get('batch_id', 'N/A')}")
+            if self.dmso_sources:
+                self.logger.info(f"Found {len(self.dmso_sources)} DMSO source wells for distribution:")
+                for src in self.dmso_sources[:5]:  # Log first 5 examples
+                    self.logger.info(f"  - Plate: {src['source_plate']}, Well: {src['source_well']}, Batch: {src.get('batch_id', 'N/A')}")
             else:
-                self.logger.warning("No obvious DMSO sources found in source data")
+                self.logger.warning("No DMSO sources found in source data")
             
             # Process each destination plate
             compound_idx = 0
@@ -328,27 +373,10 @@ class EchoSpotCalculator:
         """Add DMSO and control wells for a destination plate"""
         for dest_well, content in special_wells:
             if content.upper() == 'DMSO':
-                # Find DMSO source - look for any source from dmso_plate first, 
-                # then fall back to any DMSO source from any plate
-                dmso_sources = []
+                # Get next DMSO source using round-robin distribution
+                dmso_src = self._get_next_dmso_source()
                 
-                # First try: Look for sources from the specified DMSO plate
-                if dmso_plate:
-                    dmso_sources = [src for src in source_data 
-                                  if src['source_plate'] == dmso_plate]
-                
-                # Second try: If no sources from dmso_plate, look for DMSO compound_id in any plate
-                if not dmso_sources:
-                    dmso_sources = [src for src in source_data 
-                                  if src.get('compound_id', '').upper() == 'DMSO']
-                
-                # Third try: Look for any source that might be DMSO (batch_id contains DMSO)
-                if not dmso_sources:
-                    dmso_sources = [src for src in source_data 
-                                  if 'DMSO' in str(src.get('batch_id', '')).upper()]
-                
-                if dmso_sources:
-                    dmso_src = dmso_sources[0]
+                if dmso_src:
                     output_rows.append({
                         'Source plate name': dmso_src['source_plate'],
                         'Source Plate type': dmso_src['plate_subtype'],
@@ -501,29 +529,19 @@ class EchoSpotCalculator:
         """
         Apply DMSO backfill to equalize volumes across all non-DMSO wells.
         Inserts backfill rows immediately after the last transfer for each well.
+        Uses round-robin distribution across DMSO source wells.
         
         Args:
             output_rows: List of output row dictionaries (modified in place)
             source_data: List of source plate data
             dmso_plate: DMSO plate ID for finding DMSO source
         """
-        # Find DMSO source wells
-        dmso_sources = []
-        if dmso_plate:
-            dmso_sources = [src for src in source_data if src['source_plate'] == dmso_plate]
-        if not dmso_sources:
-            dmso_sources = [src for src in source_data 
-                          if src.get('compound_id', '').upper() == 'DMSO']
-        if not dmso_sources:
-            dmso_sources = [src for src in source_data 
-                          if 'DMSO' in str(src.get('batch_id', '')).upper()]
-        
-        if not dmso_sources:
-            self.logger.error("Cannot apply backfill: No DMSO source found")
+        # Check if DMSO sources are available
+        if not self.dmso_sources:
+            self.logger.error("Cannot apply backfill: No DMSO sources available")
             return
         
-        dmso_src = dmso_sources[0]  # Use first available DMSO source
-        self.logger.info(f"Using DMSO source: Plate {dmso_src['source_plate']}, Well {dmso_src['source_well']}")
+        self.logger.info(f"Using {len(self.dmso_sources)} DMSO source wells for backfill distribution")
         
         # Track volumes and last index for each well
         well_info = {}  # Key: (dest_plate, dest_well), Value: {'volume': total, 'last_idx': index, 'is_ctrl': bool}
@@ -590,21 +608,25 @@ class EchoSpotCalculator:
                 backfill_volume = self.snap_to_droplet_size(backfill_volume)
                 
                 if backfill_volume > 0:
-                    backfill_row = {
-                        'Source plate name': dmso_src['source_plate'],
-                        'Source Plate type': dmso_src['plate_subtype'],
-                        'Source well': dmso_src['source_well'],
-                        'Sample ID': 'DMSO',
-                        'Sample name': dmso_src.get('batch_id', 'DMSO_backfill'),
-                        'Destination plate name': dest_plate,
-                        'Destination Plate type': self.DEST_PLATE_TYPE,
-                        'Destination well': dest_well,
-                        'Transfer volym (nL)': backfill_volume,
-                        'Final conc (nM)': '',
-                        'Source conc (mM)': dmso_src.get('source_conc_mm', ''),
-                        'Exception': ''
-                    }
-                    backfill_inserts.append((info['last_idx'], backfill_row))
+                    # Get next DMSO source using round-robin distribution
+                    dmso_src = self._get_next_dmso_source()
+                    
+                    if dmso_src:
+                        backfill_row = {
+                            'Source plate name': dmso_src['source_plate'],
+                            'Source Plate type': dmso_src['plate_subtype'],
+                            'Source well': dmso_src['source_well'],
+                            'Sample ID': 'DMSO',
+                            'Sample name': dmso_src.get('batch_id', 'DMSO_backfill'),
+                            'Destination plate name': dest_plate,
+                            'Destination Plate type': self.DEST_PLATE_TYPE,
+                            'Destination well': dest_well,
+                            'Transfer volym (nL)': backfill_volume,
+                            'Final conc (nM)': '',
+                            'Source conc (mM)': dmso_src.get('source_conc_mm', ''),
+                            'Exception': ''
+                        }
+                        backfill_inserts.append((info['last_idx'], backfill_row))
         
         # Sort by index in reverse order so we can insert from back to front
         # (this way indices remain valid as we insert)
