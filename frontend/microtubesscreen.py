@@ -470,6 +470,7 @@ class MicrotubesScreen(QMainWindow):
 
         self.update_box_eb.setEnabled(False)
         self.upload_copy_log_btn.setEnabled(True)
+        self.upload_result_lab.setTextFormat(Qt.RichText)
         self.upload_result_lab.setText(res_txt)
 
     def copyLog(self):
