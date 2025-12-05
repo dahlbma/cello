@@ -452,7 +452,7 @@ class MicrotubesScreen(QMainWindow):
                     res = json.loads(r)
                     res_txt += f'''File: {file_name}
     Rack updated: {res['sRack']}
-    Failed tubes: {res['FailedTubes']}
+    Failed tubes: <span style="color: red;">{res['FailedTubes']}</span>
     Nr of ok tubes: {res['iOk']}
     Nr of failed tubes: {res['iError']}\n\n'''
                     f.close()
