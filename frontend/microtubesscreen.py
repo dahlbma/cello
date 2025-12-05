@@ -450,9 +450,12 @@ class MicrotubesScreen(QMainWindow):
                 with open(file_name, "rb") as f:
                     r, b = dbInterface.readScannedRack(self.token, self.update_box_eb.text(), f)
                     res = json.loads(r)
+                    error_tubes = res['FailedTubes']
+                    if error_tubes == "[]":
+                        error_tubes = ""
                     res_txt += f'''File: {file_name}
     Rack updated: {res['sRack']}<BR>
-    Failed tubes: <span style="color: red;">{res['FailedTubes']}</span><BR>
+    Failed tubes: <span style="color: red;">{error_tubes}</span><BR>
     Nr of ok tubes: {res['iOk']}<BR>
     Nr of failed tubes: {res['iError']}<BR><BR>'''
                     f.close()
