@@ -617,7 +617,7 @@ class EchoSpotCalculator:
                             'Source Plate type': dmso_src['plate_subtype'],
                             'Source well': dmso_src['source_well'],
                             'Sample ID': 'BACKFILL',
-                            'Sample name': dmso_src.get('batch_id', 'DMSO_backfill'),
+                            'Sample name': 'BACKFILL',
                             'Destination plate name': dest_plate,
                             'Destination Plate type': self.DEST_PLATE_TYPE,
                             'Destination well': dest_well,
