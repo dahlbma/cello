@@ -208,10 +208,11 @@ class EchoSpotCalculator:
         """
         dmso_sources = []
         
-        # First try: Look for sources from the specified DMSO plate
+        # First try: Look for DMSO compounds (by compound_id) from the specified DMSO plate
         if dmso_plate:
             dmso_sources = [src for src in source_data 
-                          if src['source_plate'] == dmso_plate]
+                          if src['source_plate'] == dmso_plate 
+                          and src.get('compound_id', '').upper() == 'DMSO']
         
         # Second try: If no sources from dmso_plate, look for DMSO compound_id in any plate
         if not dmso_sources:
