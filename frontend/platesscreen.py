@@ -145,9 +145,24 @@ class PlatesScreen(QMainWindow):
         self.sourceCTRLplate_eb.textChanged.connect(self.validateSpotfileInputs)
         self.sourceDMSOplate_eb.textChanged.connect(self.validateSpotfileInputs)
         self.userAddedVolume_eb.textChanged.connect(self.validateSpotfileInputs)
+
+        self.horizontal_chk.setChecked(True)
+        self.vertical_chk.setChecked(False)
+        self.horizontal_chk.stateChanged.connect(self.horizontalCheckChanged)
+        self.vertical_chk.stateChanged.connect(self.verticalCheckChanged)
         
         # Load plate lists initially
         self.loadPlateLists()
+
+    def horizontalCheckChanged(self, state):
+        """Handle horizontal checkbox state change"""
+        if state == Qt.Checked:
+            self.vertical_chk.setChecked(False)
+    
+    def verticalCheckChanged(self, state):
+        """Handle vertical checkbox state change"""
+        if state == Qt.Checked:
+            self.horizontal_chk.setChecked(False)
 
     def loadPlateLists(self):
         """Load plate lists from database and populate the sourcePlates_cb combobox"""
@@ -286,9 +301,11 @@ class PlatesScreen(QMainWindow):
             
             # Generate the echo file
             backfill_enabled = self.backfill_chk.isChecked()
+            well_order = 'horizontal' if self.horizontal_chk.isChecked() else 'vertical'
             logging.getLogger(self.mod_name).info(f"Backfill enabled: {backfill_enabled}")
             logging.getLogger(self.mod_name).info(f"DMSO volume: {dmso_volume} nL")
             logging.getLogger(self.mod_name).info(f"CTRL volume: {ctrl_volume} nL")
+            logging.getLogger(self.mod_name).info(f"Well order: {well_order}")
             
             success = calculator.generate_echo_file(
                 order_data=df_order,
@@ -302,6 +319,7 @@ class PlatesScreen(QMainWindow):
                 dmso_volume_nl=dmso_volume,
                 ctrl_volume_nl=ctrl_volume,
                 backfill=backfill_enabled,
+                well_order=well_order,
                 progress_callback=progress_callback
             )
             

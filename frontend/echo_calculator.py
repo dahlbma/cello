@@ -244,7 +244,7 @@ class EchoSpotCalculator:
     
     def generate_echo_file(self, order_data, source_data, ctrl_plate, dmso_plate, 
                           diluent_vol_ul, destination_plates, excel_order_path, output_path,
-                          dmso_volume_nl=250, ctrl_volume_nl=250, backfill=False, progress_callback=None):
+                          dmso_volume_nl=250, ctrl_volume_nl=250, backfill=False, well_order='horizontal', progress_callback=None):
         """
         Generate the Echo robot input file.
         
@@ -260,6 +260,7 @@ class EchoSpotCalculator:
             dmso_volume_nl: Volume for DMSO transfers in nL (default: 250)
             ctrl_volume_nl: Volume for CTRL transfers in nL (default: 250)
             backfill: If True, backfill all non-DMSO wells with DMSO to equalize volumes
+            well_order: 'horizontal' (A01, A02, ...) or 'vertical' (A01, B01, ...) (default: 'horizontal')
             progress_callback: Optional callback function(percent) for progress reporting
             
         Returns:
@@ -273,6 +274,14 @@ class EchoSpotCalculator:
         try:
             # Parse plate layout from Excel file
             _, special_wells, compound_wells = self.parse_excel_order(excel_order_path)
+            
+            # Sort compound wells based on well_order preference
+            if well_order.lower() == 'vertical':
+                # Sort by column first (A01, B01, C01, ..., P01, A02, B02, ...)
+                compound_wells = sorted(compound_wells, key=lambda w: (int(w[1:]), w[0]))
+            else:
+                # Sort by row first (A01, A02, ..., A24, B01, B02, ...) - this is default
+                compound_wells = sorted(compound_wells, key=lambda w: (w[0], int(w[1:])))
             
             if not destination_plates:
                 self.logger.error("No destination plates specified")
