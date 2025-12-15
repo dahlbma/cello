@@ -2334,6 +2334,20 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
                 </property>
                </spacer>
               </item>
+              <item>
+               <widget class="QCheckBox" name="horizontal_chk">
+                <property name="text">
+                 <string>Horizontal</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="vertical_chk">
+                <property name="text">
+                 <string>Vertical</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
             <item>
