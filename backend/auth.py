@@ -6,6 +6,7 @@ import config
 import logging
 import json
 import re
+from tornado import gen
 
 AUTHORIZATION_HEADER = 'Authorization'
 AUTHORIZATION_METHOD = 'bearer'
@@ -93,14 +94,13 @@ def jwtauth(handler_class):
                 auth_ok = require_auth(self, kwargs)
             except Exception:
                 # require_auth should already have finished the response
-                # but ensure we don't return a bare False (which Tornado
-                # will attempt to yield and raise BadYieldError).
-                return None
+                # Return a completed future to prevent AttributeError
+                return gen.maybe_future(None)
 
             if auth_ok is False:
                 # authentication failed and response was finished by
-                # require_auth(); do not continue to execute the handler.
-                return None
+                # require_auth(); return a completed future.
+                return gen.maybe_future(None)
 
             return handler_execute(self, transforms, *args, **kwargs)
 
