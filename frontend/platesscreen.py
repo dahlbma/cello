@@ -90,6 +90,25 @@ class PlatesScreen(QMainWindow):
 
         self.upload_plates_table.currentItemChanged.connect(self.upload_moldisplay)
 
+
+        # Load Echo files
+        self.echo_upload_populated = False
+        self.echo_data_issue = False
+        self.load_echo_upload_file_btn.setEnabled(False)
+        
+        self.load_echo_plate_size_cb.addItems(types)
+        self.load_echo_plate_size_cb.currentTextChanged.connect(self.enable_echo_upload)
+
+        self.choose_echo_file_btn.clicked.connect(self.import_echo_files)
+        self.load_echo_upload_file_btn.clicked.connect(self.upload_echo_plate_table)
+        self.load_echo_copy_to_clipboard_btn.clicked.connect(self.export_echo_upload_data)
+        self.load_echo_pbar.setValue(0)
+        self.load_echo_pbar.hide()
+
+        self.load_echo_plates_table.currentItemChanged.connect(self.upload_moldisplay)
+        # End load Echo files
+
+
         self.nine6to384_btn.clicked.connect(self.nine6to384_merge)
         self.nine6to384_btn.setEnabled(False)
 
@@ -858,6 +877,266 @@ class PlatesScreen(QMainWindow):
 
     def export_upload_data(self):
         export_table(self.upload_plates_table)
+
+    # Load Echo files functions
+    def import_echo_files(self):
+        """Import multiple Echo CSV files and process them"""
+        fnames = QFileDialog.getOpenFileNames(self, 'Import Echo Files', 
+                                               '.', "Echo CSV Files (*.csv);;All Files (*)")
+        if not fnames[0]:  # User cancelled or no files selected
+            return
+        
+        try:
+            all_data = []
+            files_processed = []
+            
+            for fname in fnames[0]:
+                echo_import_data = self._read_echo_details(fname)
+                all_data.extend(echo_import_data)
+                files_processed.append(os.path.basename(fname))
+            
+            # Update UI with file list
+            file_list = ", ".join(files_processed)
+            if len(file_list) > 100:
+                file_list = f"{len(files_processed)} files selected"
+            self.echo_path_lab.setText(file_list)
+            
+            self.load_echo_pbar.setValue(0)
+            self.load_echo_pbar.hide()
+            self.load_echo_plates_data = all_data
+            self.populate_echo_table(all_data)
+            
+        except Exception as e:
+            self.load_echo_plates_data = None
+            self.load_echo_upload_file_btn.setEnabled(False)
+            logging.getLogger(self.mod_name).error("Echo files import failed")
+            logging.getLogger(self.mod_name).error(str(e))
+        self.enable_echo_upload()
+
+    def _read_echo_details(self, file_path):
+        """
+        Read Echo CSV file and extract data from [DETAILS] section.
+        Maps Echo columns to import format.
+        
+        Column mapping:
+            Destination Plate Barcode -> Plate Id
+            Destination Well -> Well
+            Sample ID -> Compound Id
+            Sample Name -> Batch
+            Fluid Type -> Form
+            Sample Comment -> Conc mM
+            Actual Volume -> Volume nL
+        
+        Returns:
+            List of lists containing [Plate Id, Well, Compound Id, Batch, Form, Conc mM, Volume nL]
+        """
+        import_data = []
+        in_details_section = False
+        headers = None
+        
+        with open(file_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                
+                # Look for [DETAILS] section
+                if '[DETAILS]' in line:
+                    in_details_section = True
+                    continue
+                
+                # If we're in the details section, process the data
+                if in_details_section:
+                    if not line or line.startswith('['):
+                        # End of details section or new section starting
+                        break
+                    
+                    # First non-empty line after [DETAILS] is the header
+                    if headers is None:
+                        headers = [h.strip() for h in line.split(',')]
+                        continue
+                    
+                    # Parse data rows
+                    try:
+                        reader = csv.DictReader([line], fieldnames=headers)
+                        row = next(reader)
+                        
+                        # Map and extract the required columns
+                        well = row.get('Destination Well', '').strip()
+                        plate_id = row.get('Destination Plate Barcode', '').strip()
+                        compound_id = row.get('Sample ID', '').strip()
+                        batch = row.get('Sample Name', '').strip()
+                        form = row.get('Fluid Type', '').strip()
+                        conc = row.get('Sample Comment', '').strip()
+                        volume = row.get('Actual Volume', '').strip()
+                        
+                        # Normalize well (A1 -> A01)
+                        well = self._normalize_well(well)
+                        
+                        # Only add rows with essential data
+                        if plate_id and well:
+                            import_data.append([plate_id, well, compound_id, batch, form, conc, volume])
+                    except:
+                        # Skip malformed rows
+                        continue
+        
+        return import_data
+
+    def _normalize_well(self, well):
+        """
+        Normalize well name to zero-filled format (A1 -> A01, B2 -> B02).
+        
+        Args:
+            well: Well name string (e.g., 'A1', 'A01', 'P24')
+            
+        Returns:
+            Zero-filled well name (e.g., 'A01', 'A01', 'P24')
+        """
+        if not well:
+            return well
+        
+        # Extract row letter(s) and column number
+        match = re.match(r'^([A-Za-z]+)(\d+)$', well)
+        if match:
+            row = match.group(1).upper()
+            col = int(match.group(2))
+            return f"{row}{col:02d}"
+        
+        return well
+
+    def populate_echo_table(self, data, error=False):
+        """Populate the echo plates table with data"""
+        if len(data) == 0:
+            self.echo_upload_populated = False
+        else:
+            self.echo_data_issue = error
+            self.load_echo_plates_table.setRowCount(0)
+            self.load_echo_plates_table.setRowCount(len(data))
+            
+            try:
+                iBackfillCount = 0
+                iMaxRow = len(data)
+                for n in range(len(data)):
+                    bBackfill = False
+                    if len(data[n]) > 2 and data[n][2].upper() == 'BACKFILL':
+                        iBackfillCount += 1
+                        bBackfill = True
+                        data[n][2] = data[n][3] = 'BACKFILL'
+                    
+                    for m in range(len(data[n])):
+                        if (data[n][m] is None) or (len(data[n][m]) == 0):
+                            self.echo_data_issue = True
+                        newItem = QTableWidgetItem(f"{data[n][m]}")
+                        newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                        if error is True:
+                            newItem.setBackground(QColor(250, 103, 92))
+                        if bBackfill:
+                            self.load_echo_plates_table.setItem(iMaxRow-iBackfillCount, m, newItem)
+                        else:
+                            self.load_echo_plates_table.setItem(n-iBackfillCount, m, newItem)
+                    
+                    if len(data[n]) < 7:
+                        self.echo_data_issue = True
+                        for k in range(len(data[n]), 7):
+                            # empty cells
+                            newItem = QTableWidgetItem("")
+                            newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
+                            newItem.setBackground(QColor(250, 103, 92))
+                            self.load_echo_plates_table.setItem(n, k, newItem)
+            except Exception as e:
+                logging.getLogger(self.mod_name).error("Echo table population failed")
+                logging.getLogger(self.mod_name).error(str(e))
+            self.echo_upload_populated = True
+
+    def enable_echo_upload(self):
+        """Enable the echo upload button if conditions are met"""
+        if hasattr(self, 'echo_upload_populated') and \
+           self.echo_upload_populated is True and \
+           self.load_echo_plate_size_cb.currentText() != ' ' and \
+           hasattr(self, 'echo_data_issue') and \
+           self.echo_data_issue is False:
+            self.load_echo_upload_file_btn.setEnabled(True)
+        else:
+            self.load_echo_upload_file_btn.setEnabled(False)
+
+    def upload_echo_plate_table(self):
+        """Upload echo plate data to the database"""
+        repopulate_data = []
+        # set up progress bar
+        iTickCount = 0
+        iTicks = int(self.load_echo_plates_table.rowCount() / 100)
+        progress = 0
+        self.load_echo_pbar.setValue(progress)
+        self.load_echo_pbar.show()
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        currentPlate = None
+        plateType = self.load_echo_plate_size_cb.currentText()
+        flush = False
+        accumulated_rows = []
+        iAccumulator_count = 0
+        iRowsBatch = 6
+        
+        for row in range(self.load_echo_plates_table.rowCount()):
+            QApplication.processEvents()
+            iTickCount += 1
+
+            plate_id = self.load_echo_plates_table.item(row, 0).text()
+            if plate_id != currentPlate and iAccumulator_count > 0:
+                res, ok = dbInterface.setPlateType(self.token, plate_id, plateType)
+                currentPlate = plate_id
+                if ok is False:
+                    logging.getLogger(self.mod_name).error(f"set plate type [{plate_id}:{plateType}] failed with response: [{res.content.decode()}:{res.status_code}]\nIgnoring plate [{plate_id}]")
+                    flush = True
+                else:
+                    flush = False
+                    retVal, status = dbInterface.uploadAccumulatedRows(self.token, accumulated_rows)
+                    iAccumulator_count = 0
+                    accumulated_rows = []
+                    
+                    if status is False:
+                        for ro in retVal:
+                            repopulate_data.append(ro)
+
+            well = self.load_echo_plates_table.item(row, 1).text()
+            compound_id = self.load_echo_plates_table.item(row, 2).text()
+            batch = self.load_echo_plates_table.item(row, 3).text()
+            form = self.load_echo_plates_table.item(row, 4).text()
+            conc = self.load_echo_plates_table.item(row, 5).text()
+            volume = self.load_echo_plates_table.item(row, 6).text()
+
+            data = [plate_id, well, compound_id, batch, form, conc, volume]
+            accumulated_rows.append(data)
+            iAccumulator_count += 1
+            status = False
+            
+            if flush is False and iAccumulator_count == iRowsBatch:
+                retVal, status = dbInterface.uploadAccumulatedRows(self.token, accumulated_rows)
+                
+                iAccumulator_count = 0
+                accumulated_rows = []
+                if status is False:
+                    for ro in retVal:
+                        repopulate_data.append(ro)
+                    logging.getLogger(self.mod_name).info(f"Failed with uploadWellInformation Plate: {plate_id} Well: {well} Error: {retVal}")
+            
+            if iTickCount >= iTicks:
+                progress += 1
+                iTickCount = 0
+                self.load_echo_pbar.setValue(progress)
+
+        if iAccumulator_count != 0:
+            retVal, status = dbInterface.uploadAccumulatedRows(self.token, accumulated_rows)
+            if status is False:
+                for ro in retVal:
+                    repopulate_data.append(ro)
+
+        self.load_echo_pbar.setValue(100)
+
+        QApplication.restoreOverrideCursor()
+        self.populate_echo_table(repopulate_data, error=True)
+        self.enable_echo_upload()
+
+    def export_echo_upload_data(self):
+        """Export echo upload data to clipboard"""
+        export_table(self.load_echo_plates_table)
 
     def clear_merge_inputs(self):
         self.merge_volume_eb.setText("")
