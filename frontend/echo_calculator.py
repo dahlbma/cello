@@ -22,19 +22,20 @@ class EchoSpotCalculator:
     # Constants
     DROPLET_SIZE_NL = 2.5  # Robot droplet size in nL
     DEST_PLATE_TYPE = "384PP_DMSO2"
-    MAX_DMSO_PERCENT = 0.01  # 1% limit
     
     def __init__(self, logger_name="echo_calculator"):
         self.logger = logging.getLogger(logger_name)
         self.dmso_fixed_volume_nl = 250  # Default DMSO volume, can be overridden
         self.ctrl_fixed_volume_nl = 250  # Default CTRL volume, can be overridden
         self.dmso_source_index = 0  # Track which DMSO source well to use next (round-robin)
+        self.max_dmso_percent = 0.01  # Default 1% limit, can be overridden from Excel
     
     def parse_excel_order(self, excel_file_path):
         """
         Parse the Excel order file with two sheets:
         Sheet 1: Order list (Compound Id, Batch Id, Final conc (nM))
         Sheet 2: Plate layout (384-well layout with DMSO/CTRL/Empty markings)
+                 Cell AD2 contains the max DMSO percentage allowed (e.g., 0.01 for 1%)
         
         Returns:
             tuple: (df_order, special_wells, compound_wells)
@@ -42,10 +43,25 @@ class EchoSpotCalculator:
         try:
             # Read both sheets
             df_order = pd.read_excel(excel_file_path, sheet_name=0)
-            df_layout = pd.read_excel(excel_file_path, sheet_name=1)
+            df_layout = pd.read_excel(excel_file_path, sheet_name=1, header=None)  # Read without header to access cells directly
             
             # Normalize headers
             df_order.columns = df_order.columns.str.strip()
+            
+            # Read MAX_DMSO_PERCENT from cell AD2 (row index 1, column index 29)
+            # AD is the 30th column (0-indexed: 29)
+            try:
+                max_dmso_value = df_layout.iloc[1, 29]  # Row 2 (index 1), Column AD (index 29)
+                if pd.notna(max_dmso_value):
+                    self.max_dmso_percent = float(max_dmso_value)
+                    self.logger.info(f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% from Excel cell AD2")
+                else:
+                    self.logger.warning("Cell AD2 is empty, using default MAX_DMSO_PERCENT of 1%")
+            except (IndexError, ValueError, TypeError) as e:
+                self.logger.warning(f"Could not read MAX_DMSO_PERCENT from cell AD2: {e}, using default of 1%")
+            
+            # Re-read df_layout with proper header for plate layout parsing
+            df_layout = pd.read_excel(excel_file_path, sheet_name=1)
             
             # Parse plate layout
             special_wells, compound_wells = self._parse_plate_layout(df_layout)
@@ -170,8 +186,8 @@ class EchoSpotCalculator:
         if not matches:
             return None, 0
         
-        # Calculate max allowed transfer volume (1% DMSO limit)
-        max_transfer_nl = diluent_vol_ul * 1000 * self.MAX_DMSO_PERCENT
+        # Calculate max allowed transfer volume (DMSO limit from Excel or default)
+        max_transfer_nl = diluent_vol_ul * 1000 * self.max_dmso_percent
         
         # Sort by concentration descending (highest first)
         matches_sorted = sorted(matches, key=lambda x: x['source_conc_mm'], reverse=True)
@@ -290,9 +306,9 @@ class EchoSpotCalculator:
             self.logger.info(f"Parsed plate layout: {len(special_wells)} special wells, {len(compound_wells)} compound wells")
             
             output_rows = []
-            max_transfer_nl = diluent_vol_ul * 1000 * self.MAX_DMSO_PERCENT
+            max_transfer_nl = diluent_vol_ul * 1000 * self.max_dmso_percent
             
-            self.logger.info(f"DMSO limit: Max transfer volume is {max_transfer_nl} nL per well (1% of {diluent_vol_ul} µL)")
+            self.logger.info(f"DMSO limit: Max transfer volume is {max_transfer_nl} nL per well ({self.max_dmso_percent*100:.1f}% of {diluent_vol_ul} µL)")
             
             # Collect all DMSO sources for round-robin distribution
             self.dmso_sources = self._collect_dmso_sources(source_data, dmso_plate)
@@ -499,7 +515,7 @@ class EchoSpotCalculator:
                     concs_str += f" (+ {len(available_concs) - 5} more)"
                 
                 # Calculate what concentration we could achieve with the best available source
-                max_transfer_nl = diluent_vol_ul * 1000 * self.MAX_DMSO_PERCENT
+                max_transfer_nl = diluent_vol_ul * 1000 * self.max_dmso_percent
                 best_achievable_info = ""
                 
                 if available_concs:
