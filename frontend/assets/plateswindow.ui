@@ -83,7 +83,7 @@
       <item row="1" column="0" colspan="6">
        <widget class="QTabWidget" name="plates_tab_wg">
         <property name="currentIndex">
-         <number>0</number>
+         <number>6</number>
         </property>
         <widget class="QWidget" name="new_plates_tab">
          <attribute name="title">
@@ -2547,9 +2547,6 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
                 </item>
                </layout>
               </item>
-
-
-
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_949">
                 <item>
@@ -2568,13 +2565,6 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
                 </item>
                </layout>
               </item>
-
-
-
-
-
-
-	      
               <item>
                <spacer name="horizontalSpacer_29">
                 <property name="orientation">
