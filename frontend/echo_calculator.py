@@ -30,12 +30,16 @@ class EchoSpotCalculator:
         self.dmso_source_index = 0  # Track which DMSO source well to use next (round-robin)
         self.max_dmso_percent = 0.01  # Default 1% limit, can be overridden from Excel
     
-    def parse_excel_order(self, excel_file_path):
+    def parse_excel_order(self, excel_file_path, max_dmso_pct_vol=None):
         """
         Parse the Excel order file with two sheets:
         Sheet 1: Order list (Compound Id, Batch Id, Final conc (nM))
         Sheet 2: Plate layout (384-well layout with DMSO/CTRL/Empty markings)
-                 Cell AD2 contains the max DMSO percentage allowed (e.g., 0.01 for 1%)
+        
+        Args:
+            excel_file_path: Path to the Excel file
+            max_dmso_pct_vol: Maximum DMSO percentage (e.g., 0.01 for 1%), 
+                            typically from MAX_DMSO_pct_vol_eb QLineEdit
         
         Returns:
             tuple: (df_order, special_wells, compound_wells)
@@ -43,25 +47,25 @@ class EchoSpotCalculator:
         try:
             # Read both sheets
             df_order = pd.read_excel(excel_file_path, sheet_name=0)
-            df_layout = pd.read_excel(excel_file_path, sheet_name=1, header=None)  # Read without header to access cells directly
+            df_layout = pd.read_excel(excel_file_path, sheet_name=1)
             
             # Normalize headers
             df_order.columns = df_order.columns.str.strip()
             
-            # Read MAX_DMSO_PERCENT from cell AD2 (row index 1, column index 29)
-            # AD is the 30th column (0-indexed: 29)
-            try:
-                max_dmso_value = df_layout.iloc[1, 29]  # Row 2 (index 1), Column AD (index 29)
-                if pd.notna(max_dmso_value):
-                    self.max_dmso_percent = float(max_dmso_value)
-                    self.logger.info(f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% from Excel cell AD2")
-                else:
-                    self.logger.warning("Cell AD2 is empty, using default MAX_DMSO_PERCENT of 1%")
-            except (IndexError, ValueError, TypeError) as e:
-                self.logger.warning(f"Could not read MAX_DMSO_PERCENT from cell AD2: {e}, using default of 1%")
-            
-            # Re-read df_layout with proper header for plate layout parsing
-            df_layout = pd.read_excel(excel_file_path, sheet_name=1)
+            # Set MAX_DMSO_PERCENT from parameter
+            if max_dmso_pct_vol is not None:
+                try:
+                    # Convert to float if it's a string (from QLineEdit.text())
+                    max_dmso_value = float(max_dmso_pct_vol)
+                    if max_dmso_value > 0:
+                        self.max_dmso_percent = max_dmso_value
+                        self.logger.info(f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% from parameter")
+                    else:
+                        self.logger.warning("MAX_DMSO_PERCENT parameter is <= 0, using default of 1%")
+                except (ValueError, TypeError) as e:
+                    self.logger.warning(f"Could not parse MAX_DMSO_PERCENT parameter: {e}, using default of 1%")
+            else:
+                self.logger.info(f"No MAX_DMSO_PERCENT parameter provided, using default of 1%")
             
             # Parse plate layout
             special_wells, compound_wells = self._parse_plate_layout(df_layout)
@@ -260,7 +264,8 @@ class EchoSpotCalculator:
     
     def generate_echo_file(self, order_data, source_data, ctrl_plate, dmso_plate, 
                           diluent_vol_ul, destination_plates, excel_order_path, output_path,
-                          dmso_volume_nl=250, ctrl_volume_nl=250, backfill=False, well_order='horizontal', progress_callback=None):
+                          dmso_volume_nl=250, ctrl_volume_nl=250, backfill=False, well_order='horizontal', 
+                          max_dmso_pct_vol=None, progress_callback=None):
         """
         Generate the Echo robot input file.
         
@@ -277,6 +282,7 @@ class EchoSpotCalculator:
             ctrl_volume_nl: Volume for CTRL transfers in nL (default: 250)
             backfill: If True, backfill all non-DMSO wells with DMSO to equalize volumes
             well_order: 'horizontal' (A01, A02, ...) or 'vertical' (A01, B01, ...) (default: 'horizontal')
+            max_dmso_pct_vol: Maximum DMSO percentage (e.g., 0.01 for 1%), typically from MAX_DMSO_pct_vol_eb QLineEdit
             progress_callback: Optional callback function(percent) for progress reporting
             
         Returns:
@@ -289,7 +295,7 @@ class EchoSpotCalculator:
         
         try:
             # Parse plate layout from Excel file
-            _, special_wells, compound_wells = self.parse_excel_order(excel_order_path)
+            _, special_wells, compound_wells = self.parse_excel_order(excel_order_path, max_dmso_pct_vol)
             
             # Sort compound wells based on well_order preference
             if well_order.lower() == 'vertical':

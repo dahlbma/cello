@@ -246,6 +246,10 @@ class PlatesScreen(QMainWindow):
             destination_plates_text = self.destinationPlates_eb.toPlainText().strip()
             excel_order_path = self.spotInput_lab.text().strip()
             
+            # Get MAX_DMSO percentage (convert from text, use None if empty)
+            max_dmso_pct_text = self.MAX_DMSO_pct_vol_eb.text().strip()
+            max_dmso_pct_vol = float(max_dmso_pct_text) if max_dmso_pct_text else None
+            
             # Validate inputs
             if not excel_order_path or not os.path.exists(excel_order_path):
                 QMessageBox.warning(self, "Input Error", "Please select a valid Excel order file.")
@@ -339,6 +343,7 @@ class PlatesScreen(QMainWindow):
                 ctrl_volume_nl=ctrl_volume,
                 backfill=backfill_enabled,
                 well_order=well_order,
+                max_dmso_pct_vol=max_dmso_pct_vol,
                 progress_callback=progress_callback
             )
             
