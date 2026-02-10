@@ -184,9 +184,10 @@ class EchoSpotCalculator:
         Returns:
             tuple: (best_source_dict, transfer_volume_nl) or (None, 0) if not found
         """
+        print(f"Finding best source for batch_id={batch_id}, target_nm={target_nm}, diluent_vol_ul={diluent_vol_ul}")
         # Filter sources by batch ID
-        matches = [src for src in available_sources if src['batch_id'] == batch_id]
-        
+        matches = [src for src in available_sources if src['batch_id'] == str(batch_id)]
+        print(f"Found {matches} matching sources for batch_id={batch_id}")
         if not matches:
             return None, 0
         
