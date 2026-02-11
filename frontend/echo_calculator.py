@@ -170,16 +170,17 @@ class EchoSpotCalculator:
         steps = round(volume_nl / self.DROPLET_SIZE_NL)
         return steps * self.DROPLET_SIZE_NL
     
-    def find_best_source(self, batch_id, target_nm, available_sources, diluent_vol_ul):
+    def find_best_source(self, batch_id, target_nm, available_sources, diluent_vol_ul, max_conc_error_pct=15.0):
         """
         Find the best source for a given batch and target concentration.
-        Strategy: Use highest concentration that gives valid transfer volume within constraints.
+        Strategy: Find the source that gives the MINIMUM concentration error within constraints.
         
         Args:
             batch_id: Batch ID to find
             target_nm: Target concentration in nM
             available_sources: List of source data dictionaries
             diluent_vol_ul: Diluent volume in µL
+            max_conc_error_pct: Maximum acceptable concentration error percentage (default: 15%)
             
         Returns:
             tuple: (best_source_dict, transfer_volume_nl) or (None, 0) if not found
@@ -197,6 +198,11 @@ class EchoSpotCalculator:
         # Sort by concentration descending (highest first)
         matches_sorted = sorted(matches, key=lambda x: x['source_conc_mm'], reverse=True)
         
+        best_candidate = None
+        best_error = float('inf')
+        best_within_tolerance = None
+        best_error_within_tolerance = float('inf')
+        
         for src in matches_sorted:
             # Calculate required volume
             req_vol = self.calculate_transfer_volume(target_nm, src['source_conc_mm'], diluent_vol_ul)
@@ -211,8 +217,30 @@ class EchoSpotCalculator:
             if snapped_vol > max_transfer_nl:
                 continue  # Would exceed DMSO limit
             
-            # Found valid source
-            return src, snapped_vol
+            # Calculate actual achieved concentration with snapped volume
+            achieved_nm = (snapped_vol * src['source_conc_mm'] * 1_000_000) / (diluent_vol_ul * 1000)
+            
+            # Calculate concentration error percentage
+            conc_error_pct = abs(achieved_nm - target_nm) / target_nm * 100
+            
+            # Track best candidate within tolerance
+            if conc_error_pct <= max_conc_error_pct:
+                if conc_error_pct < best_error_within_tolerance:
+                    best_error_within_tolerance = conc_error_pct
+                    best_within_tolerance = (src, snapped_vol)
+            
+            # Track overall best candidate (even if outside tolerance)
+            if conc_error_pct < best_error:
+                best_error = conc_error_pct
+                best_candidate = (src, snapped_vol)
+        
+        # Return best candidate within tolerance if found
+        if best_within_tolerance:
+            return best_within_tolerance
+        
+        # Otherwise return best candidate if error < 50%
+        if best_candidate and best_error < 50.0:
+            return best_candidate
         
         return None, 0
     
@@ -420,7 +448,9 @@ class EchoSpotCalculator:
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
                         'Transfer volym (nL)': self.dmso_fixed_volume_nl,
+                        'Target conc (nM)': '',
                         'Final conc (nM)': '',
+                        'Conc error (%)': '',
                         'Source conc (mM)': dmso_src['source_conc_mm'],
                         'Exception': ''
                     })
@@ -437,7 +467,9 @@ class EchoSpotCalculator:
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
                         'Transfer volym (nL)': self.dmso_fixed_volume_nl,
+                        'Target conc (nM)': '',
                         'Final conc (nM)': '',
+                        'Conc error (%)': '',
                         'Source conc (mM)': '',
                         'Exception': error_msg
                     })
@@ -460,7 +492,9 @@ class EchoSpotCalculator:
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
                         'Transfer volym (nL)': self.ctrl_fixed_volume_nl,
+                        'Target conc (nM)': '',
                         'Final conc (nM)': '',
+                        'Conc error (%)': '',
                         'Source conc (mM)': ctrl_src['source_conc_mm'],
                         'Exception': ''
                     })
@@ -475,7 +509,9 @@ class EchoSpotCalculator:
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
                         'Transfer volym (nL)': self.ctrl_fixed_volume_nl,
+                        'Target conc (nM)': '',
                         'Final conc (nM)': '',
+                        'Conc error (%)': '',
                         'Source conc (mM)': '',
                         'Exception': 'Control compound not found in database'
                     })
@@ -493,6 +529,12 @@ class EchoSpotCalculator:
         )
         
         if best_source and transfer_vol > 0:
+            # Calculate actual achieved concentration with the snapped transfer volume
+            achieved_nm = (transfer_vol * best_source['source_conc_mm'] * 1_000_000) / (diluent_vol_ul * 1000)
+            
+            # Calculate concentration error percentage
+            conc_error_pct = ((achieved_nm - target_nm) / target_nm) * 100
+            
             output_rows.append({
                 'Source plate name': best_source['source_plate'],
                 'Source Plate type': best_source['plate_subtype'],
@@ -503,7 +545,9 @@ class EchoSpotCalculator:
                 'Destination Plate type': self.DEST_PLATE_TYPE,
                 'Destination well': dest_well,
                 'Transfer volym (nL)': transfer_vol,
-                'Final conc (nM)': target_nm,
+                'Target conc (nM)': target_nm,
+                'Final conc (nM)': achieved_nm,
+                'Conc error (%)': conc_error_pct,
                 'Source conc (mM)': best_source['source_conc_mm'],
                 'Exception': ''
             })
@@ -551,7 +595,9 @@ class EchoSpotCalculator:
                 'Destination Plate type': self.DEST_PLATE_TYPE,
                 'Destination well': dest_well,
                 'Transfer volym (nL)': '',
-                'Final conc (nM)': target_nm,
+                'Target conc (nM)': target_nm,
+                'Final conc (nM)': '',
+                'Conc error (%)': '',
                 'Source conc (mM)': '',
                 'Exception': error_msg
             })
@@ -655,7 +701,9 @@ class EchoSpotCalculator:
                             'Destination Plate type': self.DEST_PLATE_TYPE,
                             'Destination well': dest_well,
                             'Transfer volym (nL)': backfill_volume,
+                            'Target conc (nM)': '',
                             'Final conc (nM)': '',
+                            'Conc error (%)': '',
                             'Source conc (mM)': dmso_src.get('source_conc_mm', ''),
                             'Exception': ''
                         }
@@ -678,9 +726,16 @@ class EchoSpotCalculator:
         # Ensure correct column order
         cols = ['Source plate name', 'Source Plate type', 'Source well', 'Sample ID',
                 'Sample name', 'Destination plate name', 'Destination Plate type',
-                'Destination well', 'Transfer volym (nL)', 'Final conc (nM)', 
-                'Source conc (mM)', 'Exception']
+                'Destination well', 'Transfer volym (nL)', 'Target conc (nM)', 'Final conc (nM)',
+                'Conc error (%)', 'Source conc (mM)', 'Exception']
         df_out = df_out[cols]
+        
+        # Round numeric columns to 3 decimal places for clarity
+        numeric_cols = ['Transfer volym (nL)', 'Target conc (nM)', 'Final conc (nM)', 
+                       'Conc error (%)', 'Source conc (mM)']
+        for col in numeric_cols:
+            # Only round if column has numeric data
+            df_out[col] = pd.to_numeric(df_out[col], errors='coerce').round(3)
         
         # Write with Excel formatting
         with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
@@ -689,6 +744,8 @@ class EchoSpotCalculator:
             
             # Yellow fill for failed transfers
             yellow_fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
+            # Orange fill for high concentration errors (warning)
+            orange_fill = PatternFill(start_color='FFA500', end_color='FFA500', fill_type='solid')
             
             # Auto-adjust column widths
             for i, col in enumerate(df_out.columns):
@@ -704,11 +761,26 @@ class EchoSpotCalculator:
                 col_letter = get_column_letter(i + 1)
                 worksheet.column_dimensions[col_letter].width = adjusted_width
             
-            # Highlight rows with exceptions
+            # Highlight rows with exceptions (yellow) or high concentration errors (orange)
             exception_col_idx = cols.index('Exception') + 1
+            conc_error_col_idx = cols.index('Conc error (%)') + 1
+            
             for row_idx in range(2, len(df_out) + 2):  # Skip header
+                # First check for exceptions (yellow - highest priority)
                 exception_value = worksheet.cell(row=row_idx, column=exception_col_idx).value
                 if exception_value and str(exception_value).strip() and str(exception_value).lower() != 'nan':
                     for col_idx in range(1, len(cols) + 1):
                         cell = worksheet.cell(row=row_idx, column=col_idx)
                         cell.fill = yellow_fill
+                # Otherwise check for high concentration error (orange)
+                else:
+                    conc_error_value = worksheet.cell(row=row_idx, column=conc_error_col_idx).value
+                    if conc_error_value and str(conc_error_value).strip() and str(conc_error_value).lower() != 'nan':
+                        try:
+                            error_pct = abs(float(conc_error_value))
+                            if error_pct > 15.0:  # 15% threshold for warning
+                                for col_idx in range(1, len(cols) + 1):
+                                    cell = worksheet.cell(row=row_idx, column=col_idx)
+                                    cell.fill = orange_fill
+                        except (ValueError, TypeError):
+                            pass  # Skip if cannot parse
