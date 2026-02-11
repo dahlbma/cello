@@ -57,9 +57,16 @@ class EchoSpotCalculator:
                 try:
                     # Convert to float if it's a string (from QLineEdit.text())
                     max_dmso_value = float(max_dmso_pct_vol)
+                    
                     if max_dmso_value > 0:
-                        self.max_dmso_percent = max_dmso_value
-                        self.logger.info(f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% from parameter")
+                        # Auto-detect if user entered percentage (e.g., 1) or decimal fraction (e.g., 0.01)
+                        # If value >= 1, assume it's a percentage and convert to decimal
+                        if max_dmso_value >= 1:
+                            self.max_dmso_percent = max_dmso_value / 100.0
+                            self.logger.info(f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% (converted from {max_dmso_value})")
+                        else:
+                            self.max_dmso_percent = max_dmso_value
+                            self.logger.info(f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% from parameter")
                     else:
                         self.logger.warning("MAX_DMSO_PERCENT parameter is <= 0, using default of 1%")
                 except (ValueError, TypeError) as e:
@@ -185,10 +192,8 @@ class EchoSpotCalculator:
         Returns:
             tuple: (best_source_dict, transfer_volume_nl) or (None, 0) if not found
         """
-        print(f"Finding best source for batch_id={batch_id}, target_nm={target_nm}, diluent_vol_ul={diluent_vol_ul}")
         # Filter sources by batch ID
         matches = [src for src in available_sources if src['batch_id'] == str(batch_id)]
-        print(f"Found {matches} matching sources for batch_id={batch_id}")
         if not matches:
             return None, 0
         
