@@ -21,7 +21,7 @@ def error_handler(etype, value, tb):
     err_msg = "".join(traceback.format_exception(etype, value, tb))
     logging.getLogger().error(f"\n{err_msg}")
 
-def check_launcher_update(local_ver_data, ver_path):
+def check_launcher_update(launcher_ver_path):
     try:
         r = dbInterface.getVersion()
         if r.status_code != 200:
@@ -40,8 +40,14 @@ def check_launcher_update(local_ver_data, ver_path):
         return
 
     local_launcher = None
-    if isinstance(local_ver_data, dict):
-        local_launcher = local_ver_data.get('launcher_version')
+    try:
+        if os.path.exists(launcher_ver_path):
+            with open(launcher_ver_path) as f:
+                local_info = json.load(f)
+                if isinstance(local_info, dict):
+                    local_launcher = local_info.get('launcher_version')
+    except Exception as e:
+        logging.getLogger().info(f"Launcher version read failed: {e}")
 
     if local_launcher == server_launcher:
         return
@@ -64,9 +70,8 @@ def check_launcher_update(local_ver_data, ver_path):
             os.chmod(tmp_path, 0o775)
         os.replace(tmp_path, exec_path)
 
-        updated_ver_data = dict(local_ver_data) if isinstance(local_ver_data, dict) else {}
-        updated_ver_data['launcher_version'] = server_launcher
-        with open(ver_path, 'w', encoding='utf-8') as ver_file:
+        updated_ver_data = {'launcher_version': server_launcher}
+        with open(launcher_ver_path, 'w', encoding='utf-8') as ver_file:
             json.dump(updated_ver_data, ver_file, ensure_ascii=False, indent=4)
         logging.getLogger().info(f"Launcher updated to {server_launcher}")
     except Exception as e:
@@ -153,7 +158,8 @@ if os.path.exists(v_path):
         except:
             logging.getLogger().error(f"bad json in ./ver.dat")
 
-check_launcher_update(local_ver_data, v_path)
+launcher_ver_path = os.path.join(".", "launcher.ver")
+check_launcher_update(launcher_ver_path)
 
 #base app settings
 os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"
