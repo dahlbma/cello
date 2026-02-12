@@ -21,6 +21,62 @@ def error_handler(etype, value, tb):
     err_msg = "".join(traceback.format_exception(etype, value, tb))
     logging.getLogger().error(f"\n{err_msg}")
 
+def check_launcher_update(local_ver_data, ver_path):
+    try:
+        r = dbInterface.getVersion()
+        if r.status_code != 200:
+            logging.getLogger().info("Launcher update check skipped: server error")
+            return
+        server_info = json.loads(r.content)
+    except Exception as e:
+        logging.getLogger().info(f"Launcher update check skipped: {e}")
+        return
+
+    if not isinstance(server_info, dict):
+        return
+
+    server_launcher = server_info.get('launcher_version')
+    if not server_launcher:
+        return
+
+    local_launcher = None
+    if isinstance(local_ver_data, dict):
+        local_launcher = local_ver_data.get('launcher_version')
+
+    if local_launcher == server_launcher:
+        return
+
+    os_name = platform.system()
+    exec_name = 'cello.exe' if os_name == 'Windows' else 'cello'
+    exec_path = os.path.join(os.getcwd(), exec_name)
+    tmp_path = exec_path + '.tmp'
+
+    try:
+        bin_r = dbInterface.getLauncherBinary(os_name)
+        if bin_r.status_code != 200:
+            logging.getLogger().info(f"Launcher download failed with {bin_r.status_code}")
+            return
+        with open(tmp_path, 'wb') as f:
+            for chunk in bin_r.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+        if os_name != 'Windows':
+            os.chmod(tmp_path, 0o775)
+        os.replace(tmp_path, exec_path)
+
+        updated_ver_data = dict(local_ver_data) if isinstance(local_ver_data, dict) else {}
+        updated_ver_data['launcher_version'] = server_launcher
+        with open(ver_path, 'w', encoding='utf-8') as ver_file:
+            json.dump(updated_ver_data, ver_file, ensure_ascii=False, indent=4)
+        logging.getLogger().info(f"Launcher updated to {server_launcher}")
+    except Exception as e:
+        logging.getLogger().error(f"Launcher update failed: {e}")
+        try:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+        except Exception:
+            pass
+
 #reroute excepthook to custom error_handler
 sys.excepthook = error_handler
 
@@ -87,13 +143,17 @@ for file_name in file_list:
 #get app version
 v_path = os.path.join(".", "ver.dat")
 version = ""
+local_ver_data = {}
 if os.path.exists(v_path):
     with open(v_path) as f:
         try:
             js = json.load(f)
             version = js['version']
+            local_ver_data = js
         except:
             logging.getLogger().error(f"bad json in ./ver.dat")
+
+check_launcher_update(local_ver_data, v_path)
 
 #base app settings
 os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "2"

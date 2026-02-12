@@ -49,6 +49,15 @@ def getCelloBinary(os_name):
                      stream=True, verify=False) #fetch cello dist
     return r
 
+def getLauncherBinary(os_name):
+    if os_name == 'Windows':
+        filename = 'cello.exe'
+    else:
+        filename = 'cello'
+    r = requests.get(f'{baseUrl}getCelloLauncher/{os_name}/{filename}',
+                     stream=True, verify=False)
+    return r
+
 def getVersion():
     r = requests.get(f'{baseUrl}getVersionData', verify=False) #get file version
     return r
