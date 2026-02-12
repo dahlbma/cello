@@ -79,3 +79,4 @@ tools/triples.txt
 tools/uniques.txt
 tools/wellmixer.py
 *.tsv
+*.exe
