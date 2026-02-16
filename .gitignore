@@ -80,3 +80,5 @@ tools/uniques.txt
 tools/wellmixer.py
 *.tsv
 *.exe
+*.ver
+frontend/cello
