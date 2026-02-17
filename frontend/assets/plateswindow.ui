@@ -2559,7 +2559,7 @@ QFrame#merge_frame_3[state=&quot;mismatch&quot;] {
                 <item>
                  <widget class="QLineEdit" name="MAX_DMSO_pct_vol_eb">
                   <property name="text">
-                   <string>1</string>
+                   <string>0.5</string>
                   </property>
                  </widget>
                 </item>

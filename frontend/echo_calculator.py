@@ -28,7 +28,7 @@ class EchoSpotCalculator:
         self.dmso_fixed_volume_nl = 250  # Default DMSO volume, can be overridden
         self.ctrl_fixed_volume_nl = 250  # Default CTRL volume, can be overridden
         self.dmso_source_index = 0  # Track which DMSO source well to use next (round-robin)
-        self.max_dmso_percent = 0.01  # Default 1% limit, can be overridden from Excel
+        self.max_dmso_percent = 0.005  # Default 0.5% limit, can be overridden from Excel
     
     def parse_excel_order(self, excel_file_path, max_dmso_pct_vol=None):
         """
