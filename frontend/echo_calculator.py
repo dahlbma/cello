@@ -52,27 +52,24 @@ class EchoSpotCalculator:
             # Normalize headers
             df_order.columns = df_order.columns.str.strip()
             
-            # Set MAX_DMSO_PERCENT from parameter
+            # Set MAX_DMSO_PERCENT from parameter (UI value is always percent)
             if max_dmso_pct_vol is not None:
                 try:
                     # Convert to float if it's a string (from QLineEdit.text())
                     max_dmso_value = float(max_dmso_pct_vol)
                     
                     if max_dmso_value > 0:
-                        # Auto-detect if user entered percentage (e.g., 1) or decimal fraction (e.g., 0.01)
-                        # If value >= 1, assume it's a percentage and convert to decimal
-                        if max_dmso_value >= 1:
-                            self.max_dmso_percent = max_dmso_value / 100.0
-                            self.logger.info(f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% (converted from {max_dmso_value})")
-                        else:
-                            self.max_dmso_percent = max_dmso_value
-                            self.logger.info(f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% from parameter")
+                        self.max_dmso_percent = max_dmso_value / 100.0
+                        self.logger.info(
+                            f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% "
+                            f"(from {max_dmso_value}%)"
+                        )
                     else:
-                        self.logger.warning("MAX_DMSO_PERCENT parameter is <= 0, using default of 1%")
+                        self.logger.warning("MAX_DMSO_PERCENT parameter is <= 0, using default of 0.5%")
                 except (ValueError, TypeError) as e:
-                    self.logger.warning(f"Could not parse MAX_DMSO_PERCENT parameter: {e}, using default of 1%")
+                    self.logger.warning(f"Could not parse MAX_DMSO_PERCENT parameter: {e}, using default of 0.5%")
             else:
-                self.logger.info(f"No MAX_DMSO_PERCENT parameter provided, using default of 1%")
+                self.logger.info("No MAX_DMSO_PERCENT parameter provided, using default of 0.5%")
             
             # Parse plate layout
             special_wells, compound_wells = self._parse_plate_layout(df_layout)
