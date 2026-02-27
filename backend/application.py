@@ -1986,6 +1986,29 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 ^XZ
 """ % (sCmp, sBatch, sType, sDate, sVial, sVial)
 
+
+    zplVial = """^XA
+^MMT
+^PW400
+^LL0064
+^LS210
+^CFA,20
+^A0,25,20
+^FO300,20^FDCmp: %s^FS
+^A0,25,20
+^FO300,45^FDBatch: %s^FS
+^A0,25,20
+^FO300,70^FDConc: %s^FS
+^A0,25,20
+^FO300,95^FDDate: %s^FS
+^A0,25,20
+^FO300,120^FDVial: %s^FS
+
+^FX Third section with barcode.
+^BY2,3,45
+^FO300,142^BCN^FD%s^FS
+^XZ
+""" % (sCmp, sBatch, sType, sDate, sVial, sVial)
     
     f = open('/tmp/file.txt','w')
     f.write(zplVial)
