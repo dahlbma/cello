@@ -1986,7 +1986,7 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
 ^XZ
 """ % (sCmp, sBatch, sType, sDate, sVial, sVial)
 
-
+    # This is the 90 degfees rotated version of the label above.
     zplVial = """^XA
 ^MMT
 ^PW400
