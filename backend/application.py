@@ -2520,6 +2520,28 @@ class printBox(tornado.web.RequestHandler):
 ^XZ
 """ % (sBox.upper(), sType, sDescription, sBox.upper())
 
+        # Same label as above but rotated 90 degrees
+        zplVial = """^XA
+^MMT
+^PW400
+^LL0064
+^LS210
+^CFA,20
+^A0,25,20
+^FO300,20^FDBox: %s^FS
+^A0,25,20
+^FO300,45^FDType: %s^FS
+^A0,25,20
+^FO300,70^FD%s^FS
+
+^FX Third section with barcode.
+^BY2,3,45
+^FO300,142^BCN^FD%s^FS
+^XZ
+""" % (sBox.upper(), sType, sDescription, sBox.upper())
+
+
+        
         f = open('/tmp/file.txt','w')
         f.write(zplVial)
         f.close()
