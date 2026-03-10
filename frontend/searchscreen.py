@@ -413,6 +413,7 @@ class SearchScreen(QMainWindow):
         present = 'yes' if notpresent == False else 'no'
         
         saBatches = batches.split()
+        saBatches = list(set(saBatches))
         iNrOfRows = len(saBatches)
         if iNrOfRows == 0:
             return
