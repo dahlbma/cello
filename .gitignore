@@ -5,6 +5,7 @@ ver.dat
 mols/
 uploads/
 dist/
+.vscode/
 *.sdf
 *.mol
 error_msg.txt
