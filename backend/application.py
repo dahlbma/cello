@@ -357,10 +357,10 @@ class GetLists(tornado.web.RequestHandler):
     ) AS combined_string,
       max(list_table.list_owner)
 FROM
-    cool.list_table
+    {coolDB}.list_table
 LEFT JOIN
-    cool.list_content ON list_table.pk = list_content.list_id
-    where cool.list_table.list_type != 'Plate Id'
+    {coolDB}.list_content ON list_table.pk = list_content.list_id
+    where {coolDB}.list_table.list_type != 'Plate Id'
 GROUP BY
     list_table.pk
             '''
@@ -378,10 +378,10 @@ GROUP BY
     ) AS combined_string,
       max(list_table.list_owner)
 FROM
-    cool.list_table
+    {coolDB}.list_table
 LEFT JOIN
-    cool.list_content ON list_table.pk = list_content.list_id
-    where cool.list_table.list_type = 'Plate Id'
+    {coolDB}.list_content ON list_table.pk = list_content.list_id
+    where {coolDB}.list_table.list_type = 'Plate Id'
 GROUP BY
     list_table.pk order by list_name
             '''
