@@ -431,7 +431,7 @@ class PlatesScreen(QMainWindow):
         elif page_index == 4:
             self.join_q1_eb.setFocus()
             self.showMergePlates()
-        elif page_index == 5:
+        elif page_index == 6:
             # Echo Spotting tab - reload plate lists from database
             self.loadPlateLists()
 
