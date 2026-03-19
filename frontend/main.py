@@ -187,9 +187,11 @@ windowWidth = int(round((1200/800) * windowHeight, -1))
 widget.resize(windowWidth, windowHeight)
 
 #Close splash screen
-if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
+try:
     import pyi_splash
     pyi_splash.close()
+except ImportError:
+    pass
 
 #show app
 widget.show()
