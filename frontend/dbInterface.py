@@ -274,6 +274,15 @@ def getListById(token, batchIdPk):
         print('Failed decode')
         return False
 
+def getSDFForElements(token, saIds):
+    joinedIds = ','.join(saIds)
+    r = requests.get(f'{baseUrl}getSDFForElements/{joinedIds}',
+            headers={'token':token}, verify=False)
+    try:
+        return json.loads(r.content.decode())
+    except:
+        return ''
+
 
 def getListInfoById(token, batchIdPk):
     r = requests.get(f'{baseUrl}getListInfoById/{batchIdPk}',

@@ -66,6 +66,8 @@ class SearchScreen(QMainWindow):
         self.searchBatchesInPlates_btn.clicked.connect(self.searchBatchesInPlates)
         self.searchBatchesInPlates_btn.setEnabled(False)
         self.copyBatchesInPlates_btn.clicked.connect(self.copyBatchesInPlates)
+        self.sdfExportBatchesInPlates_btn.clicked.connect(self.exportSDFBatchesInPlates)
+        self.sdfExportBatchesInPlates_btn.setEnabled(False)
 
         self.createPlateList_btn.clicked.connect(self.createPlateList)
         self.platesList.setSelectionMode(QListWidget.SingleSelection)
@@ -178,6 +180,8 @@ class SearchScreen(QMainWindow):
     def updateSaveButton(self):
         if self.current_batch_list != None and self.current_plate_list != None:
             self.searchBatchesInPlates_btn.setEnabled(True)
+        if self.current_batch_list != None:
+            self.sdfExportBatchesInPlates_btn.setEnabled(True)
 
 
     def populateLists(self):
@@ -297,6 +301,55 @@ class SearchScreen(QMainWindow):
         # Copy to clipboard
         clipboard = QApplication.clipboard()
         clipboard.setText(clipboard_data)
+
+    def exportSDFBatchesInPlates(self):
+        selectedBatch = self.batchesList.selectedItems()[0]
+        batchIdPk = selectedBatch.data(Qt.UserRole)
+        if batchIdPk is None:
+            return
+
+        elements = dbInterface.getListById(self.token, batchIdPk)
+        if not elements:
+            return
+
+        # Extract the element IDs (first item of each tuple)
+        elementIds = [e[0] for e in elements]
+        totalElements = len(elementIds)
+        if totalElements == 0:
+            return
+
+        fname = QFileDialog.getSaveFileName(self, 'Save SDF File', '.', 'SDF Files (*.sdf)')
+        if fname[0] == '':
+            return
+        
+        # Check if the path ends with .sdf (ignoring upper/lowercase)
+        if not fname[0].lower().endswith('.sdf'):
+            fname = (fname[0] + '.sdf', fname[1])
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        chunkSize = 5
+        self.popup = PopUpProgress('Exporting SDF...')
+        self.popup.show()
+
+        sdfContent = ''
+        for i in range(0, totalElements, chunkSize):
+            chunk = elementIds[i:i + chunkSize]
+            result = dbInterface.getSDFForElements(self.token, chunk)
+            if result:
+                sdfContent += result
+            progress = min(int(((i + len(chunk)) / totalElements) * 100), 99)
+            self.popup.obj.proc_counter(progress)
+            QApplication.processEvents()
+
+        self.popup.obj.finished.emit()
+        self.popup.thread.quit()
+        self.popup.thread.wait()
+        self.popup.close()
+        QApplication.restoreOverrideCursor()
+
+        with open(fname[0], 'w') as f:
+            f.write(sdfContent)
+        logging.getLogger(self.mod_name).info(f'Exported SDF to {fname[0]}')
 
 
     def discardVial(self):
