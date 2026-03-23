@@ -218,6 +218,7 @@ def make_app():
         (r"/getListById/(?P<listId>[^\/]+)", application.GetListById),
         (r"/getListInfoById/(?P<listId>[^\/]+)", application.GetListInfoById),
         (r"/getLists/(?P<listType>[^\/]+)", application.GetLists),
+        (r"/getSDFForElements/(?P<joinedIds>[^\/]+)", application.GetSDFForElements),
         (r"/checkListName/(?P<userName>[^\/]+)/(?P<listName>[^\/]+)", application.CheckListName),
         (r"/saveListElements/(?P<accuList>[^\/]+)/(?P<listId>[^\/]+)", application.SaveListElements),
         (r"/searchLists/(?P<plateListId>[^\/]+)/(?P<batchListId>[^\/]+)", application.SearchLists),

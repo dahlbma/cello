@@ -276,7 +276,12 @@ class GetListById(tornado.web.RequestHandler):
 
         self.write(json.dumps(tRes))
 
+class GetSDFForElements(tornado.web.RequestHandler):
+    def get(self, joinedIds):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        self.write(json.dumps(joinedIds))
 
+        
 class GetListInfoById(tornado.web.RequestHandler):
     def get(self, listId):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
