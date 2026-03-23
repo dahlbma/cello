@@ -276,11 +276,70 @@ class GetListById(tornado.web.RequestHandler):
 
         self.write(json.dumps(tRes))
 
+
 class GetSDFForElements(tornado.web.RequestHandler):
     def get(self, joinedIds):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
-        self.write(json.dumps(joinedIds))
+        saIds = joinedIds.split(',')
+        
+        # 1. Determine the ID type and set up the corresponding SQL query
+        if saIds[0].startswith('CBK'):
+            sType = 'compound_id'
+            sql = "SELECT smiles_std FROM bcpvs.compound WHERE compound_id = %s"
+        else:
+            sType = 'batch_id'
+            sql = """
+                SELECT c.smiles_std, c.compound_id
+                FROM bcpvs.compound c
+                JOIN bcpvs.batch b ON c.compound_id = b.compound_id
+                WHERE b.notebook_ref = %s
+            """
+            
+        sRes = ''
+        
+        # 3. Loop through each ID
+        for sId in saIds:
+            sId = sId.strip() # Clean up any accidental whitespace
+            if not sId:
+                continue
+                
+            # Execute the query securely using parameterization to prevent SQL injection
+            cur.execute(sql, (sId,))
+            row = cur.fetchone()
+            
+            # If we found a SMILES string in the database
+            if row and row[0]:
+                smiles = row[0]
+                
+                # Convert SMILES to RDKit Mol object
+                mol = Chem.MolFromSmiles(smiles)
+                
 
+
+                if mol is not None:
+                    mol.SetProp("_Name", sId)
+                    AllChem.Compute2DCoords(mol)
+                    
+                    # Start with the structure block
+                    sdf_entry = Chem.MolToMolBlock(mol)
+                    
+                    # 3. Append the correct data tags based on the requested type
+                    if sType == 'compound_id':
+                        sdf_entry += f"> <Compound id>\n{sId}\n\n"
+                    else:
+                        fetched_compound_id = row[1]
+                        sdf_entry += f"> <Compound id>\n{fetched_compound_id}\n\n"
+                        sdf_entry += f"> <Batch id>\n{sId}\n\n"
+                        
+                    # 4. Append the record separator
+                    sdf_entry += "$$$$\n"
+                    
+                    # Add to our final result string
+                    sRes += sdf_entry
+
+        # Return the concatenated SDF string wrapped in JSON
+        self.write(json.dumps(sRes))
+        
         
 class GetListInfoById(tornado.web.RequestHandler):
     def get(self, listId):
