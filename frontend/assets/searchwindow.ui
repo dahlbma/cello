@@ -1162,6 +1162,13 @@ Weight</string>
                   </property>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QPushButton" name="sdfExportBatchesInPlates_btn">
+                  <property name="text">
+                   <string>Export SDF</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
               <item>
