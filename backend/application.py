@@ -314,8 +314,6 @@ class GetSDFForElements(tornado.web.RequestHandler):
                 # Convert SMILES to RDKit Mol object
                 mol = Chem.MolFromSmiles(smiles)
                 
-
-
                 if mol is not None:
                     mol.SetProp("_Name", sId)
                     AllChem.Compute2DCoords(mol)
