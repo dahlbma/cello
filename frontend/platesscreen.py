@@ -1,4 +1,4 @@
-import sys, os, logging, re, csv
+import sys, os, logging, re, csv, math
 from unittest import skip
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QLineEdit, QMessageBox
@@ -215,7 +215,30 @@ class PlatesScreen(QMainWindow):
                                                 '.', "Excel Files (*.xlsx)")
         if fname[0] != '':
             self.spotInput_lab.setText(fname[0])
+            try:
+                calculator = EchoSpotCalculator(self.mod_name)
+                max_dmso_pct_text = self.MAX_DMSO_pct_vol_eb.text().strip()
+                max_dmso_pct_vol = float(max_dmso_pct_text) if max_dmso_pct_text else None
+                df_order, special_wells, compound_wells = calculator.parse_excel_order(fname[0], max_dmso_pct_vol)
+
+                num_compounds = len(df_order)
+                wells_per_plate = len(compound_wells)
+                if wells_per_plate > 0 and num_compounds > 0:
+                    num_plates = math.ceil(num_compounds / wells_per_plate)
+                    plate_ids = [f"P{i:06d}" for i in range(1, num_plates + 1)]
+                    self.destinationPlates_eb.setPlainText("\n".join(plate_ids))
+                    logging.getLogger(self.mod_name).info(
+                        f"Excel order: {num_compounds} compounds, {wells_per_plate} wells/plate, "
+                        f"{num_plates} destination plate(s) required"
+                    )
+                else:
+                    logging.getLogger(self.mod_name).warning(
+                        f"Cannot calculate plates: {num_compounds} compounds, {wells_per_plate} compound wells"
+                    )
+            except Exception as e:
+                logging.getLogger(self.mod_name).error(f"Failed to parse Excel for plate count: {e}")
             self.validateSpotfileInputs()
+
 
     def validateSpotfileInputs(self):
         """Enable generateSpotfile_btn only if all required fields have data"""
