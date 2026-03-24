@@ -754,8 +754,8 @@ class EchoSpotCalculator:
                 # Calculate max length
                 max_len = len(str(col))
                 if not df_out[col].empty:
-                    max_data_len = df_out[col].astype(str).map(len).max()
-                    if max_data_len > max_len:
+                    max_data_len = df_out[col].astype(str).str.len().max()
+                    if pd.notna(max_data_len) and max_data_len > max_len:
                         max_len = max_data_len
                 
                 # Set column width with padding
