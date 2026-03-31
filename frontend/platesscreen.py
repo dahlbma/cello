@@ -612,7 +612,10 @@ class PlatesScreen(QMainWindow):
             if info[0]['discarded'] == '1':
                 self.platesearch_error_lab.setText(f"DISCARDED")
             else:
-                self.platesearch_error_lab.setText(f"Plate size: {info[0]['plate_type']}")
+                sSizeString = f"Plate size: {info[0]['wells']}"
+                if info[0]['plate_type'] == "":
+                    sSizeString += f"Plate size: {info[0]['plate_type']}"
+                self.platesearch_error_lab.setText(sSizeString)
 
             self.plate_display.setHtml(plate_to_html(self.plate_data, info[0]['wells'], None, None))
             self.setDiscard(False)
@@ -666,8 +669,15 @@ class PlatesScreen(QMainWindow):
                 newItem = QTableWidgetItem(f"{data[n]['form']}")
                 newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.plate_table.setItem(n, 3, newItem)
-                newItem = QTableWidgetItem(f"{data[n]['conc']:.3f}")
-                #newItem = QTableWidgetItem(f"{data[n]['conc']}")
+                conc_val = data[n]['conc']
+                if round(conc_val, 3) != 0 or conc_val == 0:
+                    conc_str = f"{conc_val:.3f}"
+                else:
+                    d = 4
+                    while round(conc_val, d) == 0 and d < 12:
+                        d += 1
+                    conc_str = f"{conc_val:.{d}f}"
+                newItem = QTableWidgetItem(conc_str)
                 newItem.setFlags(newItem.flags() ^ QtCore.Qt.ItemIsEditable)
                 self.plate_table.setItem(n, 4, newItem)
                 newItem = QTableWidgetItem(f"{data[n]['volume']}")
