@@ -2497,7 +2497,7 @@ class UpdateVialPosition(tornado.web.RequestHandler):
         sBoxId = sBoxId.upper()
         if not re.search('v\d\d\d\d\d(\d|\d\d)', sVialId, re.IGNORECASE):
             self.set_status(400)
-            jRes = getBoxFromDb(sBoxId, glassDB, loctreeDB)
+            jRes = getBoxFromDb(sBoxId, glassDB, loctreeDB, bcpvsDB)
             logging.error('Not a vial ' + sVialId)
             sMessage = 'Not a vial'
             jResult = [{'message':sMessage, 'data':jRes}]
