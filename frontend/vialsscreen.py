@@ -31,7 +31,7 @@ class VialsScreen(QMainWindow):
         self.edit_update_btn.clicked.connect(self.updateVial)
         self.print_vial_btn.clicked.connect(self.printVial)
 
-        types = [' ', "10", "20", "50", "Solid"]
+        types = [' ', "10", "20", "50", "100", "Solid"]
         self.edit_vconc_cb.addItems(types)
 
         self.browse_btn.clicked.connect(self.import_tare_file)
