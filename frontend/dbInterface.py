@@ -119,6 +119,16 @@ def editVial(token,
         res = json.loads(res)
         return res, True
 
+def uploadNetVials(token, json_data):
+    r = requests.post(f'{baseUrl}uploadNetVials',
+                     headers={'token': token},
+                     data={'rows': json_data}, verify=False)
+    if r.status_code != 200:
+        return r.content.decode(), False
+    else:
+        return r.content.decode(), True
+
+
 def uploadTaredVials(token, file):
     r = requests.post(f'{baseUrl}uploadTaredVials',
                      headers={'token': token},

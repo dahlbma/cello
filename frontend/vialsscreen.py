@@ -1,4 +1,5 @@
-import sys, os, logging, re
+import sys, os, logging, re, json
+import openpyxl
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog
 from PyQt5.QtCore import Qt, QRegExp
@@ -34,12 +35,20 @@ class VialsScreen(QMainWindow):
         types = [' ', "10", "20", "50", "100", "Solid"]
         self.edit_vconc_cb.addItems(types)
 
+        # Add tare file tab functionality
         self.browse_btn.clicked.connect(self.import_tare_file)
         self.create_vials_btn.clicked.connect(self.create_empty_vials)
         self.upload_btn.clicked.connect(self.addTare)
         self.upload_btn.setEnabled(False)
         self.upload_copy_log_btn.clicked.connect(self.copyLog)
         self.upload_copy_log_btn.setEnabled(False)
+
+        # Add net file tab functionality
+        self.browse_net_btn.clicked.connect(self.import_net_file)
+        self.upload_net_btn.clicked.connect(self.addNet)
+        self.upload_net_btn.setEnabled(False)
+        self.upload_copy_net_log_btn.clicked.connect(self.copyNetLog)
+        self.upload_copy_net_log_btn.setEnabled(False)
 
         regex = QRegExp("^[0-9]*\.?[0-9]*$")
         validator = QRegExpValidator(regex, self)
@@ -143,7 +152,51 @@ class VialsScreen(QMainWindow):
             logging.getLogger(self.mod_name).error(str(e))
 
 
-    
+    def import_net_file(self):
+        self.net_fname = QFileDialog.getOpenFileName(self, 'Import Net File',
+                                                '.', "Excel Files (*.xlsx)")
+        if self.net_fname[0] == '':
+            self.upload_net_btn.setEnabled(False)
+            return
+
+        self.file_net_status_lab.setText(self.net_fname[0])
+        self.file_net_status_lab.setToolTip(self.net_fname[0])
+        self.upload_net_btn.setEnabled(True)
+        self.upload_net_btn.setFocus()
+
+    def addNet(self):
+        try:
+            wb = openpyxl.load_workbook(self.net_fname[0])
+            ws = wb.active
+            headers = [cell.value for cell in next(ws.iter_rows(max_row=1))]
+            rows = []
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                if any(v is not None for v in row):
+                    rows.append(dict(zip(headers, row)))
+            json_data = json.dumps(rows)
+            r, b = dbInterface.uploadNetVials(self.token, json_data)
+            res = json.loads(r)
+            self.upload_copy_net_log_btn.setEnabled(True)
+            self.upload_net_result_lab.setText(f'''File: {self.net_fname[0]}
+Failed vials: {res['FailedVials']}
+Nr of ok vials: {res['iOk']}
+Nr of failed vials: {res['iError']}\n\n''')
+            if b is False:
+                raise Exception
+            self.net_fname = None
+            self.file_net_status_lab.setText("")
+            self.file_net_status_lab.setToolTip(None)
+        except Exception as e:
+            logging.getLogger(self.mod_name).error(f"addNet failed: {e}")
+
+        self.upload_net_btn.setEnabled(False)
+        self.upload_copy_net_log_btn.setEnabled(True)
+
+    def copyNetLog(self):
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.upload_net_result_lab.text())
+
+
     def import_tare_file(self):
         self.tare_fname = QFileDialog.getOpenFileName(self, 'Import Tare File', 
                                                 '.', "")
