@@ -1901,6 +1901,114 @@ class UploadLauncher(tornado.web.RequestHandler):
         output_file.close()
 
 @jwtauth
+class UploadNetVials(tornado.web.RequestHandler):
+    def post(self, *args, **kwargs):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        try:
+            # 1. Grab the 'rows' form parameter and decode bytes to string
+            json_rows_str = self.get_argument("rows")
+        except tornado.web.MissingArgumentError:
+            logging.error("Error: Can't find 'rows' in the argument list")
+            self.set_status(400)
+            self.write("Missing 'rows' data in request body")
+            return
+
+        try:
+            # 2. Parse the JSON string back into a Python list/dict
+            rows_data = json.loads(json_rows_str)
+        except json.JSONDecodeError:
+            logging.error("Error: Failed to decode JSON from 'rows'")
+            self.set_status(400)
+            self.write("Invalid JSON format in 'rows'")
+            return
+
+        # List to store any errors we encounter
+        error_log = []
+        iOk = 0
+        iError = 0
+        for index, row in enumerate(rows_data):
+            # We use index + 2 assuming row 1 is the header in their Excel file
+            excel_row_num = index
+            
+            # --- 1. Validate & Parse Vial ID ---
+            try:
+                sVial = row['Vial ID']
+                if not sVial:
+                    raise ValueError("Vial ID is empty")
+                logging.info(f"Processing Row {excel_row_num} - Vial: {sVial}")
+            except Exception as e:
+                iError += 1
+                error_log.append(f"Row {excel_row_num}: Invalid or missing 'Vial ID' ({str(e)})")
+                continue # Skip the rest of this row and move to the next
+
+            # --- 2. Validate & Parse Submitted Amount (with decimal cleaning) ---
+            try:
+                raw_amount = str(row['Submitted amount (mg)'])
+                # Replace Swedish/Excel comma (,) with a dot (.)
+                clean_amount = raw_amount.replace(',', '.')
+                rNet = float(clean_amount)
+            except Exception as e:
+                iError += 1
+                error_log.append(f"Row {excel_row_num} (Vial {sVial}): Failed parsing 'Submitted amount (mg)' value '{row.get('Submitted amount (mg)')}'")
+                continue
+
+            # --- 3. Validate & Parse Compound ID ---
+            try:
+                sCmpId = row['Compound ID']
+            except Exception as e:
+                iError += 1
+                error_log.append(f"Row {excel_row_num} (Vial {sVial}): Missing 'Compound ID' column")
+                continue
+
+            # --- 4. Validate & Parse Batch ID ---
+            try:
+                sBatchId = row['Batch ID']
+            except Exception as e:
+                iError += 1
+                error_log.append(f"Row {excel_row_num} (Vial {sVial}): Missing 'Batch ID' column")
+                continue
+
+            if sBatchId is None:
+                sCmpId = None
+                sSql = f"""UPDATE {glassDB}.vial SET
+                           net = %s,
+                           updated_date = NOW()
+                           WHERE vial_id = %s"""
+                params = (rNet, sVial)
+            else:
+                sSql = f"""UPDATE {glassDB}.vial SET
+                           net = %s,
+                           notebook_ref = %s,
+                           updated_date = NOW()
+                           WHERE vial_id = %s"""
+                params = (rNet, sBatchId, sVial)
+
+            try:
+                sSlask = cur.execute(sSql, params)
+            except:
+                iError += 1
+                error_log.append(f"Row {excel_row_num} (Vial {sVial}): 'Batch ID' {sBatchId} not found in DB")
+                continue
+            rows_affected = sSlask
+            if rows_affected == 0:
+                iError += 1
+                logging.warning(f"Row {excel_row_num}: Vial ID '{sVial}' was not found in the database. No update made.")
+                error_log.append(f"Row {excel_row_num}: Vial ID '{sVial}' does not exist in the system.")
+                continue  # Skip to the next row in your Excel loop
+                
+            logging.info("Upload vial: " + sVial + ' Net: ' + str(rNet))
+            iOk += 1
+
+        # --- 5. Report results back to the client ---
+        self.set_status(200)
+        if error_log:
+            logging.error(f"Upload finished with {len(error_log)} errors.")
+            self.set_status(400)
+        
+        self.finish(json.dumps({'FailedVials':error_log, 'iOk':iOk, 'iError':iError}))
+
+        
+@jwtauth
 class UploadTaredVials(tornado.web.RequestHandler):
     def post(self, *args, **kwargs):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
