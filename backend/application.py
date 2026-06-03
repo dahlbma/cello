@@ -1946,7 +1946,7 @@ class UploadNetVials(tornado.web.RequestHandler):
                 raw_amount = str(row['Submitted amount (mg)'])
                 # Replace Swedish/Excel comma (,) with a dot (.)
                 clean_amount = raw_amount.replace(',', '.')
-                rNet = float(clean_amount)
+                rNet = float(clean_amount) / 1000.0
             except Exception as e:
                 iError += 1
                 error_log.append(f"Row {excel_row_num} (Vial {sVial}): Failed parsing 'Submitted amount (mg)' value '{row.get('Submitted amount (mg)')}'")
