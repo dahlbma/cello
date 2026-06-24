@@ -1162,6 +1162,7 @@ Weight</string>
                   </property>
                  </widget>
                 </item>
+		
                 <item>
                  <widget class="QPushButton" name="sdfExportBatchesInPlates_btn">
                   <property name="text">
@@ -1169,6 +1170,15 @@ Weight</string>
                   </property>
                  </widget>
                 </item>
+
+                <item>
+                 <widget class="QPushButton" name="smilesExportBatchesInPlates_btn">
+                  <property name="text">
+                   <string>Export SMILES</string>
+                  </property>
+                 </widget>
+                </item>
+		
                </layout>
               </item>
               <item>

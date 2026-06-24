@@ -68,6 +68,8 @@ class SearchScreen(QMainWindow):
         self.copyBatchesInPlates_btn.clicked.connect(self.copyBatchesInPlates)
         self.sdfExportBatchesInPlates_btn.clicked.connect(self.exportSDFBatchesInPlates)
         self.sdfExportBatchesInPlates_btn.setEnabled(False)
+        self.smilesExportBatchesInPlates_btn.clicked.connect(self.exportSMILESBatchesInPlates)
+        self.smilesExportBatchesInPlates_btn.setEnabled(False)
 
         self.createPlateList_btn.clicked.connect(self.createPlateList)
         self.platesList.setSelectionMode(QListWidget.SingleSelection)
@@ -182,6 +184,7 @@ class SearchScreen(QMainWindow):
             self.searchBatchesInPlates_btn.setEnabled(True)
         if self.current_batch_list != None:
             self.sdfExportBatchesInPlates_btn.setEnabled(True)
+            self.smilesExportBatchesInPlates_btn.setEnabled(True)
 
 
     def populateLists(self):
@@ -350,6 +353,68 @@ class SearchScreen(QMainWindow):
         with open(fname[0], 'w') as f:
             f.write(sdfContent)
         logging.getLogger(self.mod_name).info(f'Exported SDF to {fname[0]}')
+
+
+    def exportSMILESBatchesInPlates(self):
+        selectedBatch = self.batchesList.selectedItems()[0]
+        batchIdPk = selectedBatch.data(Qt.UserRole)
+        if batchIdPk is None:
+            return
+
+        elements = dbInterface.getListById(self.token, batchIdPk)
+        if not elements:
+            return
+
+        # Extract the element IDs (first item of each tuple)
+        elementIds = [e[0] for e in elements]
+        totalElements = len(elementIds)
+        if totalElements == 0:
+            return
+
+        fname = QFileDialog.getSaveFileName(self, 'Save SMILES File', '.', 'SMILES Files (*.smi)')
+        if fname[0] == '':
+            return
+        
+        # Check if the path ends with .smi (ignoring upper/lowercase)
+        if not fname[0].lower().endswith('.smi'):
+            fname = (fname[0] + '.smi', fname[1])
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        chunkSize = 10
+        self.popup = PopUpProgress('Exporting SMILES...')
+        self.popup.show()
+
+        smilesLines = []
+        for i in range(0, totalElements, chunkSize):
+
+            chunk = elementIds[i:i + chunkSize]
+            result = dbInterface.getSMILESForElements(self.token, chunk)
+            
+            # FIXED: Loop through the list of dicts returned by the backend
+            if result and isinstance(result, list):
+                for row in result:
+                    smiles = row.get('smiles')
+                    queried_id = row.get('queried_id')
+                    
+                    # Only write valid structures to the file
+                    if smiles and smiles != "NOT FOUND":
+                        # Standard .smi format uses a tab or space to separate structure from ID
+                        smilesLines.append(f"{smiles}\t{queried_id}")
+
+            progress = min(int(((i + len(chunk)) / totalElements) * 100), 99)
+            self.popup.obj.proc_counter(progress)
+            QApplication.processEvents()
+
+        self.popup.obj.finished.emit()
+        self.popup.thread.quit()
+        self.popup.thread.wait()
+        self.popup.close()
+        QApplication.restoreOverrideCursor()
+
+        with open(fname[0], 'w', encoding='utf-8') as f:
+            f.write('\n'.join(smilesLines) + '\n')
+        
+        logging.getLogger(self.mod_name).info(f'Exported SMILES to {fname[0]}')
 
 
     def discardVial(self):
