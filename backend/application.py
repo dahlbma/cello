@@ -337,7 +337,50 @@ class GetSDFForElements(tornado.web.RequestHandler):
 
         # Return the concatenated SDF string wrapped in JSON
         self.write(json.dumps(sRes))
+
+class GetSMILESForElements(tornado.web.RequestHandler):
+    def get(self, joinedIds):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        saIds = joinedIds.split(',')
         
+        # 1. Determine the ID type and set up the corresponding SQL query
+        if saIds[0].startswith('CBK'):
+            sType = 'compound_id'
+            sql = "SELECT smiles_std FROM bcpvs.compound WHERE compound_id = %s"
+        else:
+            sType = 'batch_id'
+            sql = """
+                SELECT c.smiles_std, c.compound_id
+                FROM bcpvs.compound c
+                JOIN bcpvs.batch b ON c.compound_id = b.compound_id
+                WHERE b.notebook_ref = %s
+            """
+            
+        sResults = []
+        
+        # 3. Loop through each ID
+        for sId in saIds:
+            sId = sId.strip() # Clean up any accidental whitespace
+            if not sId:
+                continue
+                
+            # Execute the query securely using parameterization to prevent SQL injection
+            cur.execute(sql, (sId,))
+            row = cur.fetchone()
+            
+            # If we found a SMILES string in the database
+            if row and row[0]:
+                smiles = row[0]
+                
+                # Append a clean dictionary representing a row for the CSV
+                sResults.append({
+                    "queried_id": sId,
+                    "id_type": sType,
+                    "smiles": smiles
+                })
+
+        self.write(json.dumps(sResults))
+
         
 class GetListInfoById(tornado.web.RequestHandler):
     def get(self, listId):
