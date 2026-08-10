@@ -495,6 +495,7 @@ GROUP BY
             cur.execute(sSql)
         except Exception as e:
             logging.info(sSql)
+            logging.info(str(e))
             sError = str(e)
             self.set_status(400)
             self.finish(sError)
