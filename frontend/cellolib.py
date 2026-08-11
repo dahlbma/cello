@@ -387,3 +387,25 @@ def disp_tran(quad, data, size):
             new_well[wellColName] = f"{row}{col}"
             ret.append(new_well)
         return ret
+
+def get_occupied_quadrants(data, size):
+    if size != 384 or data is None:
+        return set()
+
+    occupied_quadrants = set()
+    for well_data in data:
+        try:
+            well_name = well_data['well']
+            row = ord(well_name[0].upper()) - ord('A')
+            column = int(well_name[1:])
+        except (KeyError, IndexError, TypeError, ValueError):
+            continue
+
+        if not (1 <= column <= 24):
+            continue
+        if 0 <= row < 8:
+            occupied_quadrants.add(1 if column <= 12 else 2)
+        elif 8 <= row < 16:
+            occupied_quadrants.add(3 if column <= 12 else 4)
+
+    return occupied_quadrants

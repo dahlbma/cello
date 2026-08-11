@@ -120,6 +120,7 @@ class PlatesScreen(QMainWindow):
         self.mod_arr = [0]*5 
         self.size_arr = [-1]*5
         self.ok_arr = [False]*5
+        self.target_quadrants_ok = True
 
         self.merge_datas = [None]*5
 
@@ -1244,6 +1245,30 @@ class PlatesScreen(QMainWindow):
         else: 
             return False
 
+    def check_target_quadrants(self):
+        self.target_quadrants_ok = True
+
+        if self.size_arr[0] == 384 and self.dom_size == 96:
+            occupied_quadrants = get_occupied_quadrants(
+                self.merge_datas[0], self.size_arr[0])
+            source_quadrants = {
+                quadrant for quadrant in range(1, 5)
+                if self.ok_arr[quadrant]
+            }
+            occupied_source_quadrants = sorted(
+                occupied_quadrants.intersection(source_quadrants))
+            if occupied_source_quadrants:
+                quadrants = ", ".join(
+                    f"Q{quadrant}" for quadrant in occupied_source_quadrants)
+                self.merge_status_append(
+                    f"Target quadrant(s) not empty: {quadrants}.")
+                self.target_quadrants_ok = False
+        elif self.size_arr[0] == 1536 and self.merge_datas[0]:
+            self.merge_status_append("Target plate not empty.")
+            self.target_quadrants_ok = False
+
+        return self.target_quadrants_ok
+
     def color_boxes(self):
         if self.merge_volume_eb.text() == "":
             self.mark_merge_box(5, "bad")
@@ -1258,7 +1283,8 @@ class PlatesScreen(QMainWindow):
              ((t0 != "") and (not (re.match(pattern1, t0) or re.match(pattern2, t0)) )):
             self.mark_merge_box(0, "bad")
         elif (self.ok_arr[0] and all(c == False for c in self.ok_arr[1:])) \
-             or ((self.dom_size != -1) and (self.dom_size*4 == self.size_arr[0])):
+             or ((self.dom_size != -1) and (self.dom_size*4 == self.size_arr[0]) \
+                 and self.target_quadrants_ok):
             self.mark_merge_box(0, "good")
         else:
             self.mark_merge_box(0, "mismatch")
@@ -1430,12 +1456,11 @@ class PlatesScreen(QMainWindow):
             ((self.ok_arr[0] is True) or ((self.ok_arr[0] is False) and (self.size_arr[0] == -1)))
             # filled fields are valid
 
-        if (self.merge_datas[0] is not None) and (len(self.merge_datas[0]) != 0):
-            self.merge_status_append("Target plate not empty.\n")
-
         sizesMatchingOK = self.check_merge_sizes()# sizes between parts match
         if (not sizesMatchingOK) and (self.dom_size != -1):
             self.merge_status_append("Source plates size mismatch.\n")
+
+        targetQuadrantsOK = self.check_target_quadrants()
 
         self.color_boxes()
         targetSizeOK = (self.size_arr[0] != -1) and \
@@ -1446,7 +1471,7 @@ class PlatesScreen(QMainWindow):
         volumeOK = (self.merge_volume_eb.text() != "")
         
         if noEmptyEntriesOK and fieldsFilledOK and sizesMatchingOK and \
-             targetSizeOK and volumeOK:
+               targetSizeOK and targetQuadrantsOK and volumeOK:
             self.nine6to384_btn.setEnabled(True)
             self.nine6to384_btn.setProperty("state", "good")
             self.nine6to384_btn.style().polish(self.nine6to384_btn)

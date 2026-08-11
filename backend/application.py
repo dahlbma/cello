@@ -1279,37 +1279,57 @@ class MergePlates(tornado.web.RequestHandler):
         q3 = self.get_argument("q3").upper()
         q4 = self.get_argument("q4").upper()
         targetPlate = self.get_argument("target").upper()
+        source_plates = (
+            (1, q1),
+            (2, q2),
+            (3, q3),
+            (4, q4),
+        )
 
         iTargetSize = getPlateSize(targetPlate)
 
+        if iTargetSize not in [384, 1536]:
+            sError = 'Merge target must be a 384 or 1536 well plate'
+            self.set_status(400)
+            self.finish(sError)
+            return
+
         sSql = f"""
-        select count(c.config_id) from {coolDB}.plate p, {coolDB}.config c
+        select c.well from {coolDB}.plate p, {coolDB}.config c
         where p.config_id = c.config_id
         and p.plate_id = '{targetPlate}'
         """
         sSlask = cur.execute(sSql)
-        tRes = cur.fetchall()
-        if tRes[0][0] > 0:
+        occupied_target_wells = {row[0] for row in cur.fetchall()}
+
+        if iTargetSize == 384:
+            occupied_quadrants = []
+            for quadrant_number, source_plate in source_plates:
+                if source_plate == "":
+                    continue
+                quadrant = getQuadrant(quadrant_number, iTargetSize)
+                target_wells = set() if quadrant.empty else set(quadrant[2].tolist())
+                if occupied_target_wells.intersection(target_wells):
+                    occupied_quadrants.append(quadrant_number)
+
+            if occupied_quadrants:
+                quadrants = ", ".join(
+                    f"Q{quadrant_number}" for quadrant_number in occupied_quadrants)
+                sError = f'Target quadrant(s) not empty: {quadrants}'
+                self.set_status(400)
+                self.finish(sError)
+                return
+        elif occupied_target_wells:
             sError = 'Target plate not empty'
             self.set_status(400)
             self.finish(sError)
             return
 
-        if q1 != "":
-            quadrant = getQuadrant(1, iTargetSize)
-            plate = getPlate(q1)
-            transferWells(quadrant, plate, targetPlate)
-        if q2 != "":
-            quadrant = getQuadrant(2, iTargetSize)
-            plate = getPlate(q2)
-            transferWells(quadrant, plate, targetPlate)
-        if q3 != "":
-            quadrant = getQuadrant(3, iTargetSize)
-            plate = getPlate(q3)
-            transferWells(quadrant, plate, targetPlate)
-        if q4 != "":
-            quadrant = getQuadrant(4, iTargetSize)
-            plate = getPlate(q4)
+        for quadrant_number, source_plate in source_plates:
+            if source_plate == "":
+                continue
+            quadrant = getQuadrant(quadrant_number, iTargetSize)
+            plate = getPlate(source_plate)
             transferWells(quadrant, plate, targetPlate)
 
 @jwtauth
