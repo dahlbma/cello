@@ -1,6 +1,6 @@
 import sys, os, logging, re, csv
 from PyQt5.uic import loadUi
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QFileDialog, QMessageBox
 from PyQt5.QtWidgets import QTreeWidgetItem, QAbstractItemView, QProgressBar
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
@@ -40,6 +40,8 @@ class MicrotubesScreen(QMainWindow):
         self.copy_volume_eb.textChanged.connect(self.check_copy_volume)
 
         self.rack_print_list_btn.clicked.connect(self.print_rack_list)
+        self.discard_microtubes_btn.clicked.connect(self.discard_microtubes_in_rack)
+        self.discard_microtubes_btn.setEnabled(False)
 
         self.rack_table.currentItemChanged.connect(self.rack_moldisplay)
         self.rack_table.currentItemChanged.connect(self.show_loc_id)
@@ -244,6 +246,7 @@ class MicrotubesScreen(QMainWindow):
     def search_rack(self):
         self.rack_display.setHtml("")
         self.rack_not_found_lab.setText('')
+        self.check_print(None)
         rack = self.rack_search_eb.text()
         if len(rack) < 6:
             self.check_print(None)
@@ -268,6 +271,7 @@ class MicrotubesScreen(QMainWindow):
         self.copy_volume_eb.setEnabled(True)
         self.setRackTableData(self.rack_data)
         self.rack_table.setCurrentCell(0,0)
+        self.check_print(self.rack_table.currentItem())
         self.rack_export_btn.setEnabled(True)
         if len(self.rack_data) == 0:
             self.check_print("empty")
@@ -327,23 +331,25 @@ class MicrotubesScreen(QMainWindow):
         else:
             self.rack_boxid_lab.setText("")
 
-    def check_print(self, item):
+    def check_print(self, item, rack=None):
         if item == "empty":
-            l = self.rack_search_eb.text().split(" ")
-            self.currentRack = l[0]
+            self.currentRack = rack or self.rack_id_lab.text().split(" ")[0]
             self.rack_print_label_btn.setEnabled(True)
             self.rack_copy_btn.setEnabled(True)
             self.rack_print_list_btn.setEnabled(True)
+            self.discard_microtubes_btn.setEnabled(True)
         elif (self.rack_table.rowCount() > 0) and (item is not None):
             self.currentRack = self.rack_table.item(item.row(), 4).text()
             self.rack_print_label_btn.setEnabled(True)
             self.rack_copy_btn.setEnabled(True)
             self.rack_print_list_btn.setEnabled(True)
+            self.discard_microtubes_btn.setEnabled(True)
         else:
             self.currentRack = None
             self.rack_print_label_btn.setEnabled(False)
             self.rack_copy_btn.setEnabled(False)
             self.rack_print_list_btn.setEnabled(False)
+            self.discard_microtubes_btn.setEnabled(False)
 
 
     def rack_moldisplay(self, item):
@@ -394,6 +400,37 @@ class MicrotubesScreen(QMainWindow):
         rack = self.currentRack
         print("print rack list")
         dbInterface.printRackList(self.token, rack)
+
+    def discard_microtubes_in_rack(self):
+        rack = self.currentRack
+        if rack is None:
+            return
+
+        answer = QMessageBox.question(
+            self,
+            "Discard microtubes",
+            f"Discard all microtubes in rack {rack}?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if answer != QMessageBox.Yes:
+            return
+
+        res, status = dbInterface.discardMicrotubesInRack(self.token, rack)
+        if not status:
+            QMessageBox.critical(
+                self,
+                "Discard microtubes",
+                f"Could not discard microtubes in rack {rack}:\n{res}"
+            )
+            return
+
+        self.rack_data = []
+        self.rack_table.setRowCount(0)
+        self.rack_display.setHtml("")
+        self.structure_lab.clear()
+        self.rack_export_btn.setEnabled(False)
+        self.check_print("empty", rack)
 
     def export_rack_data(self):
         export_table(self.rack_table)

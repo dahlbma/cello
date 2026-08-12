@@ -190,6 +190,7 @@ def make_app():
         (r"/getMicroTubes/(?P<sBatches>[^\/]+)", application.getMicroTubes),
         (r"/getMicroTubesFromFile", application.GetMicroTubesFromFile),
         (r"/getRack/(?P<sRacks>[^\/]+)", application.getRack),
+        (r"/discard_microtubes_in_rack/(?P<sRack>[^\/]+)", application.DiscardMicrotubesInRack),
         (r"/printRack/(?P<sRack>[^\/]+)", application.PrintRack),
         (r"/printRackList/(?P<sRack>[^\/]+)", application.PrintRackList),
         (r"/updateRackLocation/(?P<sRack>[^\/]+)/(?P<sLocation>[^\/]+)",

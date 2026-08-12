@@ -1637,6 +1637,48 @@ class UpdateRackLocation(tornado.web.RequestHandler):
 
 
 @jwtauth
+class DiscardMicrotubesInRack(tornado.web.RequestHandler):
+    def put(self, sRack):
+        glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
+        if sRack == 'DISCARDED':
+            self.set_status(400)
+            self.finish('Cannot discard the DISCARDED rack')
+            return
+
+        try:
+            sSql = f"""
+            select matrix_id from {microtubeDB}.matrix
+            where matrix_id = %s
+            """
+            cur.execute(sSql, (sRack, ))
+            if len(cur.fetchall()) != 1:
+                self.set_status(400)
+                self.finish(f'Rack not found {sRack}')
+                return
+
+            sSql = f"""
+            select matrix_id from {microtubeDB}.matrix
+            where matrix_id = 'DISCARDED' and location = 'SL11008'
+            """
+            cur.execute(sSql)
+            if len(cur.fetchall()) != 1:
+                self.set_status(500)
+                self.finish('DISCARDED rack not found')
+                return
+
+            sSql = f"""
+            update {microtubeDB}.matrix_tube
+            set matrix_id = 'DISCARDED', position = NULL
+            where matrix_id = %s
+            """
+            cur.execute(sSql, (sRack, ))
+            self.finish()
+        except Exception as e:
+            self.set_status(400)
+            self.finish(str(e))
+
+
+@jwtauth
 class UpdateBoxName(tornado.web.RequestHandler):
     def put(self, sBox, sNewName):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
@@ -2941,6 +2983,7 @@ class searchBatches(tornado.web.RequestHandler):
             where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
             and l.loc_id = m.location
             and t.notebook_ref = b.notebook_ref and b.compound_id = '{sId}'
+            and mt.matrix_id <> 'DISCARDED'
             '''
         else:
             sSql = f'''
@@ -2957,6 +3000,7 @@ class searchBatches(tornado.web.RequestHandler):
             where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
             and l.loc_id = m.location
             and t.notebook_ref = b.notebook_ref and t.notebook_ref = '{sId}'
+            and mt.matrix_id <> 'DISCARDED'
             '''
             
         sSlask = cur.execute(sSql)
@@ -3103,6 +3147,7 @@ class searchBatchess(tornado.web.RequestHandler):
             where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
             and l.loc_id = m.location
             and t.notebook_ref = b.notebook_ref and b.compound_id = '{sId}'
+            and mt.matrix_id <> 'DISCARDED'
             '''
         else:
             sSql = f'''
@@ -3119,6 +3164,7 @@ class searchBatchess(tornado.web.RequestHandler):
             where mt.matrix_id = m.matrix_id and t.tube_id = mt.tube_id
             and l.loc_id = m.location
             and t.notebook_ref = b.notebook_ref and t.notebook_ref = '{sId}'
+            and mt.matrix_id <> 'DISCARDED'
             '''
 
         sSlask = cur.execute(sSql)

@@ -545,6 +545,18 @@ def printRackList(token, rack):
         res = r.content
     return res
 
+def discardMicrotubesInRack(token, rack):
+    r = requests.put(f'{baseUrl}discard_microtubes_in_rack/{rack}',
+                     headers={'token': token}, verify=False)
+    try:
+        res = r.content.decode()
+    except:
+        res = r.content
+    if r.status_code != 200:
+        return res, False
+    else:
+        return res, True
+
 def createPlateFromRack(token, rack, volume):
     r = requests.get(f'{baseUrl}createPlateFromRack/{rack}/{volume}',
                       headers={'token': token}, verify=False)
