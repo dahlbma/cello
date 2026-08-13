@@ -784,14 +784,14 @@ SELECT
  t.notebook_ref AS batchId,
  t.tube_id AS tubeId,
  t.volume * 1000000 AS volume,
- m.matrix_id AS matrixId,
+ CASE WHEN mt.matrix_id = 'DISCARDED' THEN 'DISCARDED' ELSE m.matrix_id END AS matrixId,
  mt.position AS position,
- m.location AS location,
+ CASE WHEN mt.matrix_id = 'DISCARDED' THEN 'DISCARDED' ELSE m.location END AS location,
  b.compound_id as compoundId
 FROM
  {microtubeDB}.tube t
  join {bcpvsDB}.batch b on t.notebook_ref = b.notebook_ref
- left join {microtubeDB}.v_matrix_tube mt on t.tube_id = mt.tube_id
+ left join {microtubeDB}.matrix_tube mt on t.tube_id = mt.tube_id
  left join {microtubeDB}.v_matrix m on m.matrix_id = mt.matrix_id
 where
 t.notebook_ref = '{sId}'
@@ -894,12 +894,12 @@ or b.compound_id = %s
 t.notebook_ref as batchId,
 t.tube_id as tubeId,
 t.volume*1000000 as volume,
-m.matrix_id as matrixId,
+ CASE WHEN mt.matrix_id = 'DISCARDED' THEN 'DISCARDED' ELSE m.matrix_id END as matrixId,
 mt.position as position,
-m.location as location,
+ CASE WHEN mt.matrix_id = 'DISCARDED' THEN 'DISCARDED' ELSE m.location END as location,
 b.compound_id as compoundId
 from {microtubeDB}.tube t
-left outer join {microtubeDB}.v_matrix_tube mt on t.tube_id = mt.tube_id
+left outer join {microtubeDB}.matrix_tube mt on t.tube_id = mt.tube_id
 left outer join {microtubeDB}.v_matrix m on m.matrix_id = mt.matrix_id
 join {bcpvsDB}.batch b on b.notebook_ref = t.notebook_ref and
 t.tube_id = %s
