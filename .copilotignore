@@ -1,0 +1,13 @@
+# Block rapidly mutating files that break prompt-caching
+**/.next/
+**/dist/
+**/build/
+**/*.log
+**/node_modules/
+**/.turbo/
+package-lock.json
+yarn.lock
+.venv/
+venv/
+ENV/
+**/.venv/**
