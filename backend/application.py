@@ -66,6 +66,14 @@ def getDatabase(parent):
     else:
         return 'glass_test', 'cool_test', 'microtube_test', 'loctree_test', 'bcpvs_test'
 
+def getOtherMicrotubeDB(microtubeDB):
+    if microtubeDB == 'microtube':
+        return 'ddd_microtube'
+    elif microtubeDB == 'ddd_microtube':
+        return 'microtube'
+    return None
+
+
 def res2json():
     result = [list(i) for i in cur.fetchall()]
     return json.dumps(result)
@@ -1753,14 +1761,36 @@ class ReadScannedRack(tornado.web.RequestHandler):
             """
             sSlask = cur.execute(sSql)
             tRes = cur.fetchall()
-            if len(tRes) == 0:
+            if len(tRes) > 0:
+                return True
+
+            otherMicrotubeDB = getOtherMicrotubeDB(microtubeDB)
+            if otherMicrotubeDB is not None:
                 sSql = f"""
-                insert into {microtubeDB}.matrix
-                (matrix_id, created_date)
-                values
-                ('{sRack}', now())
+                select tube_id from {otherMicrotubeDB}.matrix_tube
+                where matrix_id = '{sRack}'
                 """
                 cur.execute(sSql)
+                tOtherRackTubes = cur.fetchall()
+                if len(tOtherRackTubes) > 0:
+                    return False
+
+            sSql = f"""
+            insert into {microtubeDB}.matrix
+            (matrix_id, created_date)
+            values
+            ('{sRack}', now())
+            """
+            cur.execute(sSql)
+
+            if otherMicrotubeDB is not None:
+                sSql = f"""
+                delete from {otherMicrotubeDB}.matrix
+                where matrix_id = '{sRack}'
+                """
+                cur.execute(sSql)
+
+            return True
 
         try:
             sLocation = self.get_argument("location")
@@ -1793,7 +1823,10 @@ class ReadScannedRack(tornado.web.RequestHandler):
         iError = 0
         saError = []
 
-        createRackIfNotFound(sRackId)
+        if not createRackIfNotFound(sRackId):
+            self.set_status(409)
+            self.finish(f'Rack {sRackId} exists in the other database and contains microtubes')
+            return
         logging.info(f'Updating rack {sRackId}')
         
         for sLine in saFile:
