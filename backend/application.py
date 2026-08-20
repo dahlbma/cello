@@ -1759,9 +1759,6 @@ class ReadScannedRack(tornado.web.RequestHandler):
             """
             sSlask = cur.execute(sSql)
             tRes = cur.fetchall()
-            if len(tRes) > 0:
-                return True
-
             otherMicrotubeDB = getOtherMicrotubeDB(microtubeDB)
             if otherMicrotubeDB is not None:
                 sSql = f"""
@@ -1773,13 +1770,14 @@ class ReadScannedRack(tornado.web.RequestHandler):
                 if len(tOtherRackTubes) > 0:
                     return False
 
-            sSql = f"""
-            insert into {microtubeDB}.matrix
-            (matrix_id, created_date)
-            values
-            ('{sRack}', now())
-            """
-            cur.execute(sSql)
+            if len(tRes) == 0:
+                sSql = f"""
+                insert into {microtubeDB}.matrix
+                (matrix_id, created_date)
+                values
+                ('{sRack}', now())
+                """
+                cur.execute(sSql)
 
             if otherMicrotubeDB is not None:
                 sSql = f"""
