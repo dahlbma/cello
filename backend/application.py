@@ -1642,6 +1642,7 @@ class DiscardMicrotubesInRack(tornado.web.RequestHandler):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         if sRack == 'DISCARDED':
             self.set_status(400)
+
             self.finish('Cannot discard the DISCARDED rack')
             return
 
@@ -1675,6 +1676,7 @@ class DiscardMicrotubesInRack(tornado.web.RequestHandler):
             self.finish()
         except Exception as e:
             self.set_status(400)
+            logging.error(f'Updating rack {str(e)}')
             self.finish(str(e))
 
 
