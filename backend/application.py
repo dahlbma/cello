@@ -137,6 +137,8 @@ def getNewPlateId(coolDB):
     return sPlate
 
 def getNewRackId(microtubeDB):
+    otherMicrotubeDB = getOtherMicrotubeDB(microtubeDB)
+
     def nextPossibleRack():
         # Use microtube sequence to get unique sequence over both glass and ddd_microtube
         #sSql = f"select pkey from {microtubeDB}.matrix_sequence"
@@ -159,8 +161,16 @@ def getNewRackId(microtubeDB):
         res = cur.fetchall()
         if len(res) > 0:
             pass
-        else:
-            break
+            continue
+
+        if otherMicrotubeDB is not None:
+            sSql = f"select matrix_id from {otherMicrotubeDB}.matrix where matrix_id = '{sRack}'"
+            cur.execute(sSql)
+            res = cur.fetchall()
+            if len(res) > 0:
+                continue
+
+        break
 
     return sRack
 
