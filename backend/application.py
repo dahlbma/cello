@@ -2332,8 +2332,8 @@ def doPrint(sCmp, sBatch, sType, sDate, sVial):
     f = open('/tmp/file.txt','w')
     f.write(zplVial)
     f.close()
-    #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
+    #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
+    os.system("lp -h ipp.sys.kth.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
 
 @jwtauth
 class verifyVial(tornado.web.RequestHandler):
@@ -2518,7 +2518,7 @@ def doPrintPlate(sPlate):
     f.write(s)
     f.close()
     #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+    os.system("lp -h ipp.sys.kth.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
 def doPrintRack(sRack):
@@ -2541,8 +2541,8 @@ def doPrintRack(sRack):
     f = open('/tmp/file.txt','w')
     f.write(s)
     f.close()
-    #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates /tmp/file.txt")
-    os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+    #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
+    os.system("lp -h ipp.sys.kth.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
 @jwtauth
@@ -2865,7 +2865,7 @@ class printBox(tornado.web.RequestHandler):
         f.write(zplVial)
         f.close()
         #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
-        os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates /tmp/file.txt")
+        os.system("lp -h ipp.sys.kth.se:631 -d CBCS-GK420t_plates /tmp/file.txt")
         self.finish("Printed")
 
 
