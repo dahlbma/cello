@@ -449,7 +449,7 @@ class EchoSpotCalculator:
                         'Destination plate name': dest_plate_id,
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
-                        'Transfer volym (nL)': self.dmso_fixed_volume_nl,
+                        'Transfer volume': self.dmso_fixed_volume_nl,
                         'Target conc (nM)': '',
                         'Final conc (nM)': '',
                         'Conc error (%)': '',
