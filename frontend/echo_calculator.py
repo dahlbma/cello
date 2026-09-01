@@ -468,7 +468,7 @@ class EchoSpotCalculator:
                         'Destination plate name': dest_plate_id,
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
-                        'Transfer volym (nL)': self.dmso_fixed_volume_nl,
+                        'Transfer volume': self.dmso_fixed_volume_nl,
                         'Target conc (nM)': '',
                         'Final conc (nM)': '',
                         'Conc error (%)': '',
@@ -493,7 +493,7 @@ class EchoSpotCalculator:
                         'Destination plate name': dest_plate_id,
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
-                        'Transfer volym (nL)': self.ctrl_fixed_volume_nl,
+                        'Transfer volume': self.ctrl_fixed_volume_nl,
                         'Target conc (nM)': '',
                         'Final conc (nM)': '',
                         'Conc error (%)': '',
@@ -510,7 +510,7 @@ class EchoSpotCalculator:
                         'Destination plate name': dest_plate_id,
                         'Destination Plate type': self.DEST_PLATE_TYPE,
                         'Destination well': dest_well,
-                        'Transfer volym (nL)': self.ctrl_fixed_volume_nl,
+                        'Transfer volume': self.ctrl_fixed_volume_nl,
                         'Target conc (nM)': '',
                         'Final conc (nM)': '',
                         'Conc error (%)': '',
@@ -546,7 +546,7 @@ class EchoSpotCalculator:
                 'Destination plate name': dest_plate_id,
                 'Destination Plate type': self.DEST_PLATE_TYPE,
                 'Destination well': dest_well,
-                'Transfer volym (nL)': transfer_vol,
+                'Transfer volume': transfer_vol,
                 'Target conc (nM)': target_nm,
                 'Final conc (nM)': achieved_nm,
                 'Conc error (%)': conc_error_pct,
@@ -596,7 +596,7 @@ class EchoSpotCalculator:
                 'Destination plate name': dest_plate_id,
                 'Destination Plate type': self.DEST_PLATE_TYPE,
                 'Destination well': dest_well,
-                'Transfer volym (nL)': '',
+                'Transfer volume': '',
                 'Target conc (nM)': target_nm,
                 'Final conc (nM)': '',
                 'Conc error (%)': '',
@@ -630,7 +630,7 @@ class EchoSpotCalculator:
         for idx, row in enumerate(output_rows):
             dest_plate = row['Destination plate name']
             dest_well = row['Destination well']
-            transfer_vol = row['Transfer volym (nL)']
+            transfer_vol = row['Transfer volume']
             sample_id = row['Sample ID']
             sample_name = row['Sample name']
             
@@ -702,7 +702,7 @@ class EchoSpotCalculator:
                             'Destination plate name': dest_plate,
                             'Destination Plate type': self.DEST_PLATE_TYPE,
                             'Destination well': dest_well,
-                            'Transfer volym (nL)': backfill_volume,
+                            'Transfer volume': backfill_volume,
                             'Target conc (nM)': '',
                             'Final conc (nM)': '',
                             'Conc error (%)': '',
@@ -728,12 +728,12 @@ class EchoSpotCalculator:
         # Ensure correct column order
         cols = ['Source plate name', 'Source Plate type', 'Source well', 'Sample ID',
                 'Sample name', 'Destination plate name', 'Destination Plate type',
-                'Destination well', 'Transfer volym (nL)', 'Target conc (nM)', 'Final conc (nM)',
+                'Destination well', 'Transfer volume', 'Target conc (nM)', 'Final conc (nM)',
                 'Conc error (%)', 'Source conc (mM)', 'Exception']
         df_out = df_out[cols]
         
         # Round numeric columns to 3 decimal places for clarity
-        numeric_cols = ['Transfer volym (nL)', 'Target conc (nM)', 'Final conc (nM)', 
+        numeric_cols = ['Transfer volume', 'Target conc (nM)', 'Final conc (nM)', 
                        'Conc error (%)', 'Source conc (mM)']
         for col in numeric_cols:
             # Only round if column has numeric data
