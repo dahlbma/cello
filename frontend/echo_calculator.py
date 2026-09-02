@@ -187,12 +187,17 @@ class EchoSpotCalculator:
             max_conc_error_pct: Maximum acceptable concentration error percentage (default: 15%)
             
         Returns:
-            tuple: (best_source_dict, transfer_volume_nl) or (None, 0) if not found
+            tuple: (best_source_dict, transfer_volume_nl, best_error_pct)
+                   or (None, volume, best_error_pct) if not found.
+                   best_error_pct is the lowest concentration error (%) among sources
+                   that satisfy the volume constraints, or inf if none do.
+                   On failure, volume is the transfer volume of the best (rejected)
+                   candidate, or 0 if no candidate satisfied the volume constraints.
         """
         # Filter sources by batch ID
         matches = [src for src in available_sources if src['batch_id'] == str(batch_id)]
         if not matches:
-            return None, 0
+            return None, 0, float('inf')
         
         # Calculate max allowed transfer volume (DMSO limit from Excel or default)
         max_transfer_nl = diluent_vol_ul * 1000 * self.max_dmso_percent
@@ -238,13 +243,15 @@ class EchoSpotCalculator:
         
         # Return best candidate within tolerance if found
         if best_within_tolerance:
-            return best_within_tolerance
+            return best_within_tolerance[0], best_within_tolerance[1], best_error_within_tolerance
         
         # Otherwise return best candidate if error < 50%
         if best_candidate and best_error < 50.0:
-            return best_candidate
+            return best_candidate[0], best_candidate[1], best_error
         
-        return None, 0
+        # No acceptable source - report the best (rejected) candidate's volume and error
+        best_vol = best_candidate[1] if best_candidate else 0
+        return None, best_vol, best_error
     
     def _collect_dmso_sources(self, source_data, dmso_plate):
         """
@@ -526,7 +533,7 @@ class EchoSpotCalculator:
         compound_id = row['Compound Id']
         
         # Find best source
-        best_source, transfer_vol = self.find_best_source(
+        best_source, transfer_vol, best_error_pct = self.find_best_source(
             batch_id, target_nm, source_data, diluent_vol_ul
         )
         
@@ -571,7 +578,14 @@ class EchoSpotCalculator:
                 max_transfer_nl = diluent_vol_ul * 1000 * self.max_dmso_percent
                 best_achievable_info = ""
                 
-                if available_concs:
+                if best_error_pct < float('inf'):
+                    # At least one source satisfied the volume constraints, but the
+                    # concentration error was too large (>= 50%)
+                    best_achievable_info = (
+                        f", best concentration gives a {best_error_pct:.0f}% "
+                        f"concentration error at volume {transfer_vol:.1f} nL"
+                    )
+                elif available_concs:
                     best_conc_mm = available_concs[0]  # Highest concentration
                     req_vol = self.calculate_transfer_volume(target_nm, best_conc_mm, diluent_vol_ul)
                     snapped_vol = self.snap_to_droplet_size(req_vol)
