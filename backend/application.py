@@ -2479,7 +2479,7 @@ class EditVial(tornado.web.RequestHandler):
             cur.execute(sSql)
         except Exception as e:
             sError = str(e)
-            logging.error("Error updating vial " + str(sVial))
+            logging.error("Error updating vial " + str(sVial) + " and batch " + str(sBatch))
             logging.error("Error: " + sError)
             self.set_status(400)
             self.finish(sError)
