@@ -2502,7 +2502,7 @@ def doPrintPlate(sPlate):
     
     s = f'''
 ^XA
-^MD17
+^MD5
 ^PR1
 ^MMT
 ^CFA,20
@@ -2517,7 +2517,6 @@ def doPrintPlate(sPlate):
     f = open('/tmp/file.txt','w')
     f.write(s)
     f.close()
-    #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t_plates  /tmp/file.txt")
     os.system("lp -h ipp.sys.kth.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
@@ -2541,7 +2540,6 @@ def doPrintRack(sRack):
     f = open('/tmp/file.txt','w')
     f.write(s)
     f.close()
-    #os.system("lp -h homer.scilifelab.se:631 -d CBCS-GK420t /tmp/file.txt")
     os.system("lp -h ipp.sys.kth.se:631 -d CBCS-GK420t /tmp/file.txt")
 
 
