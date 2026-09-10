@@ -237,6 +237,7 @@ Nr of failed vials: {res['iError']}\n\n''')
 
     def create_empty_vials(self):
         iNrVials = self.create_n_vial_eb.text()
-        res = dbInterface.createEmptyVials(self.token, iNrVials)
+        bPrintLabels = self.print_vial_labels_chk.isChecked()
+        res = dbInterface.createEmptyVials(self.token, iNrVials, bPrintLabels)
         out = "Vials created:\n" + "\n".join(list(json.loads(res)))
         self.empty_vials_result_lab.setText(out)

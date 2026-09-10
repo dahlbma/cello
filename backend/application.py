@@ -2638,6 +2638,7 @@ class CreateEmptyVials(tornado.web.RequestHandler):
     def put(self, sNrOfVials):
         glassDB, coolDB, microtubeDB, loctreeDB, bcpvsDB = getDatabase(self)
         iNrOfVials = int(sNrOfVials)
+        bPrintLabels = self.get_query_argument('printLabels', default='0') == '1'
         saResultingVials = []
         for i in range(iNrOfVials):
             sDate = (time.strftime("%Y-%m-%d"))
@@ -2657,7 +2658,8 @@ class CreateEmptyVials(tornado.web.RequestHandler):
                 logVialChange(glassDB, sVial, '', 'Created')
             except:
                 sError = 'Vial already in database'
-            doPrint(sCmp, sBatch, '', sDate, sVial)
+            if bPrintLabels:
+                doPrint(sCmp, sBatch, '', sDate, sVial)
             saResultingVials.append(sVial)
         self.write(json.dumps(saResultingVials))
 
