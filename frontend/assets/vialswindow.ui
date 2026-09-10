@@ -924,6 +924,16 @@
                </widget>
               </item>
               <item>
+               <widget class="QCheckBox" name="print_vial_labels_chk">
+                <property name="text">
+                 <string>Print labels</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
                <spacer name="horizontalSpacer_8">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>

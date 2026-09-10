@@ -344,8 +344,9 @@ def getBatches(token, batchIds, vials, tubes, plates, present):
     except:
         return r.content
 
-def createEmptyVials(token, iNrVials):
-    r = requests.put(f'{baseUrl}createEmptyVials/{iNrVials}',
+def createEmptyVials(token, iNrVials, bPrintLabels=False):
+    sPrintLabels = '1' if bPrintLabels else '0'
+    r = requests.put(f'{baseUrl}createEmptyVials/{iNrVials}?printLabels={sPrintLabels}',
             headers={'token':token}, verify=False)
     try:
         return r.content.decode()
