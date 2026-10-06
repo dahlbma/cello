@@ -639,17 +639,19 @@ class EchoSpotCalculator:
         self.logger.info(f"Using {len(self.dmso_sources)} DMSO source wells for backfill distribution")
         
         # Track volumes and last index for each well
-        well_info = {}  # Key: (dest_plate, dest_well), Value: {'volume': total, 'last_idx': index, 'is_ctrl': bool}
+        well_info = {}  # Key: (dest_plate, dest_well), Value: {'volume': total, 'last_idx': index}
         
         for idx, row in enumerate(output_rows):
             dest_plate = row['Destination plate name']
             dest_well = row['Destination well']
             transfer_vol = row['Transfer volume']
             sample_id = row['Sample ID']
-            sample_name = row['Sample name']
             
+            if row.get('Exception'):
+                continue
+
             # Skip if this is already a DMSO-only well or has no volume
-            if sample_id == 'DMSO':
+            if str(sample_id).strip().upper() == 'DMSO':
                 continue
             
             if not transfer_vol or str(transfer_vol).strip() == '':
@@ -660,41 +662,31 @@ class EchoSpotCalculator:
             except (ValueError, TypeError):
                 continue
             
-            # Check if this is a CTRL well
-            is_ctrl = str(sample_name).startswith('CTRL')
-            
             key = (dest_plate, dest_well)
             if key not in well_info:
-                well_info[key] = {'volume': 0, 'last_idx': idx, 'is_ctrl': is_ctrl}
+                well_info[key] = {'volume': 0, 'last_idx': idx}
             
             well_info[key]['volume'] += volume
             well_info[key]['last_idx'] = idx  # Track last row for this well
-            # If any transfer to this well is a CTRL, mark it as such
-            if is_ctrl:
-                well_info[key]['is_ctrl'] = True
         
         if not well_info:
             self.logger.warning("No non-DMSO wells found for backfill")
             return
         
-        # Find maximum volume among non-CTRL wells only
-        non_ctrl_volumes = [info['volume'] for info in well_info.values() if not info['is_ctrl']]
+        # Find maximum volume among non-DMSO wells
+        non_dmso_volumes = [info['volume'] for info in well_info.values()]
         
-        if not non_ctrl_volumes:
-            self.logger.warning("No non-CTRL compound wells found for backfill")
+        if not non_dmso_volumes:
+            self.logger.warning("No non-DMSO wells found for backfill")
             return
         
-        max_volume = max(non_ctrl_volumes)
-        self.logger.info(f"Maximum non-DMSO/non-CTRL well volume: {max_volume} nL")
+        max_volume = max(non_dmso_volumes)
+        self.logger.info(f"Maximum non-DMSO well volume: {max_volume} nL")
         
         # Create backfill rows with their insertion indices
         backfill_inserts = []  # List of (insert_after_idx, backfill_row)
         
         for (dest_plate, dest_well), info in well_info.items():
-            # Skip CTRL wells - they should not be backfilled
-            if info['is_ctrl']:
-                continue
-            
             current_volume = info['volume']
             if current_volume < max_volume:
                 backfill_volume = max_volume - current_volume
