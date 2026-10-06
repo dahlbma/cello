@@ -2,8 +2,8 @@ import sys, os, logging, re, csv, math
 from unittest import skip
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QFileDialog, QLineEdit, QMessageBox
-from PyQt5.QtCore import Qt, QRegExp
-from PyQt5.QtGui import QColor, QIntValidator, QIcon, QRegExpValidator
+from PyQt5.QtCore import Qt, QLocale, QRegExp
+from PyQt5.QtGui import QColor, QDoubleValidator, QIntValidator, QIcon, QRegExpValidator
 from PyQt5 import QtWebEngineWidgets
 import pandas as pd
 
@@ -154,7 +154,9 @@ class PlatesScreen(QMainWindow):
         self.sourceDMSOplate_eb.setValidator(plate_id_validator)
         
         # Set up validator for volume edit box (digits only)
-        volume_validator = QIntValidator(0, 999999999, self)
+        volume_validator = QDoubleValidator(0.0, 999999999.0, 3, self)
+        volume_validator.setNotation(QDoubleValidator.StandardNotation)
+        volume_validator.setLocale(QLocale.c())
         self.userAddedVolume_eb.setValidator(volume_validator)
         
         # Set up filter for destination plates QTextEdit (only plate IDs and whitespace)
@@ -264,7 +266,7 @@ class PlatesScreen(QMainWindow):
             plateListId = self.sourcePlates_cb.currentData()
             sCtrlPlate = self.sourceCTRLplate_eb.text().strip()
             sDMSOplate = self.sourceDMSOplate_eb.text().strip()
-            diluent_volume = int(self.userAddedVolume_eb.text().strip())
+            diluent_volume = float(self.userAddedVolume_eb.text().strip())
             dmso_volume = int(self.DMSO_vol_eb.text().strip())
             ctrl_volume = int(self.CTRL_vol_eb.text().strip())
             destination_plates_text = self.destinationPlates_eb.toPlainText().strip()
