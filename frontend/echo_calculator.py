@@ -199,8 +199,11 @@ class EchoSpotCalculator:
         if not matches:
             return None, 0, float('inf')
         
-        # Calculate max allowed transfer volume (DMSO limit from Excel or default)
-        max_transfer_nl = diluent_vol_ul * 1000 * self.max_dmso_percent
+        # Apply both the configured DMSO percentage and per-well volume limit.
+        max_transfer_nl = min(
+            diluent_vol_ul * 1000 * self.max_dmso_percent,
+            self.dmso_fixed_volume_nl,
+        )
         
         # Sort by concentration descending (highest first)
         matches_sorted = sorted(matches, key=lambda x: x['source_conc_mm'], reverse=True)
@@ -328,7 +331,12 @@ class EchoSpotCalculator:
         """
         # Set DMSO and CTRL volumes for this run
         self.dmso_fixed_volume_nl = dmso_volume_nl
-        self.ctrl_fixed_volume_nl = ctrl_volume_nl
+        self.ctrl_fixed_volume_nl = min(ctrl_volume_nl, dmso_volume_nl)
+        if ctrl_volume_nl > dmso_volume_nl:
+            self.logger.warning(
+                f"CTRL transfer volume {ctrl_volume_nl} nL exceeds the per-well volume limit "
+                f"of {dmso_volume_nl} nL; limiting CTRL transfers to the limit"
+            )
         self.dmso_source_index = 0  # Reset DMSO source index for each file generation
         
         try:
@@ -350,9 +358,16 @@ class EchoSpotCalculator:
             self.logger.info(f"Parsed plate layout: {len(special_wells)} special wells, {len(compound_wells)} compound wells")
             
             output_rows = []
-            max_transfer_nl = diluent_vol_ul * 1000 * self.max_dmso_percent
+            max_transfer_nl = min(
+                diluent_vol_ul * 1000 * self.max_dmso_percent,
+                self.dmso_fixed_volume_nl,
+            )
             
-            self.logger.info(f"DMSO limit: Max transfer volume is {max_transfer_nl} nL per well ({self.max_dmso_percent*100:.1f}% of {diluent_vol_ul} µL)")
+            self.logger.info(
+                f"DMSO limit: Max substance transfer is {max_transfer_nl} nL per well "
+                f"({self.max_dmso_percent*100:.1f}% of {diluent_vol_ul} µL, capped by "
+                f"{self.dmso_fixed_volume_nl} nL total per well)"
+            )
             
             # Collect all DMSO sources for round-robin distribution
             self.dmso_sources = self._collect_dmso_sources(source_data, dmso_plate)
@@ -575,7 +590,10 @@ class EchoSpotCalculator:
                     concs_str += f" (+ {len(available_concs) - 5} more)"
                 
                 # Calculate what concentration we could achieve with the best available source
-                max_transfer_nl = diluent_vol_ul * 1000 * self.max_dmso_percent
+                max_transfer_nl = min(
+                    diluent_vol_ul * 1000 * self.max_dmso_percent,
+                    self.dmso_fixed_volume_nl,
+                )
                 best_achievable_info = ""
                 
                 if best_error_pct < float('inf'):
@@ -680,7 +698,7 @@ class EchoSpotCalculator:
             self.logger.warning("No non-DMSO wells found for backfill")
             return
         
-        max_volume = max(non_dmso_volumes)
+        max_volume = min(max(non_dmso_volumes), self.dmso_fixed_volume_nl)
         self.logger.info(f"Maximum non-DMSO well volume: {max_volume} nL")
         
         # Create backfill rows with their insertion indices
@@ -693,6 +711,12 @@ class EchoSpotCalculator:
                 
                 # Snap to droplet size
                 backfill_volume = self.snap_to_droplet_size(backfill_volume)
+                remaining_volume = self.dmso_fixed_volume_nl - current_volume
+                max_backfill_volume = max(
+                    0,
+                    int(remaining_volume / self.DROPLET_SIZE_NL) * self.DROPLET_SIZE_NL,
+                )
+                backfill_volume = min(backfill_volume, max_backfill_volume)
                 
                 if backfill_volume > 0:
                     # Get next DMSO source using round-robin distribution
