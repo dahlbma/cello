@@ -1,3 +1,6 @@
+import pymysql
+pymysql.install_as_MySQLdb()
+
 import tornado.autoreload
 import tornado.httpserver
 import tornado.ioloop
@@ -11,7 +14,7 @@ import chembl_export
 from tornado.options import define, options
 import logging
 from tornado.log import enable_pretty_logging
-import MySQLdb
+#import MySQLdb
 from datetime import datetime, timedelta
 import jwt
 import json
@@ -53,7 +56,7 @@ class login(tornado.web.RequestHandler):
         password = self.get_argument('password')
         database = self.get_argument('database')
         try:
-            db_connection2 = MySQLdb.connect(
+            db_connection2 = pymysql.connect(
                 host="esox3",
                 user=username,
                 passwd=password
