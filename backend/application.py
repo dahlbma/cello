@@ -1803,12 +1803,14 @@ class ReadScannedRack(tornado.web.RequestHandler):
         try:
             sLocation = self.get_argument("location")
             file1 = self.request.files['file'][0]
-            sFile = tornado.escape.xhtml_unescape(file1.body)
+            sFile = tornado.escape.xhtml_unescape(file1.body.decode('utf-8-sig'))
         except:
             logging.error("Error cant find file1 in the argument list")
             return
 
-        m = re.search("Rack Base Name: (MX\d+)", str(file1['body']))
+        m = re.search(r"Rack Base Name: (MX\d+)", sFile)
+        if not m:
+            m = re.search(r"(?m)^\s*ContainerId:\s*([A-Za-z0-9_-]+)\s*$", sFile)
         if m:
             sRackId = m.groups()[0]
         else:
@@ -1825,8 +1827,11 @@ class ReadScannedRack(tornado.web.RequestHandler):
         output_file.write(sFile)
         output_file.close()
 
-        fNewFile = open(finalFilename, mode='rU')
-        saFile = fNewFile.readlines()
+        saFile = sFile.splitlines()
+        bNewScannerFormat = any(
+            re.fullmatch(r"\s*Position\s*;\s*TubeBarcode\s*", sLine)
+            for sLine in saFile
+        )
         iOk = 0
         iError = 0
         saError = []
@@ -1838,15 +1843,23 @@ class ReadScannedRack(tornado.web.RequestHandler):
         logging.info(f'Updating rack {sRackId}')
         
         for sLine in saFile:
-            if "NO READ" in sLine or "Forced Stop" in sLine:
-                resetPosition(sLine, sRackId)
-            
-            m = re.search("\s+(\w\d\d);\s+(\d+)", sLine)
-            if m:
+            if bNewScannerFormat:
+                m = re.fullmatch(r"\s*([A-H]\d{2})\s*;\s*(\d+|EMPTY)\s*", sLine)
+                if not m:
+                    continue
+                sPosition, sTube = m.groups()
+                if sTube == "EMPTY":
+                    resetPosition(f" {sPosition};", sRackId)
+                    continue
+            else:
+                if "NO READ" in sLine or "Forced Stop" in sLine:
+                    resetPosition(sLine, sRackId)
+
+                m = re.search(r"\s+(\w\d\d);\s+(\d+)", sLine)
+                if not m:
+                    continue
                 sPosition = m.groups()[0]
                 sTube = m.groups()[1]
-            else:
-                continue
 
             # Reset any tube that was in the position we are about to update
             sSql = f"""select tube_id from {microtubeDB}.matrix_tube
