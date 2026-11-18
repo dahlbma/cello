@@ -1,4 +1,4 @@
-import sys, os, logging, re, csv
+import sys, os, logging, re, csv, html, shutil, requests
 from PyQt5.uic import loadUi
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QTreeWidget, QFileDialog, QMessageBox
 from PyQt5.QtWidgets import QTreeWidgetItem, QAbstractItemView, QProgressBar
@@ -52,6 +52,7 @@ class MicrotubesScreen(QMainWindow):
 
         self.choose_file_btn.clicked.connect(self.getRackFile)
         self.upload_file_btn.clicked.connect(self.uploadRackFile)
+        self.upload_file_btn.setEnabled(False)
         self.update_box_eb.textChanged.connect(self.unlockRackUpload)
         self.upload_copy_log_btn.clicked.connect(self.copyLog)
         self.upload_copy_log_btn.setEnabled(False)
@@ -481,37 +482,81 @@ class MicrotubesScreen(QMainWindow):
             self.upload_file_btn.setEnabled(False)
 
     def uploadRackFile(self):
-        res_txt = ""
+        result_lines = []
+        logger = logging.getLogger(self.mod_name)
         for file_name in self.upload_fnames[0]:
             try:
                 with open(file_name, "rb") as f:
-                    r, b = dbInterface.readScannedRack(self.token, self.update_box_eb.text(), f)
-                    res = json.loads(r)
-                    error_tubes = res['FailedTubes']
-                    if len(str(error_tubes)) < 7:
-                        error_tubes = ""
-                    res_txt += f'''File: {file_name}
-    Rack updated: {res['sRack']}<BR>
-    Failed tubes: <span style="color: red;">{error_tubes}</span><BR>
-    Nr of ok tubes: {res['iOk']}<BR>
-    Nr of failed tubes: {res['iError']}<BR><BR>'''
-                    f.close()
-                    try:
-                        os.mkdir('uploads')
-                    except:
-                        pass
-                    try:
-                        os.rename(file_name, f'uploads/{os.path.basename(file_name)}')
-                    except Exception as e:
-                        logging.getLogger(self.mod_name).error(f"Move rack failed: {str(e)}")
-            except:
-                res_txt += 'Error reading scanned file\n' + r
-                logging.getLogger(self.mod_name).error(f"readScannedRack failed with response: {r}")
+                    response, succeeded = dbInterface.readScannedRack(
+                        self.token, self.update_box_eb.text(), f)
+            except OSError as e:
+                message = f"Could not read scan file: {e}"
+                logger.error("%s: %s", file_name, message)
+                result_lines.append(
+                    f"File: {html.escape(file_name)}<br>"
+                    f"<span style=\"color: red;\">{html.escape(message)}</span><br><br>")
+                continue
+            except (requests.exceptions.RequestException, UnicodeError) as e:
+                message = f"Upload request failed: {e}. The scan file was not moved."
+                logger.error("%s: %s", file_name, message)
+                result_lines.append(
+                    f"File: {html.escape(file_name)}<br>"
+                    f"<span style=\"color: red;\">{html.escape(message)}</span><br><br>")
+                continue
+
+            if not succeeded:
+                message = response.strip() or "The server returned no error details."
+                logger.error("readScannedRack rejected %s: %s", file_name, message)
+                result_lines.append(
+                    f"File: {html.escape(file_name)}<br>"
+                    f"<span style=\"color: red;\">Server rejected the upload: "
+                    f"{html.escape(message)}. The scan file was not moved.</span><br><br>")
+                continue
+
+            try:
+                res = json.loads(response)
+                error_tubes = res['FailedTubes']
+                rack = res['sRack']
+                ok_count = res['iOk']
+                error_count = res['iError']
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                message = (
+                    "The server returned an invalid response; upload completion could "
+                    "not be confirmed. The scan file was not moved. Verify the rack "
+                    f"contents before retrying. ({e})")
+                logger.error("Invalid readScannedRack response for %s: %s", file_name, e)
+                result_lines.append(
+                    f"File: {html.escape(file_name)}<br>"
+                    f"<span style=\"color: red;\">{html.escape(message)}</span><br><br>")
+                continue
+
+            if len(str(error_tubes)) < 7:
+                error_tubes = ""
+            try:
+                os.makedirs("uploads", exist_ok=True)
+                shutil.move(file_name, os.path.join("uploads", os.path.basename(file_name)))
+            except (OSError, shutil.Error) as e:
+                message = (
+                    "The server updated the rack, but the scan file could not be moved "
+                    f"to the local uploads folder: {e}")
+                logger.error("Move rack file %s failed: %s", file_name, e)
+                result_lines.append(
+                    f"File: {html.escape(file_name)}<br>"
+                    f"<span style=\"color: red;\">{html.escape(message)}</span><br><br>")
+                continue
+
+            result_lines.append(
+                f"File: {html.escape(file_name)}<br>"
+                f"Rack updated: {html.escape(str(rack))}<br>"
+                f"Failed tubes: <span style=\"color: red;\">"
+                f"{html.escape(str(error_tubes))}</span><br>"
+                f"Nr of ok tubes: {html.escape(str(ok_count))}<br>"
+                f"Nr of failed tubes: {html.escape(str(error_count))}<br><br>")
 
         self.update_box_eb.setEnabled(False)
         self.upload_copy_log_btn.setEnabled(True)
         self.upload_result_lab.setTextFormat(Qt.RichText)
-        self.upload_result_lab.setText(res_txt)
+        self.upload_result_lab.setText("".join(result_lines))
 
     def copyLog(self):
         clipboard = QApplication.clipboard()
