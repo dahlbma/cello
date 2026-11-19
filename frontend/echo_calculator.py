@@ -22,6 +22,7 @@ class EchoSpotCalculator:
     # Constants
     DROPLET_SIZE_NL = 2.5  # Robot droplet size in nL
     DEST_PLATE_TYPE = "384PP_DMSO2"
+    PLATE_ROWS = "ABCDEFGHIJKLMNOP"
     
     def __init__(self, logger_name="echo_calculator"):
         self.logger = logging.getLogger(logger_name)
@@ -32,57 +33,151 @@ class EchoSpotCalculator:
     
     def parse_excel_order(self, excel_file_path, max_dmso_pct_vol=None):
         """
-        Parse the Excel order file with two sheets:
+        Parse an Excel order file with two sheets.
+
+        For the original format, returns a flat list for both special and
+        compound wells. For a multi-layout file, returns one list per plate.
+        Use parse_excel_order_layouts when the layout-to-plate relationship
+        needs to be explicit.
+        """
+        df_order, plate_layouts, is_multi_plate = self.parse_excel_order_layouts(
+            excel_file_path, max_dmso_pct_vol
+        )
+
+        if is_multi_plate:
+            return (
+                df_order,
+                [layout['special_wells'] for layout in plate_layouts],
+                [layout['compound_wells'] for layout in plate_layouts],
+            )
+
+        layout = plate_layouts[0]
+        return df_order, layout['special_wells'], layout['compound_wells']
+
+    def parse_excel_order_layouts(self, excel_file_path, max_dmso_pct_vol=None):
+        """
+        Parse the order and every plate layout in an Excel order file.
+
         Sheet 1: Order list (Compound Id, Batch Id, Final conc (nM))
-        Sheet 2: Plate layout (384-well layout with DMSO/CTRL/Empty markings)
-        
-        Args:
-            excel_file_path: Path to the Excel file
-            max_dmso_pct_vol: Maximum DMSO percentage (e.g., 0.01 for 1%), 
-                            typically from MAX_DMSO_pct_vol_eb QLineEdit
-        
+        Sheet 2: One plate layout, or a sequence of labelled plate layouts
+
+        Layout labels in the second sheet are descriptive only. They are not
+        destination plate IDs and are not used when generating transfers.
+
         Returns:
-            tuple: (df_order, special_wells, compound_wells)
+            tuple: (df_order, plate_layouts, is_multi_plate)
+            - plate_layouts: list of dicts containing name, special_wells,
+              and compound_wells
+            - is_multi_plate: True when the layout sheet has multiple blocks
         """
         try:
-            # Read both sheets
+            # Read both sheets. Keep the layout sheet raw so repeated headers
+            # can be detected instead of being interpreted as data.
             df_order = pd.read_excel(excel_file_path, sheet_name=0)
-            df_layout = pd.read_excel(excel_file_path, sheet_name=1)
-            
+            df_layout = pd.read_excel(excel_file_path, sheet_name=1, header=None)
+
             # Normalize headers
             df_order.columns = df_order.columns.str.strip()
-            
-            # Set MAX_DMSO_PERCENT from parameter (UI value is always percent)
-            if max_dmso_pct_vol is not None:
-                try:
-                    # Convert to float if it's a string (from QLineEdit.text())
-                    max_dmso_value = float(max_dmso_pct_vol)
-                    
-                    if max_dmso_value > 0:
-                        self.max_dmso_percent = max_dmso_value / 100.0
-                        self.logger.info(
-                            f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% "
-                            f"(from {max_dmso_value}%)"
-                        )
-                    else:
-                        self.logger.warning("MAX_DMSO_PERCENT parameter is <= 0, using default of 0.5%")
-                except (ValueError, TypeError) as e:
-                    self.logger.warning(f"Could not parse MAX_DMSO_PERCENT parameter: {e}, using default of 0.5%")
-            else:
-                self.logger.info("No MAX_DMSO_PERCENT parameter provided, using default of 0.5%")
-            
-            # Parse plate layout
-            special_wells, compound_wells = self._parse_plate_layout(df_layout)
-            
-            return df_order, special_wells, compound_wells
-            
+
+            self._set_max_dmso_percent(max_dmso_pct_vol)
+
+            plate_layouts, is_multi_plate = self._parse_excel_plate_layouts(df_layout)
+            layout_type = "multi-plate" if is_multi_plate else "single-layout"
+            self.logger.info(
+                f"Detected {layout_type} Excel order with {len(plate_layouts)} layout(s)"
+            )
+
+            return df_order, plate_layouts, is_multi_plate
+
         except Exception as e:
             self.logger.error(f"Error parsing Excel file: {e}")
             raise
-    
+
+    def _set_max_dmso_percent(self, max_dmso_pct_vol):
+        """Set the maximum DMSO percentage from the UI value."""
+        if max_dmso_pct_vol is not None:
+            try:
+                # Convert to float if it's a string (from QLineEdit.text())
+                max_dmso_value = float(max_dmso_pct_vol)
+
+                if max_dmso_value > 0:
+                    self.max_dmso_percent = max_dmso_value / 100.0
+                    self.logger.info(
+                        f"MAX_DMSO_PERCENT set to {self.max_dmso_percent*100:.1f}% "
+                        f"(from {max_dmso_value}%)"
+                    )
+                else:
+                    self.logger.warning("MAX_DMSO_PERCENT parameter is <= 0, using default of 0.5%")
+            except (ValueError, TypeError) as e:
+                self.logger.warning(f"Could not parse MAX_DMSO_PERCENT parameter: {e}, using default of 0.5%")
+        else:
+            self.logger.info("No MAX_DMSO_PERCENT parameter provided, using default of 0.5%")
+
+    @classmethod
+    def _is_plate_layout_header(cls, row):
+        """Return True when a row contains the 1-24 plate column header."""
+        if len(row) < 25:
+            return False
+
+        for expected, value in enumerate(row.iloc[1:25], 1):
+            if pd.isna(value):
+                return False
+            try:
+                if float(value) != expected:
+                    return False
+            except (TypeError, ValueError):
+                return False
+
+        return True
+
+    def _parse_excel_plate_layouts(self, df_layout):
+        """Detect and parse all 384-well layout blocks on the layout sheet."""
+        plate_layouts = []
+
+        for start_idx in range(len(df_layout)):
+            header_row = df_layout.iloc[start_idx]
+            if not self._is_plate_layout_header(header_row):
+                continue
+
+            layout_end = start_idx + 17
+            layout_grid = df_layout.iloc[start_idx + 1:layout_end, :25]
+            if len(layout_grid) != len(self.PLATE_ROWS):
+                continue
+
+            row_labels = [
+                str(value).strip() if pd.notna(value) else ''
+                for value in layout_grid.iloc[:, 0]
+            ]
+            if row_labels != list(self.PLATE_ROWS):
+                continue
+
+            label_value = header_row.iloc[0]
+            layout_name = (
+                str(label_value).strip()
+                if pd.notna(label_value) and str(label_value).strip()
+                else None
+            )
+            special_wells, compound_wells = self._parse_plate_layout(layout_grid)
+            plate_layouts.append({
+                'name': layout_name,
+                'special_wells': special_wells,
+                'compound_wells': compound_wells,
+            })
+
+        if not plate_layouts:
+            raise ValueError(
+                "Could not find a valid 384-well plate layout in the second sheet"
+            )
+
+        is_multi_plate = len(plate_layouts) > 1
+        return plate_layouts, is_multi_plate
+
     def _parse_plate_layout(self, df_layout):
         """
-        Parse the plate layout from Sheet 2.
+        Parse one plate layout.
+
+        Accepts both a raw 16x25 layout grid and a DataFrame read by pandas with
+        the first layout row as its header.
         Returns:
             tuple: (special_wells, compound_wells)
             - special_wells: List of tuples (well_position, content) for DMSO/CTRL wells
@@ -90,36 +185,52 @@ class EchoSpotCalculator:
         """
         special_wells = []
         compound_wells = []
-        rows = "ABCDEFGHIJKLMNOP"
-        
-        for row_idx, row_data in df_layout.iterrows():
-            row_letter = row_data['Unnamed: 0']  # Should be A, B, C, etc.
-            if row_letter not in rows:
+
+        for _, row_data in df_layout.iterrows():
+            if 'Unnamed: 0' in df_layout.columns:
+                row_letter = row_data['Unnamed: 0']
+            else:
+                row_letter = row_data.iloc[0]
+
+            row_letter = str(row_letter).strip() if pd.notna(row_letter) else ''
+            if row_letter not in self.PLATE_ROWS:
                 continue
-                
+
             # Iterate through columns 1-24
             for col_num in range(1, 25):
                 if col_num in df_layout.columns:
                     content = row_data[col_num]
-                    well_position = f"{row_letter}{col_num:02d}"
-                    
-                    # Skip explicitly marked as "Empty"
-                    if pd.notna(content) and str(content).strip().upper() == 'EMPTY':
-                        continue
-                    
-                    # Handle special wells (DMSO, CTRL)
-                    if pd.notna(content):
-                        content_str = str(content).strip()
-                        if content_str.upper() == 'DMSO' or content_str.startswith('CTRL'):
-                            special_wells.append((well_position, content_str))
-                        else:
-                            # Non-empty, non-DMSO, non-CTRL, non-Empty -> available for compounds
-                            compound_wells.append(well_position)
+                elif len(row_data) > col_num:
+                    content = row_data.iloc[col_num]
+                else:
+                    continue
+
+                well_position = f"{row_letter}{col_num:02d}"
+
+                # Skip explicitly marked as "Empty"
+                if pd.notna(content) and str(content).strip().upper() == 'EMPTY':
+                    continue
+
+                # Handle special wells (DMSO, CTRL)
+                if pd.notna(content):
+                    content_str = str(content).strip()
+                    content_upper = content_str.upper()
+                    if content_upper == 'DMSO' or content_upper.startswith('CTRL'):
+                        special_wells.append((well_position, content_str))
                     else:
-                        # NaN/blank cell -> available for compounds
+                        # Non-empty, non-DMSO, non-CTRL, non-Empty -> available for compounds
                         compound_wells.append(well_position)
-        
+                else:
+                    # NaN/blank cell -> available for compounds
+                    compound_wells.append(well_position)
+
         return special_wells, compound_wells
+
+    def sort_compound_wells(self, compound_wells, well_order='horizontal'):
+        """Return compound wells in the selected Echo traversal order."""
+        if well_order.lower() == 'vertical':
+            return sorted(compound_wells, key=lambda well: (int(well[1:]), well[0]))
+        return sorted(compound_wells, key=lambda well: (well[0], int(well[1:])))
     
     def parse_destination_plates(self, destination_plates_text):
         """
@@ -340,22 +451,52 @@ class EchoSpotCalculator:
         self.dmso_source_index = 0  # Reset DMSO source index for each file generation
         
         try:
-            # Parse plate layout from Excel file
-            _, special_wells, compound_wells = self.parse_excel_order(excel_order_path, max_dmso_pct_vol)
-            
-            # Sort compound wells based on well_order preference
-            if well_order.lower() == 'vertical':
-                # Sort by column first (A01, B01, C01, ..., P01, A02, B02, ...)
-                compound_wells = sorted(compound_wells, key=lambda w: (int(w[1:]), w[0]))
-            else:
-                # Sort by row first (A01, A02, ..., A24, B01, B02, ...) - this is default
-                compound_wells = sorted(compound_wells, key=lambda w: (w[0], int(w[1:])))
-            
             if not destination_plates:
                 self.logger.error("No destination plates specified")
                 return False
-            
-            self.logger.info(f"Parsed plate layout: {len(special_wells)} special wells, {len(compound_wells)} compound wells")
+
+            _, plate_layouts, is_multi_plate = self.parse_excel_order_layouts(
+                excel_order_path, max_dmso_pct_vol
+            )
+            sorted_layouts = [{
+                'name': layout['name'],
+                'special_wells': layout['special_wells'],
+                'compound_wells': self.sort_compound_wells(
+                    layout['compound_wells'], well_order
+                ),
+            } for layout in plate_layouts]
+
+            if is_multi_plate:
+                if len(destination_plates) != len(sorted_layouts):
+                    self.logger.error(
+                        f"Multi-plate order has {len(sorted_layouts)} layouts, "
+                        f"but {len(destination_plates)} destination plates were provided"
+                    )
+                    return False
+                generation_layouts = sorted_layouts
+                total_capacity = sum(
+                    len(layout['compound_wells']) for layout in generation_layouts
+                )
+                if len(order_data) > total_capacity:
+                    self.logger.error(
+                        f"Multi-plate layouts hold {total_capacity} compounds, "
+                        f"but the order contains {len(order_data)}"
+                    )
+                    return False
+                self.logger.info(
+                    f"Using {len(generation_layouts)} sheet-order layouts for "
+                    f"{len(destination_plates)} destination plates; layout labels "
+                    "are ignored"
+                )
+            else:
+                # Preserve the original behavior: repeat the one layout for
+                # every destination plate in the order.
+                generation_layouts = [sorted_layouts[0]] * len(destination_plates)
+                self.logger.info(
+                    f"Parsed plate layout: "
+                    f"{len(sorted_layouts[0]['special_wells'])} special wells, "
+                    f"{len(sorted_layouts[0]['compound_wells'])} compound wells"
+                )
             
             output_rows = []
             max_transfer_nl = min(
@@ -382,18 +523,30 @@ class EchoSpotCalculator:
             # Process each destination plate
             compound_idx = 0
             total_compounds = len(order_data)
-            total_wells = total_compounds + (len(special_wells) * len(destination_plates))
+            total_wells = total_compounds + sum(
+                len(layout['special_wells']) for layout in generation_layouts
+            )
             wells_processed = 0
-            
-            for plate_num, dest_plate_id in enumerate(destination_plates, 1):
+
+            def report_progress():
+                if not progress_callback:
+                    return
+                progress = int((wells_processed / total_wells) * 100) if total_wells else 100
+                progress_callback(min(100, progress))
+
+            for plate_num, (dest_plate_id, layout) in enumerate(
+                zip(destination_plates, generation_layouts), 1
+            ):
+                special_wells = layout['special_wells']
+                compound_wells = layout['compound_wells']
+
                 # Add special wells (DMSO/CTRL) for this plate
                 self._add_special_wells(output_rows, special_wells, dest_plate_id, 
                                       source_data, ctrl_plate, dmso_plate)
                 wells_processed += len(special_wells)
                 
                 # Report progress
-                if progress_callback:
-                    progress_callback(int((wells_processed / total_wells) * 100))
+                report_progress()
                 
                 # Add compounds for this plate
                 compounds_added = 0
@@ -415,16 +568,17 @@ class EchoSpotCalculator:
                     
                     # Report progress periodically (every 10 compounds)
                     if progress_callback and compounds_added % 10 == 0:
-                        progress_callback(int((wells_processed / total_wells) * 100))
+                        report_progress()
                 
                 self.logger.info(f"Plate {plate_num}/{len(destination_plates)}: {compounds_added} compounds added")
                 
                 # Report progress after each plate
-                if progress_callback:
-                    progress_callback(int((wells_processed / total_wells) * 100))
+                report_progress()
                 
-                # If we've processed all compounds, break
-                if compound_idx >= total_compounds:
+                # A legacy single layout keeps its existing early-exit
+                # behavior. Multi-plate layouts still emit that plate's
+                # controls even if the final order is already complete.
+                if compound_idx >= total_compounds and not is_multi_plate:
                     break
             
             # Check if we processed all compounds
@@ -498,7 +652,7 @@ class EchoSpotCalculator:
                         'Exception': error_msg
                     })
             
-            elif content.startswith('CTRL'):
+            elif content.upper().startswith('CTRL'):
                 # Find control compound source - search across ALL source plates
                 # (controls may be on list plates OR the ctrl_plate)
                 ctrl_sources = [src for src in source_data 

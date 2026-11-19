@@ -222,21 +222,46 @@ class PlatesScreen(QMainWindow):
                 calculator = EchoSpotCalculator(self.mod_name)
                 max_dmso_pct_text = self.MAX_DMSO_pct_vol_eb.text().strip()
                 max_dmso_pct_vol = float(max_dmso_pct_text) if max_dmso_pct_text else None
-                df_order, special_wells, compound_wells = calculator.parse_excel_order(fname[0], max_dmso_pct_vol)
+                df_order, plate_layouts, is_multi_plate = calculator.parse_excel_order_layouts(
+                    fname[0], max_dmso_pct_vol
+                )
 
                 num_compounds = len(df_order)
-                wells_per_plate = len(compound_wells)
-                if wells_per_plate > 0 and num_compounds > 0:
-                    num_plates = math.ceil(num_compounds / wells_per_plate)
+                if is_multi_plate:
+                    num_plates = len(plate_layouts)
+                    total_wells = sum(
+                        len(layout['compound_wells']) for layout in plate_layouts
+                    )
+                    can_calculate_plates = num_compounds > 0 and num_plates > 0
+                else:
+                    wells_per_plate = len(plate_layouts[0]['compound_wells'])
+                    num_plates = (
+                        math.ceil(num_compounds / wells_per_plate)
+                        if wells_per_plate > 0
+                        else 0
+                    )
+                    total_wells = num_plates * wells_per_plate
+                    can_calculate_plates = wells_per_plate > 0 and num_compounds > 0
+
+                if can_calculate_plates:
                     plate_ids = [f"P{i:06d}" for i in range(1, num_plates + 1)]
                     self.destinationPlates_eb.setPlainText("\n".join(plate_ids))
-                    logging.getLogger(self.mod_name).info(
-                        f"Excel order: {num_compounds} compounds, {wells_per_plate} wells/plate, "
-                        f"{num_plates} destination plate(s) required"
-                    )
+                    if is_multi_plate:
+                        logging.getLogger(self.mod_name).info(
+                            f"Multi-plate Excel order: {num_compounds} compounds, "
+                            f"{num_plates} layouts, {total_wells} compound wells; "
+                            "layout labels are ignored"
+                        )
+                    else:
+                        logging.getLogger(self.mod_name).info(
+                            f"Excel order: {num_compounds} compounds, "
+                            f"{wells_per_plate} wells/plate, "
+                            f"{num_plates} destination plate(s) required"
+                        )
                 else:
                     logging.getLogger(self.mod_name).warning(
-                        f"Cannot calculate plates: {num_compounds} compounds, {wells_per_plate} compound wells"
+                        f"Cannot calculate plates: {num_compounds} compounds, "
+                        f"{total_wells} compound wells"
                     )
             except Exception as e:
                 logging.getLogger(self.mod_name).error(f"Failed to parse Excel for plate count: {e}")
@@ -303,8 +328,22 @@ class PlatesScreen(QMainWindow):
             
             # Parse Excel order file
             try:
-                df_order, special_wells, compound_wells = calculator.parse_excel_order(excel_order_path)
-                logging.getLogger(self.mod_name).info(f"Parsed order: {len(df_order)} compounds, {len(special_wells)} special wells, {len(compound_wells)} compound wells")
+                df_order, plate_layouts, is_multi_plate = (
+                    calculator.parse_excel_order_layouts(
+                        excel_order_path, max_dmso_pct_vol
+                    )
+                )
+                special_wells = sum(
+                    len(layout['special_wells']) for layout in plate_layouts
+                )
+                compound_wells = sum(
+                    len(layout['compound_wells']) for layout in plate_layouts
+                )
+                logging.getLogger(self.mod_name).info(
+                    f"Parsed order: {len(df_order)} compounds, "
+                    f"{len(plate_layouts)} layout(s), {special_wells} special wells, "
+                    f"{compound_wells} compound wells"
+                )
                 popup.obj.proc_counter(40)
                 QApplication.processEvents()
             except Exception as e:
@@ -319,6 +358,18 @@ class PlatesScreen(QMainWindow):
                 self._close_popup(popup)
                 QApplication.restoreOverrideCursor()
                 QMessageBox.warning(self, "Input Error", "No valid destination plate IDs found.")
+                return
+
+            if is_multi_plate and len(destination_plates) != len(plate_layouts):
+                self._close_popup(popup)
+                QApplication.restoreOverrideCursor()
+                QMessageBox.warning(
+                    self,
+                    "Input Error",
+                    f"The Excel file contains {len(plate_layouts)} plate layouts, "
+                    f"but {len(destination_plates)} destination plate IDs were "
+                    "specified. Provide one destination plate for each layout."
+                )
                 return
             
             # Choose output file
