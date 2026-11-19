@@ -84,3 +84,5 @@ tools/wellmixer.py
 *.exe
 *.ver
 frontend/cello
+
+next_prompt.txt
